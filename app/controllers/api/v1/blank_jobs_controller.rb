@@ -4,8 +4,7 @@ module Api
     class BlankJobsController < BaseController
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
-      #after_action only: [:index] { set_pagination_header(BlankJobView.count) }
-      #after_action :set_pagination_header(BlankJobView.count), only: [:index]
+      after_action only: [:index] { set_pagination_header(BlankJobView.count) }
 
       def index
         @blank_jobs = BlankJobView.paginate(params.slice(:_end, :_sort, :_order))

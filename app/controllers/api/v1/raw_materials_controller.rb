@@ -5,10 +5,8 @@ module Api
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
       before_action :set_raw_material, only: [:show, :update, :destroy]
-      #after_action only: [:index] { set_pagination_header(RawMaterialView.count(1)) }
-      ##after_action :set_pagination_header(RawMaterialView.count(1)), only: [:index]
-      #after_action only: [:raw_material_list_only] { set_pagination_header(RawMaterial.count) }
-      ##after_action :set_pagination_header(RawMaterial.count), only: [:raw_material_list_only]
+      after_action only: [:index] { set_pagination_header(RawMaterialView.count(1)) }
+      after_action only: [:raw_material_list_only] { set_pagination_header(RawMaterial.count) }
 
       def index
         @raw_materials = RawMaterialView.paginate(params.slice(:_end, :_sort, :_order))

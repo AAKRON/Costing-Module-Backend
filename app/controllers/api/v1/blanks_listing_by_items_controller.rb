@@ -5,9 +5,8 @@ module Api
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
       before_action :set_blanks_listing_by_item, only: [:show, :update, :destroy]
-      #after_action only: [:index] { set_pagination_header(BlanksListingByItem.count) }
-	  ##after_action :set_pagination_header(BlanksListingByItem.count), only: [:index]
-      
+      after_action only: [:index] { set_pagination_header(BlanksListingByItem.count) }
+
       def index
         @blanks_listing_by_item = BlanksListingByItem.paginate(params.slice(:_end, :_sort, :_order))
         @blanks_listing_by_item = @blanks_listing_by_item.search(params[:q], :item_number) unless params.fetch(:q, '').empty?

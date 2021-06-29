@@ -4,8 +4,7 @@ module Api
     class Api::V1::AppConstantsController < BaseController
       before_action :restrict_access
       before_action :set_app_constant, only: :update
-      #after_action only: [:index] { set_pagination_header(AppConstant.count) }
-      ##after_action :set_pagination_header(AppConstant.count), only: [:index]
+      after_action only: [:index] { set_pagination_header(AppConstant.count) }
 
       def index
         @app_constants = AppConstant.paginate(params.slice(:_end, :_sort, :_order))

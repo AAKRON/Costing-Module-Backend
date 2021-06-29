@@ -5,10 +5,8 @@ module Api
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
       before_action :set_item_type, only: [:update, :show]
-      #after_action only: [:index] { set_pagination_header(ItemType.count) }
-      ##after_action :set_pagination_header(ItemType.count), only: [:index]
-      #after_action only: [:item_type_list_only] { set_pagination_header(ItemType.count) }
-      ##after_action :set_pagination_header(ItemType.count), only: [:item_type_list_only]
+      after_action only: [:index] { set_pagination_header(ItemType.count) }
+      after_action only: [:item_type_list_only] { set_pagination_header(ItemType.count) }
 
       def index
         @item_types = ItemType.paginate(params.slice(:_end, :_sort, :_order))
