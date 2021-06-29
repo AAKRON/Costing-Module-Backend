@@ -6,7 +6,7 @@ module Api
       before_action :set_user_access_level, only:[:destroy, :update]
       before_action :set_blank_type, only: [:update, :show]
       #after_action only: [:index] { set_pagination_header(BlankType.count) }
-	  after_action :set_pagination_header(BlankType.count), only: [:index]
+	  ##after_action :set_pagination_header(BlankType.count), only: [:index]
       def index
         @blank_types = BlankType.paginate(params.slice(:_end, :_sort, :_order))
         @blank_types = @blank_types.search(params[:q], :type_number) unless params.fetch(:q, '').empty?

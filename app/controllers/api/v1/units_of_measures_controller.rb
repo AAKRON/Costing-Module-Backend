@@ -5,7 +5,7 @@ module Api
       before_action :set_user_access_level, only:[:destroy, :update]
       before_action :set_units_of_measure, only: [:show, :update, :destroy]
       #after_action only: [:index, :units_of_measure_list_only] { set_pagination_header(UnitsOfMeasure.count) }
-	  after_action :set_pagination_header(UnitsOfMeasure.count), only: [:index, :units_of_measure_list_only]
+	  #after_action :set_pagination_header(UnitsOfMeasure.count), only: [:index, :units_of_measure_list_only]
       # GET /units_of_measures
       # GET /units_of_measures.json
       def index

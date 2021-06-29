@@ -6,9 +6,9 @@ module Api
       before_action :set_user_access_level, only:[:destroy, :update]
       before_action :set_blank, only: [:show, :update]
       #after_action only: [:index] { set_pagination_header(BlankCostView.count) }
-      after_action :set_pagination_header(BlankCostView.count), only: [:index]
+      ##after_action :set_pagination_header(BlankCostView.count), only: [:index]
       #after_action only: [:blank_list_only] { set_pagination_header(Blank.count) }
-      after_action :set_pagination_header(Blank.count), only: [:blank_list_only]
+      ##after_action :set_pagination_header(Blank.count), only: [:blank_list_only]
 
       def index
         @blanks = BlankCostView.paginate(params.slice(:_end, :_sort, :_order))

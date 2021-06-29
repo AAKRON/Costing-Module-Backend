@@ -6,7 +6,7 @@ module Api
       before_action :set_user_access_level
       before_action :set_user, only: :update
       #after_action only: [:index] { set_pagination_header(User.count) }
-      after_action :set_pagination_header(User.count), only: [:index]
+      ##after_action :set_pagination_header(User.count), only: [:index]
 
       def index
         @users = User.paginate(params.slice(:_end, :_sort, :_order))
