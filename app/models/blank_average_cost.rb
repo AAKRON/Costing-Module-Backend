@@ -1,0 +1,2 @@
+class BlankAverageCost < ApplicationRecord
+end

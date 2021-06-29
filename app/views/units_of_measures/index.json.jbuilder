@@ -1,0 +1,1 @@
+json.array! @units_of_measures, partial: 'units_of_measures/units_of_measure', as: :units_of_measure

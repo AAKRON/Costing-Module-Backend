@@ -1,0 +1,1 @@
+json.partial! "units_of_measures/units_of_measure", units_of_measure: @units_of_measure
