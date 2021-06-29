@@ -4,8 +4,8 @@ module Api
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
       before_action :set_raw_material_type, only: [:show, :update, :destroy]
-      after_action only: [:index, :raw_material_type_list_only] { set_pagination_header(Rawmaterialtype.count) }
-
+      #after_action only: [:index, :raw_material_type_list_only] { set_pagination_header(Rawmaterialtype.count) }
+	  after_action :set_pagination_header(Rawmaterialtype.count), only: [:index, :raw_material_type_list_only]	
       def index
         @raw_material_types = Rawmaterialtype.all.paginate(params.slice(:_end, :_sort, :_order))
         @raw_material_types = @raw_material_types.search(params[:q], :name) unless params.fetch(:q, '').empty?

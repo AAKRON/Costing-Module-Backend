@@ -5,8 +5,10 @@ module Api
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
       before_action :set_job, only:[:job_cost_calculate, :update]
-      after_action only: [:index] { set_pagination_header(JobWithScreenListing.count) }
-      after_action only: [:job_list_only] { set_pagination_header(JobListing.count) }
+      #after_action only: [:index] { set_pagination_header(JobWithScreenListing.count) }
+      after_action :set_pagination_header(JobWithScreenListing.count), only: [:index]
+      #after_action only: [:job_list_only] { set_pagination_header(JobListing.count) }
+      after_action :set_pagination_header(JobListing.count), only: [:job_list_only]
 
       def index
         @job_listings = JobWithScreenListing.paginate(params.slice(:_end, :_sort, :_order))

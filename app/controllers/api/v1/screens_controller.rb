@@ -5,8 +5,8 @@ module Api
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
       before_action :set_screen, only: [:show, :update]
-      after_action only: [:index] { set_pagination_header(Screen.count) }
-
+      #after_action only: [:index] { set_pagination_header(Screen.count) }
+	  after_action :set_pagination_header(Screen.count), only: [:index]
       def index
         @screens = Screen.paginate(params.slice(:_end, :_sort, :_order))
         @screens = @screens.search(params[:q], :screen_size) unless params.fetch(:q, '').empty?

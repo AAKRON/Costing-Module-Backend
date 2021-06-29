@@ -5,8 +5,10 @@ module Api
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
       before_action :set_box, only: [:show, :update, :destroy]
-      after_action only: [:index] { set_pagination_header(Box.count) }
-      after_action only: [:box_list_only] { set_pagination_header(Box.count) }
+      #after_action only: [:index] { set_pagination_header(Box.count) }
+      after_action :set_pagination_header(Box.count), only: [:index]
+      #after_action only: [:box_list_only] { set_pagination_header(Box.count) }
+      after_action :set_pagination_header(Box.count), only: [:box_list_only]
 
       def index
         @boxes = Box.paginate(params.slice(:_end, :_sort, :_order))

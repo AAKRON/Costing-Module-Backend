@@ -4,7 +4,8 @@ module Api
     class FinalCalculationsController < BaseController
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
-      after_action only: [:index] { set_pagination_header(BlankFinalCalculationsView.count) }
+      #after_action only: [:index] { set_pagination_header(BlankFinalCalculationsView.count) }
+      after_action :set_pagination_header(BlankFinalCalculationsView.count), only: [:index]
 
       def index
         @final_calculations = BlankFinalCalculationsView.paginate(params.slice(:_end, :_sort, :_order))
