@@ -5,8 +5,8 @@ module Api
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
       before_action :set_item, only: [:show, :update]
-      after_action (only: [:index]) { set_pagination_header(ItemCostView.count) }
-      after_action (only: [:item_list_only]) { set_pagination_header(Item.count) }
+      after_action(only: [:index]) { set_pagination_header(ItemCostView.count) }
+      after_action(only: [:item_list_only]) { set_pagination_header(Item.count) }
 
       def index
         #set_pagination_header(ItemCostView.count)
