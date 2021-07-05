@@ -4,7 +4,7 @@ module Api
     class ItemJobsController < BaseController
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
-      #after_action only: [:index] { set_pagination_header(ItemWithJobCount.count) }
+      after_action (only: [:index]) { set_pagination_header(ItemWithJobCount.count) }
 
       def index
         #set_pagination_header(ItemWithJobCount.count)

@@ -4,8 +4,8 @@ module Api
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
       before_action :set_vendor, only: [:show, :update, :destroy]
-      #after_action only: [:index, :vendor_list_only] { set_pagination_header(Vendor.count) }
-
+      after_action (only: [:index]) { set_pagination_header(Vendor.count) }
+	  after_action (only: [:vendor_list_only]) { set_pagination_header(Vendor.count) }	
       def index
         @vendors = Vendor.all.paginate(params.slice(:_end, :_sort, :_order))
         @vendors = @vendors.search(params[:q], :code) unless params.fetch(:q, '').empty?

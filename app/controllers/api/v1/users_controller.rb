@@ -5,7 +5,7 @@ module Api
       before_action :restrict_access
       before_action :set_user_access_level
       before_action :set_user, only: :update
-      #after_action only: [:index] { set_pagination_header(User.count) }
+      after_action (only: [:index]) { set_pagination_header(User.count) }
 
       def index
         #set_pagination_header(User.count)
