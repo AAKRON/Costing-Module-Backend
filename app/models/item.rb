@@ -15,7 +15,7 @@ class Item < ApplicationRecord
   has_many :item_boxes
   has_many :material_costs
   has_many :blanks_listing_item_with_cost, :foreign_key => :item_number
-  belongs_to :item_type, class_name: ItemType, primary_key: 'type_number', foreign_key: :item_type_id, optional: true
+  belongs_to :item_type, class_name: 'ItemType', primary_key: 'type_number', foreign_key: :item_type_id, optional: true
 
   accepts_nested_attributes_for :item_jobs
 
