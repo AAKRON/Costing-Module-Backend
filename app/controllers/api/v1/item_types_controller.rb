@@ -5,10 +5,11 @@ module Api
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
       before_action :set_item_type, only: [:update, :show]
-      after_action only: [:index] { set_pagination_header(ItemType.count) }
-      after_action only: [:item_type_list_only] { set_pagination_header(ItemType.count) }
+      #after_action only: [:index] { set_pagination_header(ItemType.count) }
+      #after_action only: [:item_type_list_only] { set_pagination_header(ItemType.count) }
 
       def index
+        #set_pagination_header(ItemType.count)
         @item_types = ItemType.paginate(params.slice(:_end, :_sort, :_order))
         @item_types = @item_types.search(params[:q], :type_number) unless params.fetch(:q, '').empty?
 
@@ -38,6 +39,7 @@ module Api
       end
 
       def item_type_list_only
+        #set_pagination_header(ItemType.count)
         @item_type = ItemType.all
 
         render json: @item_type, status: :ok

@@ -7,7 +7,7 @@ module Api
       #after_action only: [:index] { set_pagination_header(ItemWithJobCount.count) }
 
       def index
-        set_pagination_header(ItemWithJobCount.count)
+        #set_pagination_header(ItemWithJobCount.count)
         @items = ItemWithJobCount.paginate(params.slice(:_end, :_sort, :_order))
         @items = @items.search(params[:q], :item_number) unless params.fetch(:q, '').empty?
 

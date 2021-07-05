@@ -8,7 +8,7 @@ module Api
       #after_action only: [:index] { set_pagination_header(Screen.count) }
 
       def index
-        set_pagination_header(Screen.count)
+        #set_pagination_header(Screen.count)
         @screens = Screen.paginate(params.slice(:_end, :_sort, :_order))
         @screens = @screens.search(params[:q], :screen_size) unless params.fetch(:q, '').empty?
         render template: 'api/v1/screens/index.json', status: 200

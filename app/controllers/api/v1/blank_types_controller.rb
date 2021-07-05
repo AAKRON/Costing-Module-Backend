@@ -8,7 +8,7 @@ module Api
       #after_action only: [:index] { set_pagination_header(BlankType.count) }
 
       def index
-        set_pagination_header(BlankType.count)
+        #set_pagination_header(BlankType.count)
         @blank_types = BlankType.paginate(params.slice(:_end, :_sort, :_order))
         @blank_types = @blank_types.search(params[:q], :type_number) unless params.fetch(:q, '').empty?
 

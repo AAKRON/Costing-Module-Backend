@@ -4,9 +4,10 @@ module Api
     class Api::V1::AppConstantsController < BaseController
       before_action :restrict_access
       before_action :set_app_constant, only: :update
-      after_action only: [:index] { set_pagination_header(AppConstant.count) }
+      #after_action only: [:index] { set_pagination_header(AppConstant.count) }
 
       def index
+        #set_pagination_header(AppConstant.count)
         @app_constants = AppConstant.paginate(params.slice(:_end, :_sort, :_order))
         @app_constants = @app_constants.search(params[:q], :name) unless params.fetch(:q, '').empty?
         render json: @app_constants, status: 200

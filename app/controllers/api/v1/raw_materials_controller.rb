@@ -9,7 +9,7 @@ module Api
       #after_action only: [:raw_material_list_only] { set_pagination_header(RawMaterial.count) }
 
       def index
-        set_pagination_header(RawMaterialView.count(1))
+        #set_pagination_header(RawMaterialView.count(1))
         @raw_materials = RawMaterialView.paginate(params.slice(:_end, :_sort, :_order))
         @raw_materials = @raw_materials.search(params[:q], :name) unless params.fetch(:q, '').empty?
       end
@@ -43,7 +43,7 @@ module Api
       end
 
       def raw_material_list_only
-        set_pagination_header(RawMaterial.count)
+        #set_pagination_header(RawMaterial.count)
         @raw_material = RawMaterial.all
 
         render json: @raw_material, status: :ok

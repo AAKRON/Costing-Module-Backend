@@ -5,9 +5,10 @@ module Api
       before_action :restrict_access
       before_action :set_user_access_level
       before_action :set_user, only: :update
-      after_action only: [:index] { set_pagination_header(User.count) }
+      #after_action only: [:index] { set_pagination_header(User.count) }
 
       def index
+        #set_pagination_header(User.count)
         @users = User.paginate(params.slice(:_end, :_sort, :_order))
         @users = @users.search(params[:q], :username) unless params.fetch(:q, '').empty?
         render json: @users, status: 200
