@@ -5,10 +5,11 @@ module Api
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
       before_action :set_job, only:[:job_cost_calculate, :update]
-      after_action only: [:index] { set_pagination_header(JobWithScreenListing.count) }
-      after_action only: [:job_list_only] { set_pagination_header(JobListing.count) }
+      #after_action only: [:index] { set_pagination_header(JobWithScreenListing.count) }
+      #after_action only: [:job_list_only] { set_pagination_header(JobListing.count) }
 
       def index
+        set_pagination_header(JobWithScreenListing.count)
         @job_listings = JobWithScreenListing.paginate(params.slice(:_end, :_sort, :_order))
         @job_listings = @job_listings.search(params[:q], :job_number) unless params.fetch(:q, '').empty?
         render template: 'api/v1/job_listings/index.json', status: :ok
@@ -37,6 +38,7 @@ module Api
       end
 
       def job_list_only
+        set_pagination_header(JobListing.count)
         @job_listing = JobListing.all
 
         render json: @job_listing, status: :ok

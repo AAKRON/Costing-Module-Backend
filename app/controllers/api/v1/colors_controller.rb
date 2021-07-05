@@ -4,9 +4,10 @@ module Api
     class ColorsController < BaseController
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
-      after_action only: [:index, :color_list_only] { set_pagination_header(Color.count) }
+      #after_action only: [:index, :color_list_only] { set_pagination_header(Color.count) }
 
       def index
+        set_pagination_header(Color.count)
         color = Color.all.paginate(params.slice(:_end, :_sort, :_order))
         color = color.search(params[:q], :name) unless params.fetch(:q, '').empty?
 
