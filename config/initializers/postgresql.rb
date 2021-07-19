@@ -1,10 +1,1 @@
-Upsert::ColumnDefinition::Postgresql.class_eval do
-	def all(connection, quoted_table_name)
-          res = connection.execute "SELECT a.attname AS name, format_type(a.atttypid, a.atttypmod) AS sql_type, d.adsrc AS default
-	  FROM pg_attribute a LEFT JOIN pg_attrdef d
-	  ON a.attrelid = d.adrelid AND a.attnum = d.adnum
-	  WHERE a.attrelid = '#{quoted_table_name}'::regclass
-	  AND a.attnum > 0 AND NOT a.attisdropped"
-	end  
-end
 
