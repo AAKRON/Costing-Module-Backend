@@ -1,5 +1,6 @@
 require "upsert"
 require "upsert/column_definition/postgresql"
+
 Upsert::ColumnDefinition::Postgresql.class_eval do
 	def all(connection, quoted_table_name)
           res = connection.execute <<-EOS
