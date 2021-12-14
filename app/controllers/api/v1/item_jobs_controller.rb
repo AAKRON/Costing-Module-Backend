@@ -23,8 +23,7 @@ module Api
       end
       
       def update_item_jobs_data
-        #render(json: { message: "item not found",status: :bad_request })
-        @item = Item.where(item_number: params[:item_number])
+        @item = Item.where(item_number: params[:id])
         #puts "#{@item.count}"
         #abort
         if @item.present?
