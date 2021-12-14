@@ -24,23 +24,17 @@ module Api
       
       def update_item_jobs_data
         @item = Item.where(item_number: params[:item_number])
-        #puts "#{@item.count}"
-        #abort
         if @item.present?
 			@itemJob = ItemJob.find(params[:item_job_id])
 			if @itemJob
-				#puts "#{@itemJob.to_json}"
-				#puts "Hiii"
 				@itemJob.update(job_listing_id: params[:job_listing_id],hour_per_piece:params[:hour_per_piece])
 				@itemJobs = ItemJob.where(item_id: params[:item_number])
 				render json: @itemJobs, status: :ok
-				#puts itemJobs.errors.full_messages
 			else
 				render json: @itemJob.errors.messages, status: :bad_request
 			end
 		else
 			render(json: { message: "item not found",status: :bad_request })
-			#render json: "item not found", status: :bad_request
 		end
       end
 

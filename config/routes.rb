@@ -32,6 +32,7 @@ Rails.application.routes.draw do
       put "/update-item-job-data", to: "item_jobs#update_item_jobs_data"
       get "/blank-list-only", to: "blanks#blank_list_only"
       put "/update-blank-jobs-only/:id", to: "blank_jobs#update_blank_jobs_only"
+      put "/update-blank-job-data", to: "blank_jobs#update_blank_jobs_data"
       get "download/:file_type", to: "files#download"
       get "/box-list-only", to: "boxes#box_list_only"
       get "/item-type-list-only", to: "item_types#item_type_list_only"

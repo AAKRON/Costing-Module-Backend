@@ -20,7 +20,28 @@ module Api
         render_item_and_item_jobs_template(template_name: :show, status: :created) if @blank.save
         render json: @blank.errors, status: :bad_request unless @blank.save
       end
-
+	  
+	  def update_blank_jobs_data
+        @blank = Blank.where(blank_number: params[:blank_number])
+        #puts "#{@blank.count}"
+        #abort
+        if @blank.present?
+			@blankJob = BlankJob.find(params[:blank_job_id])
+			if @blankJob
+				#puts "#{@blankJob.to_json}"
+				#puts "Hiii"
+				@blankJob.update(job_listing_id: params[:job_listing_id],hour_per_piece:params[:hour_per_piece])
+				@blankJobs = BlankJob.where(blank_id: params[:blank_number])
+				render json: @blankJobs, status: :ok
+				#puts itemJobs.errors.full_messages
+			else
+				render json: @blankJob.errors.messages, status: :bad_request
+			end
+		else
+			render(json: { message: "item not found",status: :bad_request })
+		end
+      end
+      
       def update_blank_jobs_only
         BlankJob.bulk_update_or_create(
           blank_job_body(params[:copy_jobs], params[:blank_number]),
