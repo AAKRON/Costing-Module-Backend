@@ -23,7 +23,7 @@ module Api
       end
       
       def update_item_jobs_data
-        @item = Item.where(item_number: params[:id])
+        @item = Item.where(item_number: params[:item_number])
         #puts "#{@item.count}"
         #abort
         if @item.present?
