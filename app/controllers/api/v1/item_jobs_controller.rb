@@ -21,6 +21,16 @@ module Api
         render_item_and_item_jobs_template(template_name: :show, status: :created) if @item.save
         render json: @item.errors, status: :bad_request unless @item.save
       end
+      
+      def update_item_jobs_data
+        @itemJob = ItemJob.find(params[:item_job_id])
+	    if @itemJob.update({'job_listing_id': params[:job_listing_id],'hour_per_piece':params[:hour_per_piece]})
+		 @itemJobs = ItemJob.where(item_id: params[:item_number])
+         render json: @itemJobs, status: :ok
+	    else
+		 render json: @itemJob.errors.messages, status: :bad_request
+	    end
+      end
 
       def update_item_jobs_only
         ItemJob.bulk_update_or_create(
