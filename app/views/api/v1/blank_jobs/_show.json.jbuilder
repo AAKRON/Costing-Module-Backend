@@ -6,6 +6,7 @@ json.number_of_jobs blank.blank_jobs.count
 json.jobs do
   json.array! blank.blank_jobs do |job|
     job = BlankJobDecorator.new(job)
+    json.job_pk_id job.id
     json.job_number job.job_number
     json.description job.description
     json.wages_per_hour job.wages_per_hour
