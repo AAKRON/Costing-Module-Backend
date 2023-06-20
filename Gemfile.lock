@@ -62,6 +62,7 @@ GEM
       zeitwerk (~> 2.3)
     addressable (2.7.0)
       public_suffix (>= 2.0.2, < 5.0)
+    ast (2.4.2)
     bcrypt (3.1.16)
     builder (3.2.4)
     byebug (11.1.3)
@@ -185,6 +186,10 @@ GEM
     notiffany (0.1.3)
       nenv (~> 0.1)
       shellany (~> 0.0)
+    parallel (1.23.0)
+    parser (3.2.2.3)
+      ast (~> 2.4.1)
+      racc
     pdfkit (0.8.5)
     pg (1.2.3)
     pry (0.12.2)
@@ -230,6 +235,7 @@ GEM
       method_source
       rake (>= 0.13)
       thor (~> 1.0)
+    rainbow (3.1.1)
     rake (13.0.3)
     rb-fsevent (0.11.0)
     rb-inotify (0.10.1)
@@ -241,6 +247,7 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
+    rexml (3.2.5)
     rspec (3.10.0)
       rspec-core (~> 3.10.0)
       rspec-expectations (~> 3.10.0)
@@ -262,6 +269,19 @@ GEM
       rspec-mocks (~> 3.10)
       rspec-support (~> 3.10)
     rspec-support (3.10.2)
+    rubocop (1.52.1)
+      json (~> 2.3)
+      parallel (~> 1.10)
+      parser (>= 3.2.2.3)
+      rainbow (>= 2.2.2, < 4.0)
+      regexp_parser (>= 1.8, < 3.0)
+      rexml (>= 3.2.5, < 4.0)
+      rubocop-ast (>= 1.28.0, < 2.0)
+      ruby-progressbar (~> 1.7)
+      unicode-display_width (>= 2.4.0, < 3.0)
+    rubocop-ast (1.29.0)
+      parser (>= 3.2.1.0)
+    ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.4)
     rubyXL (3.4.17)
       nokogiri (>= 1.10.8)
@@ -315,6 +335,7 @@ GEM
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.7.7)
+    unicode-display_width (2.4.2)
     upsert (2.9.10)
     websocket-driver (0.7.5)
       websocket-extensions (>= 0.1.0)
@@ -352,6 +373,7 @@ DEPENDENCIES
   rails (~> 6.1.1)
   redis
   rspec-rails
+  rubocop
   rubyXL
   scenic
   seed_dump

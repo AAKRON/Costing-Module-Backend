@@ -35,3 +35,5 @@
 *.rdb
 *.xlsx
 rawmaterials.xlsx
+.vscode/*
+```

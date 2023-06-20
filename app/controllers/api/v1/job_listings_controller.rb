@@ -1,15 +1,16 @@
 # frozen_string_literal: true
+
 module Api
   module V1
     class JobListingsController < BaseController
       before_action :restrict_access
-      before_action :set_user_access_level, only:[:destroy, :update]
-      before_action :set_job, only:[:job_cost_calculate, :update]
+      before_action :set_user_access_level, only: %i[destroy update]
+      before_action :set_job, only: %i[job_cost_calculate update]
       after_action(only: [:index]) { set_pagination_header(JobWithScreenListing.count) }
       after_action(only: [:job_list_only]) { set_pagination_header(JobListing.count) }
 
       def index
-        #set_pagination_header(JobWithScreenListing.count)
+        # set_pagination_header(JobWithScreenListing.count)
         @job_listings = JobWithScreenListing.paginate(params.slice(:_end, :_sort, :_order))
         @job_listings = @job_listings.search(params[:q], :job_number) unless params.fetch(:q, '').empty?
         render template: 'api/v1/job_listings/index.json', status: :ok
@@ -25,6 +26,29 @@ module Api
         end
       end
 
+      def jobs_by_params
+        query_params = params.permit(:description, :wages_per_hour, :screen_id, :job_number)
+
+        query = JobListing.all
+
+        if query_params[:description].present?
+          query = query.where('description ILIKE ?', "%#{query_params[:description]}%")
+        end
+
+        if query_params[:wages_per_hour].present?
+          query = query.where('CAST(wages_per_hour AS TEXT) ILIKE ?', "%#{query_params[:wages_per_hour]}%")
+        end
+
+        query = query.where('screen_id ILIKE ?', "%#{query_params[:screen_id]}%") if query_params[:screen_id].present?
+
+        if query_params[:job_number].present?
+          query = query.where('job_number ILIKE ?', "%#{query_params[:job_number]}%")
+        end
+
+        @jobs = query.all
+        render json: @jobs, status: :ok
+      end
+
       def update
         if @job.update(job_listing_params)
           render json: @job, status: :ok
@@ -38,7 +62,7 @@ module Api
       end
 
       def job_list_only
-        #set_pagination_header(JobListing.count)
+        # set_pagination_header(JobListing.count)
         @job_listing = JobListing.all
 
         render json: @job_listing, status: :ok
