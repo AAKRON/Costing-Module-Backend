@@ -26,7 +26,6 @@ group :development, :test do
   gem 'byebug', platform: :mri
   gem 'pry-nav'
   gem "factory_bot_rails"
-  gem 'ffaker'
   gem 'rspec-rails'
   gem 'capybara'
   gem 'guard-rspec'
