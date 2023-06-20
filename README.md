@@ -14,7 +14,7 @@ The API service for the costing module
 3. Create a DB named `costing_development_db`
 4. Run migrations: `rake db:migrate`
 5. Seed the database with: `rake db:seed`
-6. If you want to reseed your DB, run the following commands: Restart the DB `brew services start postgresql` and run `rake db:reset`
+6. If you want to reseed your DB, run the following commands: `rake db:schema:load` and run `rake db:seed`.
 
 ### 3. Run Ruby
 
