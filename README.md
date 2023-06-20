@@ -12,8 +12,9 @@ The API service for the costing module
 1. We recommend to install PGAdmin: https://www.postgresql.org/ftp/pgadmin/pgadmin4/v7.1/macos/
 2. If you are setting up postgresql for first time, you must register the postres user with the next command: `createuser postgres -s` and create a local server.
 3. Create a DB named `costing_development_db`
-4. Run migrations: `rails db:migrate`
+4. Run migrations: `rake db:migrate`
 5. Seed the database with: `rake db:seed`
+6. If you want to reseed your DB, run the following commands: Restart the DB `brew services start postgresql` and run `rake db:reset`
 
 ### 3. Run Ruby
 

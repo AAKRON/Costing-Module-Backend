@@ -18,3 +18,12 @@
 #  {id: 3, screen_size: 'large', cost: 0.0156 }
 #]
 #Screen.create(screen_sizes)
+
+# Create test user
+# User.create(username: 'test', role:'admin')
+
+# Create job listing
+FactoryBot.create_list(:job_listing, 20)
+
+# Create blanks
+# FactoryBot.create_list(:blank, 20)

@@ -2,304 +2,304 @@
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
 #
-# Note that this schema.rb definition is the authoritative source for your
-# database schema. If you need to create the application database on another
-# system, you should be using db:schema:load, not running all the migrations
-# from scratch. The latter is a flawed and unsustainable approach (the more migrations
-# you'll amass, the slower it'll run and the greater likelihood for issues).
+# This file is the source Rails uses to define your schema when running `bin/rails
+# db:schema:load`. When creating a new database, `bin/rails db:schema:load` tends to
+# be faster and is potentially less error prone than running all of your
+# migrations from scratch. Old migrations may fail to apply correctly if those
+# migrations use external dependencies or application code.
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171107111207) do
+ActiveRecord::Schema.define(version: 2017_11_07_111207) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "app_constants", force: :cascade do |t|
-    t.string   "name"
-    t.string   "value"
+  create_table "app_constants", id: :serial, force: :cascade do |t|
+    t.string "name"
+    t.string "value"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  create_table "blank_jobs", force: :cascade do |t|
-    t.decimal  "hour_per_piece"
-    t.integer  "blank_id"
-    t.integer  "job_listing_id"
-    t.datetime "created_at",     null: false
-    t.datetime "updated_at",     null: false
-    t.string   "cell_key"
+  create_table "blank_jobs", id: :serial, force: :cascade do |t|
+    t.decimal "hour_per_piece"
+    t.integer "blank_id"
+    t.integer "job_listing_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "cell_key"
   end
 
-  create_table "blank_raw_materials", force: :cascade do |t|
-    t.integer  "piece_per_unit_of_measure"
-    t.decimal  "cost"
-    t.integer  "blank_id"
-    t.integer  "raw_material_id"
-    t.datetime "created_at",                null: false
-    t.datetime "updated_at",                null: false
-    t.index ["blank_id"], name: "index_blank_raw_materials_on_blank_id", using: :btree
-    t.index ["raw_material_id"], name: "index_blank_raw_materials_on_raw_material_id", using: :btree
+  create_table "blank_raw_materials", id: :serial, force: :cascade do |t|
+    t.integer "piece_per_unit_of_measure"
+    t.decimal "cost"
+    t.integer "blank_id"
+    t.integer "raw_material_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["blank_id"], name: "index_blank_raw_materials_on_blank_id"
+    t.index ["raw_material_id"], name: "index_blank_raw_materials_on_raw_material_id"
   end
 
-  create_table "blank_types", force: :cascade do |t|
-    t.integer  "type_number", null: false
-    t.string   "description", null: false
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
-    t.index ["type_number"], name: "index_blank_types_on_type_number", using: :btree
+  create_table "blank_types", id: :serial, force: :cascade do |t|
+    t.integer "type_number", null: false
+    t.string "description", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["type_number"], name: "index_blank_types_on_type_number"
   end
 
-  create_table "blanks", force: :cascade do |t|
-    t.string   "description"
-    t.integer  "blank_number",                                          null: false
-    t.datetime "created_at",                                            null: false
-    t.datetime "updated_at",                                            null: false
-    t.integer  "blank_type_id",                         default: 0
-    t.decimal  "cost",          precision: 8, scale: 3, default: "0.0"
+  create_table "blanks", id: :serial, force: :cascade do |t|
+    t.string "description"
+    t.integer "blank_number", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "blank_type_id", default: 0
+    t.decimal "cost", precision: 8, scale: 3, default: "0.0"
   end
 
-  create_table "blanks_listing_by_items", force: :cascade do |t|
-    t.integer  "item_number"
-    t.integer  "blank_number"
-    t.integer  "mult"
-    t.integer  "div"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
-    t.string   "cell_key"
+  create_table "blanks_listing_by_items", id: :serial, force: :cascade do |t|
+    t.integer "item_number"
+    t.integer "blank_number"
+    t.integer "mult"
+    t.integer "div"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "cell_key"
   end
 
-  create_table "blanks_listing_item_with_costs", force: :cascade do |t|
-    t.integer  "item_number"
-    t.integer  "blank_number"
-    t.float    "cost_per_blank"
-    t.datetime "created_at",     null: false
-    t.datetime "updated_at",     null: false
-    t.string   "cell_key"
+  create_table "blanks_listing_item_with_costs", id: :serial, force: :cascade do |t|
+    t.integer "item_number"
+    t.integer "blank_number"
+    t.float "cost_per_blank"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "cell_key"
   end
 
-  create_table "boxes", force: :cascade do |t|
-    t.string   "name"
-    t.decimal  "cost_per_box"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
-  end
-
-  create_table "colorant_costs", force: :cascade do |t|
-    t.decimal  "colorant_percentage"
-    t.decimal  "cost"
-    t.integer  "blank_id"
-    t.integer  "colorant_id"
-    t.datetime "created_at",          null: false
-    t.datetime "updated_at",          null: false
-    t.index ["blank_id"], name: "index_colorant_costs_on_blank_id", using: :btree
-    t.index ["colorant_id"], name: "index_colorant_costs_on_colorant_id", using: :btree
-  end
-
-  create_table "colorants", force: :cascade do |t|
-    t.string   "description"
-    t.string   "cost"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
-  end
-
-  create_table "colors", force: :cascade do |t|
-    t.string   "code"
-    t.string   "name"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
-    t.float    "cost_of_color"
-    t.index ["name"], name: "index_colors_on_name", unique: true, using: :btree
-  end
-
-  create_table "documents", force: :cascade do |t|
-    t.string   "filename"
-    t.string   "content_type"
-    t.binary   "file_content"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
-    t.string   "document_type"
-  end
-
-  create_table "final_calculations", force: :cascade do |t|
-    t.integer  "blank_id"
-    t.integer  "color_number"
-    t.string   "color_description"
-    t.integer  "raw_material_id"
-    t.string   "colorant_one"
-    t.integer  "number_of_pieces_per_unit_one"
-    t.float    "percentage_of_colorant_one"
-    t.string   "colorant_two"
-    t.integer  "number_of_pieces_per_unit_two"
-    t.float    "percentage_of_colorant_two"
-    t.datetime "created_at",                    null: false
-    t.datetime "updated_at",                    null: false
-    t.string   "cell_key"
-    t.index ["blank_id"], name: "index_final_calculations_on_blank_id", using: :btree
-  end
-
-  create_table "item_blank_job_pieces", force: :cascade do |t|
-    t.decimal  "hour_per_piece"
-    t.datetime "created_at",     null: false
-    t.datetime "updated_at",     null: false
-    t.integer  "blank_id"
-    t.integer  "item_job_id"
-  end
-
-  create_table "item_boxes", force: :cascade do |t|
-    t.integer  "pieces_per_box"
-    t.integer  "box_id"
-    t.integer  "item_id"
-    t.datetime "created_at",     null: false
-    t.datetime "updated_at",     null: false
-    t.index ["box_id"], name: "index_item_boxes_on_box_id", using: :btree
-    t.index ["item_id"], name: "index_item_boxes_on_item_id", using: :btree
-  end
-
-  create_table "item_jobs", force: :cascade do |t|
-    t.decimal  "hour_per_piece"
-    t.integer  "item_id"
-    t.integer  "job_listing_id"
-    t.datetime "created_at",     null: false
-    t.datetime "updated_at",     null: false
-    t.string   "cell_key"
-    t.index ["item_id"], name: "index_item_jobs_on_item_id", using: :btree
-    t.index ["job_listing_id"], name: "index_item_jobs_on_job_listing_id", using: :btree
-  end
-
-  create_table "item_jobs_pieces", force: :cascade do |t|
-    t.decimal  "hour_per_piece"
-    t.integer  "blank_id"
-    t.integer  "item_job_id"
-    t.datetime "created_at",     null: false
-    t.datetime "updated_at",     null: false
-    t.index ["blank_id"], name: "index_item_jobs_pieces_on_blank_id", using: :btree
-    t.index ["item_job_id"], name: "index_item_jobs_pieces_on_item_job_id", using: :btree
-  end
-
-  create_table "item_types", force: :cascade do |t|
-    t.integer  "type_number", null: false
-    t.string   "description", null: false
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
-    t.index ["type_number"], name: "index_item_types_on_type_number", using: :btree
-  end
-
-  create_table "items", force: :cascade do |t|
-    t.integer  "item_number"
-    t.datetime "created_at",                            null: false
-    t.datetime "updated_at",                            null: false
-    t.string   "description"
-    t.integer  "box_id",                default: 0
-    t.integer  "number_of_pcs_per_box", default: 0
-    t.decimal  "ink_cost",              default: "0.0"
-    t.integer  "item_type_id",          default: 0
-    t.index ["item_number"], name: "index_items_on_item_number", unique: true, using: :btree
-  end
-
-  create_table "job_listings", force: :cascade do |t|
-    t.string   "description"
-    t.float    "wages_per_hour"
-    t.integer  "screen_id"
-    t.datetime "created_at",     null: false
-    t.datetime "updated_at",     null: false
-    t.integer  "job_number"
-    t.index ["screen_id"], name: "index_job_listings_on_screen_id", using: :btree
-  end
-
-  create_table "material_costs", force: :cascade do |t|
-    t.decimal  "ink_cost"
-    t.decimal  "box_cost_per_item"
-    t.decimal  "screen_size_cost"
-    t.integer  "item_id"
-    t.datetime "created_at",        null: false
-    t.datetime "updated_at",        null: false
-    t.index ["item_id"], name: "index_material_costs_on_item_id", using: :btree
-  end
-
-  create_table "overhead_costs", force: :cascade do |t|
-    t.decimal  "cost"
-    t.integer  "overhead_percentage_id"
-    t.integer  "job_listing_id"
-    t.datetime "created_at",             null: false
-    t.datetime "updated_at",             null: false
-    t.index ["job_listing_id"], name: "index_overhead_costs_on_job_listing_id", using: :btree
-    t.index ["overhead_percentage_id"], name: "index_overhead_costs_on_overhead_percentage_id", using: :btree
-  end
-
-  create_table "overhead_percentages", force: :cascade do |t|
-    t.integer  "type"
-    t.integer  "percentage"
+  create_table "boxes", id: :serial, force: :cascade do |t|
+    t.string "name"
+    t.decimal "cost_per_box"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  create_table "raw_materials", force: :cascade do |t|
-    t.string   "name"
-    t.float    "cost"
-    t.integer  "units_of_measure_id"
-    t.datetime "created_at",          null: false
-    t.datetime "updated_at",          null: false
-    t.integer  "color_id"
-    t.integer  "vendor_id"
-    t.integer  "rawmaterialtype_id"
-  end
-
-  create_table "rawmaterialtypes", force: :cascade do |t|
-    t.string   "name"
+  create_table "colorant_costs", id: :serial, force: :cascade do |t|
+    t.decimal "colorant_percentage"
+    t.decimal "cost"
+    t.integer "blank_id"
+    t.integer "colorant_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["name"], name: "index_rawmaterialtypes_on_name", unique: true, using: :btree
+    t.index ["blank_id"], name: "index_colorant_costs_on_blank_id"
+    t.index ["colorant_id"], name: "index_colorant_costs_on_colorant_id"
   end
 
-  create_table "screen_sizes", force: :cascade do |t|
-    t.string   "size"
-    t.decimal  "cost"
+  create_table "colorants", id: :serial, force: :cascade do |t|
+    t.string "description"
+    t.string "cost"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  create_table "screens", force: :cascade do |t|
-    t.string   "screen_size"
-    t.float    "cost"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
+  create_table "colors", id: :serial, force: :cascade do |t|
+    t.string "code"
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.float "cost_of_color"
+    t.index ["name"], name: "index_colors_on_name", unique: true
   end
 
-  create_table "unitofmeasures", force: :cascade do |t|
-    t.string   "name"
-    t.string   "abbr"
+  create_table "documents", id: :serial, force: :cascade do |t|
+    t.string "filename"
+    t.string "content_type"
+    t.binary "file_content"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "document_type"
+  end
+
+  create_table "final_calculations", id: :serial, force: :cascade do |t|
+    t.integer "blank_id"
+    t.integer "color_number"
+    t.string "color_description"
+    t.integer "raw_material_id"
+    t.string "colorant_one"
+    t.integer "number_of_pieces_per_unit_one"
+    t.float "percentage_of_colorant_one"
+    t.string "colorant_two"
+    t.integer "number_of_pieces_per_unit_two"
+    t.float "percentage_of_colorant_two"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "cell_key"
+    t.index ["blank_id"], name: "index_final_calculations_on_blank_id"
+  end
+
+  create_table "item_blank_job_pieces", id: :serial, force: :cascade do |t|
+    t.decimal "hour_per_piece"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "blank_id"
+    t.integer "item_job_id"
+  end
+
+  create_table "item_boxes", id: :serial, force: :cascade do |t|
+    t.integer "pieces_per_box"
+    t.integer "box_id"
+    t.integer "item_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["box_id"], name: "index_item_boxes_on_box_id"
+    t.index ["item_id"], name: "index_item_boxes_on_item_id"
+  end
+
+  create_table "item_jobs", id: :serial, force: :cascade do |t|
+    t.decimal "hour_per_piece"
+    t.integer "item_id"
+    t.integer "job_listing_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "cell_key"
+    t.index ["item_id"], name: "index_item_jobs_on_item_id"
+    t.index ["job_listing_id"], name: "index_item_jobs_on_job_listing_id"
+  end
+
+  create_table "item_jobs_pieces", id: :serial, force: :cascade do |t|
+    t.decimal "hour_per_piece"
+    t.integer "blank_id"
+    t.integer "item_job_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["blank_id"], name: "index_item_jobs_pieces_on_blank_id"
+    t.index ["item_job_id"], name: "index_item_jobs_pieces_on_item_job_id"
+  end
+
+  create_table "item_types", id: :serial, force: :cascade do |t|
+    t.integer "type_number", null: false
+    t.string "description", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["type_number"], name: "index_item_types_on_type_number"
+  end
+
+  create_table "items", id: :serial, force: :cascade do |t|
+    t.integer "item_number"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "description"
+    t.integer "box_id", default: 0
+    t.integer "number_of_pcs_per_box", default: 0
+    t.decimal "ink_cost", default: "0.0"
+    t.integer "item_type_id", default: 0
+    t.index ["item_number"], name: "index_items_on_item_number", unique: true
+  end
+
+  create_table "job_listings", id: :serial, force: :cascade do |t|
+    t.string "description"
+    t.float "wages_per_hour"
+    t.integer "screen_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "job_number"
+    t.index ["screen_id"], name: "index_job_listings_on_screen_id"
+  end
+
+  create_table "material_costs", id: :serial, force: :cascade do |t|
+    t.decimal "ink_cost"
+    t.decimal "box_cost_per_item"
+    t.decimal "screen_size_cost"
+    t.integer "item_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["item_id"], name: "index_material_costs_on_item_id"
+  end
+
+  create_table "overhead_costs", id: :serial, force: :cascade do |t|
+    t.decimal "cost"
+    t.integer "overhead_percentage_id"
+    t.integer "job_listing_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["job_listing_id"], name: "index_overhead_costs_on_job_listing_id"
+    t.index ["overhead_percentage_id"], name: "index_overhead_costs_on_overhead_percentage_id"
+  end
+
+  create_table "overhead_percentages", id: :serial, force: :cascade do |t|
+    t.integer "type"
+    t.integer "percentage"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  create_table "units_of_measures", force: :cascade do |t|
-    t.string   "name"
-    t.string   "abbr"
+  create_table "raw_materials", id: :serial, force: :cascade do |t|
+    t.string "name"
+    t.float "cost"
+    t.integer "units_of_measure_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["name"], name: "index_units_of_measures_on_name", unique: true, using: :btree
+    t.integer "color_id"
+    t.integer "vendor_id"
+    t.integer "rawmaterialtype_id"
   end
 
-  create_table "users", force: :cascade do |t|
-    t.string   "username"
-    t.string   "token"
-    t.integer  "role"
-    t.datetime "created_at",      null: false
-    t.datetime "updated_at",      null: false
-    t.string   "password_digest"
-  end
-
-  create_table "vendors", force: :cascade do |t|
-    t.string   "name"
-    t.string   "code"
+  create_table "rawmaterialtypes", id: :serial, force: :cascade do |t|
+    t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["name"], name: "index_vendors_on_name", unique: true, using: :btree
+    t.index ["name"], name: "index_rawmaterialtypes_on_name", unique: true
+  end
+
+  create_table "screen_sizes", id: :serial, force: :cascade do |t|
+    t.string "size"
+    t.decimal "cost"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "screens", id: :serial, force: :cascade do |t|
+    t.string "screen_size"
+    t.float "cost"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "unitofmeasures", id: :serial, force: :cascade do |t|
+    t.string "name"
+    t.string "abbr"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "units_of_measures", id: :serial, force: :cascade do |t|
+    t.string "name"
+    t.string "abbr"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_units_of_measures_on_name", unique: true
+  end
+
+  create_table "users", id: :serial, force: :cascade do |t|
+    t.string "username"
+    t.string "token"
+    t.integer "role"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "password_digest"
+  end
+
+  create_table "vendors", id: :serial, force: :cascade do |t|
+    t.string "name"
+    t.string "code"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_vendors_on_name", unique: true
   end
 
 
-  create_view "item_with_job_counts",  sql_definition: <<-SQL
+  create_view "item_with_job_counts", sql_definition: <<-SQL
       SELECT i.id,
       i.item_number,
       i.description,
@@ -308,8 +308,7 @@ ActiveRecord::Schema.define(version: 20171107111207) do
        LEFT JOIN item_jobs ij ON ((ij.item_id = i.id)))
     GROUP BY i.id;
   SQL
-
-  create_view "raw_material_views",  sql_definition: <<-SQL
+  create_view "raw_material_views", sql_definition: <<-SQL
       SELECT DISTINCT ON (t1.name) t1.id,
       t1.name,
       t4.name AS raw_material_type,
@@ -323,8 +322,7 @@ ActiveRecord::Schema.define(version: 20171107111207) do
        JOIN rawmaterialtypes t4 ON ((t1.rawmaterialtype_id = t4.id)))
        JOIN units_of_measures t5 ON ((t1.units_of_measure_id = t5.id)));
   SQL
-
-  create_view "final_calculation_views",  sql_definition: <<-SQL
+  create_view "final_calculation_views", sql_definition: <<-SQL
       SELECT fc.id,
       fc.blank_id,
       rm.name AS raw_material_name,
@@ -341,8 +339,7 @@ ActiveRecord::Schema.define(version: 20171107111207) do
        LEFT JOIN colors c2 ON (((c2.name)::text = (fc.colorant_two)::text)))
        LEFT JOIN raw_materials rm ON ((rm.id = fc.raw_material_id)));
   SQL
-
-  create_view "job_with_screen_listings",  sql_definition: <<-SQL
+  create_view "job_with_screen_listings", sql_definition: <<-SQL
       SELECT jl.id,
       jl.description,
       jl.job_number,
@@ -352,24 +349,18 @@ ActiveRecord::Schema.define(version: 20171107111207) do
      FROM (job_listings jl
        LEFT JOIN screens s ON ((s.id = jl.screen_id)));
   SQL
-
-  create_view "item_with_box_costs",  sql_definition: <<-SQL
+  create_view "item_with_box_costs", sql_definition: <<-SQL
       SELECT t1.id,
       t1.item_number,
       t1.description,
       t2.name AS box_name,
       t1.number_of_pcs_per_box,
       (t1.ink_cost)::numeric(10,4) AS ink_cost,
-      (t2.cost_per_box / (
-          CASE
-              WHEN (t1.number_of_pcs_per_box = 0) THEN 1
-              ELSE t1.number_of_pcs_per_box
-          END)::numeric) AS box_cost
+      (t2.cost_per_box / (t1.number_of_pcs_per_box)::numeric) AS box_cost
      FROM (items t1
        LEFT JOIN boxes t2 ON ((t1.box_id = t2.id)));
   SQL
-
-  create_view "blank_views",  sql_definition: <<-SQL
+  create_view "blank_views", sql_definition: <<-SQL
       SELECT DISTINCT ON (t1.blank_number) t1.id,
       t2.id AS blank_type_id,
       t2.type_number,
@@ -380,8 +371,7 @@ ActiveRecord::Schema.define(version: 20171107111207) do
      FROM (blanks t1
        LEFT JOIN blank_types t2 ON ((t1.blank_type_id = t2.type_number)));
   SQL
-
-  create_view "blank_job_views",  sql_definition: <<-SQL
+  create_view "blank_job_views", sql_definition: <<-SQL
       SELECT t1.id,
       t1.blank_number,
       t1.description,
@@ -390,15 +380,13 @@ ActiveRecord::Schema.define(version: 20171107111207) do
        LEFT JOIN blank_jobs t2 ON ((t1.blank_number = t2.blank_id)))
     GROUP BY t1.id, t1.blank_number, t1.description;
   SQL
-
-  create_view "blank_average_costs",  sql_definition: <<-SQL
+  create_view "blank_average_costs", sql_definition: <<-SQL
       SELECT final_calculation_views.blank_id,
       (avg((((COALESCE(final_calculation_views.raw_material_cost, (0)::double precision) / (final_calculation_views.number_of_pieces_per_unit_one)::double precision) + ((COALESCE(final_calculation_views.cost_of_color_one, (0)::double precision) * COALESCE(final_calculation_views.percentage_of_colorant_one, (0)::double precision)) / (final_calculation_views.number_of_pieces_per_unit_one)::double precision)) + ((COALESCE(final_calculation_views.cost_of_color_two, (0)::double precision) * COALESCE(final_calculation_views.percentage_of_colorant_two, (0)::double precision)) / (final_calculation_views.number_of_pieces_per_unit_two)::double precision))))::numeric(10,5) AS average_cost_of_blank
      FROM final_calculation_views
     GROUP BY final_calculation_views.blank_id;
   SQL
-
-  create_view "blank_cost_views",  sql_definition: <<-SQL
+  create_view "blank_cost_views", sql_definition: <<-SQL
       SELECT DISTINCT ON (b.blank_number) b.id,
       b.blank_number,
       b.description,
@@ -420,8 +408,7 @@ ActiveRecord::Schema.define(version: 20171107111207) do
        RIGHT JOIN blanks b ON ((b.id = bc.blank_id)))
        LEFT JOIN blank_types bt ON ((b.blank_type_id = bt.type_number)));
   SQL
-
-  create_view "item_with_blank_per_cost_views",  sql_definition: <<-SQL
+  create_view "item_with_blank_per_cost_views", sql_definition: <<-SQL
       SELECT bliwc.id,
       bliwc.item_number,
       bliwc.blank_number,
@@ -438,8 +425,7 @@ ActiveRecord::Schema.define(version: 20171107111207) do
        LEFT JOIN blank_cost_views bcv ON ((bcv.id = bliwc.blank_number)))
        LEFT JOIN blanks_listing_by_items blbi ON (((blbi.item_number = bliwc.item_number) AND (blbi.blank_number = bliwc.blank_number))));
   SQL
-
-  create_view "item_cost_views",  sql_definition: <<-SQL
+  create_view "item_cost_views", sql_definition: <<-SQL
       SELECT i.id,
       i.item_number,
       i.description,
@@ -482,8 +468,7 @@ ActiveRecord::Schema.define(version: 20171107111207) do
             GROUP BY ij.item_id) ijcws ON ((ijcws.item_id = i.id)))
        LEFT JOIN item_types it ON ((it.type_number = i.item_type_id)));
   SQL
-
-  create_view "blank_final_calculations_views",  sql_definition: <<-SQL
+  create_view "blank_final_calculations_views", sql_definition: <<-SQL
       SELECT fc.id,
       fc.blank_id AS blank_number,
       b.description AS blank_name,
@@ -500,5 +485,4 @@ ActiveRecord::Schema.define(version: 20171107111207) do
        LEFT JOIN blanks b ON ((b.id = fc.blank_id)))
        LEFT JOIN blank_average_costs bac ON ((bac.blank_id = fc.blank_id)));
   SQL
-
 end
