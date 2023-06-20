@@ -1,6 +1,6 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :item_box do
-    pieces_per_box Faker::Number.number 1
+    pieces_per_box { Faker::Number.number 1 }
     box
     item
   end

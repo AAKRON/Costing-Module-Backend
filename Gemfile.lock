@@ -96,11 +96,11 @@ GEM
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
     erubi (1.10.0)
-    factory_girl (4.9.0)
-      activesupport (>= 3.0.0)
-    factory_girl_rails (4.9.0)
-      factory_girl (~> 4.9.0)
-      railties (>= 3.0.0)
+    factory_bot (6.2.1)
+      activesupport (>= 5.0.0)
+    factory_bot_rails (6.2.0)
+      factory_bot (~> 6.2.0)
+      railties (>= 5.0.0)
     faker (2.18.0)
       i18n (>= 1.6, < 2)
     faraday (1.4.3)
@@ -116,6 +116,7 @@ GEM
     faraday-excon (1.1.0)
     faraday-net_http (1.0.1)
     faraday-net_http_persistent (1.1.0)
+    ffaker (2.21.0)
     ffi (1.15.3)
     formatador (0.3.0)
     globalid (0.4.2)
@@ -335,8 +336,9 @@ DEPENDENCIES
   codeclimate-test-reporter
   coveralls
   database_cleaner
-  factory_girl_rails
+  factory_bot_rails
   faker
+  ffaker
   guard-rspec
   jbuilder
   kaminari
@@ -372,4 +374,4 @@ RUBY VERSION
    ruby 2.7.7p221
 
 BUNDLED WITH
-   2.2.21
+   2.4.13

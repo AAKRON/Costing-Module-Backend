@@ -25,4 +25,4 @@ The API service for the costing module
 
 1. Run the rails console with: `rails console`
 2. To create a test user, run the following command:
-   `u = User.create(username: 'test', password:'password', role:'admin', token:'1234')`
+   `u = User.create(username: 'test', role:'admin')`

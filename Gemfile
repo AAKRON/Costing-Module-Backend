@@ -25,6 +25,8 @@ gem 'pdfkit'
 group :development, :test do
   gem 'byebug', platform: :mri
   gem 'pry-nav'
+  gem "factory_bot_rails"
+  gem 'ffaker'
   gem 'rspec-rails'
   gem 'capybara'
   gem 'guard-rspec'
@@ -46,7 +48,6 @@ group :test do
   gem "codeclimate-test-reporter"
   gem 'simplecov', :require => false
   gem 'coveralls', require: false
-  gem "factory_girl_rails"
   gem "database_cleaner"
   gem 'shoulda'
   gem 'shoulda-context'

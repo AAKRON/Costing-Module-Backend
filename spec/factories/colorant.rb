@@ -1,6 +1,6 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :colorant do |f|
-    description Faker::StarWars.quote
-    cost Faker::Number.number 1
+    description { Faker::StarWars.quote }
+    cost { Faker::Number.number 1 }
   end
 end

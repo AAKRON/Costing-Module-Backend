@@ -1,10 +1,10 @@
 require "capybara/rspec"
-require 'factory_girl_rails'
+require 'factory_bot_rails'
 
 Dir[File.expand_path(File.join(File.dirname(__FILE__),'support','**','*.rb'))].each {|f| require f}
 
 RSpec.configure do |config|
-  config.include FactoryGirl::Syntax::Methods
+  config.include FactoryBot::Syntax::Methods
   config.include Requests::AuthHelper, type: :request
   config.include Requests::JsonHelpers, type: :request
 

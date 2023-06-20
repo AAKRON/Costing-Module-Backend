@@ -1,6 +1,6 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :user do |f|
-    username Faker::GameOfThrones.house
-    role 'admin'
+    username { Faker::GameOfThrones.house }
+    role { 'admin' }
   end
 end
