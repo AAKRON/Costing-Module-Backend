@@ -19,11 +19,11 @@
 #]
 #Screen.create(screen_sizes)
 
-# Create test user
+# # Create test user
 # User.create(username: 'test', role:'admin')
 
-# Create job listing
-FactoryBot.create_list(:job_listing, 20)
+# # Create job listing
+# FactoryBot.create_list(:job_listing, 20)
 
 # Create blanks
-# FactoryBot.create_list(:blank, 20)
+FactoryBot.create_list(:blank, 20)
