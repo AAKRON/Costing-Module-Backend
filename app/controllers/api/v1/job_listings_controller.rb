@@ -27,19 +27,22 @@ module Api
       end
 
       def jobs_by_params
-        query_params = params.permit(:description, :wages_per_hour, :screen_id, :job_number)
+        query_params = params.permit(:description, :wages_per_hour, :screen_size, :job_number)
+        # @job_listings = JobWithScreenListing.paginate(params.slice(:_end, :_sort, :_order))
 
-        query = JobListing.all
+        query = JobWithScreenListing.all
 
         if query_params[:description].present?
           query = query.where('description ILIKE ?', "%#{query_params[:description]}%")
         end
 
+        if query_params[:screen_size].present?
+          query = query.where('screen_size ILIKE ?', "%#{query_params[:screen_size]}%")
+        end
+
         if query_params[:wages_per_hour].present?
           query = query.where('CAST(wages_per_hour AS TEXT) ILIKE ?', "%#{query_params[:wages_per_hour]}%")
         end
-
-        query = query.where('screen_id ILIKE ?', "%#{query_params[:screen_id]}%") if query_params[:screen_id].present?
 
         if query_params[:job_number].present?
           query = query.where('job_number ILIKE ?', "%#{query_params[:job_number]}%")
