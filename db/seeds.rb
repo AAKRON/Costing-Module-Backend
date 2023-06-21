@@ -22,8 +22,14 @@
 # Create test user
 User.create(username: 'test', role:'admin')
 
-# # Create job listing
+# Create Screens
+Screen.create(screen_size: 'small', cost: 10)
+Screen.create(screen_size: 'medium', cost: 12)
+Screen.create(screen_size: 'large', cost: 15)
+
+# # Create job listing (It uses the screens created above)
 FactoryBot.create_list(:job_listing, 20)
 
 # Create blanks
 FactoryBot.create_list(:blank, 20)
+
