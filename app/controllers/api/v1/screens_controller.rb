@@ -8,9 +8,11 @@ module Api
       after_action(only: [:index]) { set_pagination_header(Screen.count) }
 
       def index
+        screen_id = (params.fetch(:screen_id, '') == 'null' ) ? '' : params.fetch(:screen_id, '')
         #set_pagination_header(Screen.count)
         @screens = Screen.paginate(params.slice(:_end, :_sort, :_order))
-        @screens = @screens.search(params[:q], :screen_size) unless params.fetch(:q, '').empty?
+        @screens = @screens.where("id = #{screen_id}") unless screen_id.empty?
+        @screens = @screens.where("id = #{params[:id]}") unless params.fetch(:id, '').empty?
         render template: 'api/v1/screens/index.json', status: 200
       end
 

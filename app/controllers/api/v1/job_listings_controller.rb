@@ -10,9 +10,12 @@ module Api
       after_action(only: [:job_list_only]) { set_pagination_header(JobListing.count) }
 
       def index
+        screen_id = (params.fetch(:screen_id, '') == 'null' ) ? '' : params.fetch(:screen_id, '')
         # set_pagination_header(JobWithScreenListing.count)
         @job_listings = JobWithScreenListing.paginate(params.slice(:_end, :_sort, :_order))
-        @job_listings = @job_listings.search(params[:q], :job_number) unless params.fetch(:q, '').empty?
+        @job_listings = @job_listings.where("job_number = #{params[:job_number]}") unless params.fetch(:job_number, '').empty?
+        @job_listings = @job_listings.where("screen_id = #{screen_id}") unless screen_id.empty?
+        @job_listings = @job_listings.where("lower(description) LIKE ?", "%#{params[:description]}%") unless params.fetch(:description, '').empty?
         render template: 'api/v1/job_listings/index.json', status: :ok
       end
 

@@ -9,8 +9,11 @@ module Api
       after_action(only: [:blank_list_only]) { set_pagination_header(Blank.count) }
 
       def index
+        blank_type_id = (params.fetch(:blank_type_id, '') == 'null' ) ? '' : params.fetch(:blank_type_id, '')
         @blanks = BlankCostView.paginate(params.slice(:_end, :_sort, :_order))
-        @blanks = @blanks.search(params[:q], :blank_number) unless params.fetch(:q, '').empty?
+        @blanks = @blanks.where("blank_number = #{params[:blank_number]}") unless params.fetch(:blank_number, '').empty?
+        @blanks = @blanks.where("blank_type_id = #{blank_type_id}") unless blank_type_id.empty?
+        @blanks = @blanks.where("lower(description) LIKE ?", "%#{params[:description]}%") unless params.fetch(:description, '').empty?
 
         render_blanks_template(template_name: :list, status: :ok)
       end

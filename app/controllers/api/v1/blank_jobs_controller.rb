@@ -8,7 +8,8 @@ module Api
 
       def index
         @blank_jobs = BlankJobView.paginate(params.slice(:_end, :_sort, :_order))
-        @blank_jobs = @blank_jobs.search(params[:q], :blank_number) unless params.fetch(:q, '').empty?
+        @blank_jobs = @blank_jobs.where("blank_number = #{params[:blank_number]}") unless params.fetch(:blank_number, '').empty?
+        @blank_jobs = @blank_jobs.where("lower(description) LIKE ?", "%#{params[:description]}%") unless params.fetch(:description, '').empty?
 
         render_item_and_item_jobs_template(template_name: :list, status: :ok)
       end

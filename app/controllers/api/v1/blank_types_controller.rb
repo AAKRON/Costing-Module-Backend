@@ -11,7 +11,8 @@ module Api
         #set_pagination_header(BlankType.count)
         
         @blank_types = BlankType.paginate(params.slice(:_end, :_sort, :_order))
-        @blank_types = @blank_types.search(params[:q], :type_number) unless params.fetch(:q, '').empty?
+        @blank_types = @blank_types.where("type_number = #{params[:type_number]}") unless params.fetch(:type_number, '').empty?
+        @blank_types = @blank_types.where("lower(description) LIKE ?", "%#{params[:description]}%") unless params.fetch(:description, '').empty?
 
         render json: @blank_types, status: :ok
       end
