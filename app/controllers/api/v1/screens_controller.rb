@@ -13,6 +13,7 @@ module Api
         @screens = Screen.paginate(params.slice(:_end, :_sort, :_order))
         @screens = @screens.where("id = #{screen_id}") unless screen_id.empty?
         @screens = @screens.where("id = #{params[:id]}") unless params.fetch(:id, '').empty?
+        @screens = @screens.where("cost = #{params[:cost]}") unless params.fetch(:cost, '').empty?
         render template: 'api/v1/screens/index.json', status: 200
       end
 
