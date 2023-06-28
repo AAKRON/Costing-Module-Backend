@@ -13,7 +13,7 @@ module Api
         @blanks = BlankCostView.paginate(params.slice(:_end, :_sort, :_order))
         @blanks = @blanks.where("blank_number = #{params[:blank_number]}") unless params.fetch(:blank_number, '').empty?
         @blanks = @blanks.where("blank_type_id = #{blank_type_id}") unless blank_type_id.empty?
-        @blanks = @blanks.where("lower(description) LIKE ?", "%#{params[:description]}%") unless params.fetch(:description, '').empty?
+        @blanks = @blanks.where("description LIKE ?", "%#{params[:description]}%") unless params.fetch(:description, '').empty?
         @blanks = @blanks.where("cost = #{params[:cost]}") unless params.fetch(:cost, '').empty?
         @blanks = @blanks.where("total_blank_cost_for_price = #{params[:total_blank_cost_for_price]}") unless params.fetch(:total_blank_cost_for_price, '').empty?
         @blanks = @blanks.where("total_blank_cost_for_inventory = #{params[:total_blank_cost_for_inventory]}") unless params.fetch(:total_blank_cost_for_inventory, '').empty?

@@ -9,7 +9,7 @@ module Api
       def index
         @blank_jobs = BlankJobView.paginate(params.slice(:_end, :_sort, :_order))
         @blank_jobs = @blank_jobs.where("blank_number = #{params[:blank_number]}") unless params.fetch(:blank_number, '').empty?
-        @blank_jobs = @blank_jobs.where("lower(description) LIKE ?", "%#{params[:description]}%") unless params.fetch(:description, '').empty?
+        @blank_jobs = @blank_jobs.where("description LIKE ?", "%#{params[:description]}%") unless params.fetch(:description, '').empty?
         @blank_jobs = @blank_jobs.where("number_of_jobs = #{params[:number_of_jobs]}") unless params.fetch(:number_of_jobs, '').empty?
 
         render_item_and_item_jobs_template(template_name: :list, status: :ok)
@@ -22,7 +22,7 @@ module Api
         render_item_and_item_jobs_template(template_name: :show, status: :created) if @blank.save
         render json: @blank.errors, status: :bad_request unless @blank.save
       end
-	  
+
 	  def update_blank_jobs_data
         @blank = Blank.where(blank_number: params[:blank_number])
         #puts "#{@blank.count}"
@@ -43,7 +43,7 @@ module Api
 			render(json: { message: "item not found",status: :bad_request })
 		end
       end
-      
+
       def update_blank_jobs_only
         BlankJob.bulk_update_or_create(
           blank_job_body(params[:copy_jobs], params[:blank_number]),

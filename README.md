@@ -22,7 +22,7 @@ The API service for the costing module
 
 2. Run ruby with: `rails server`
 
-### 4. Create Test User
+### 4. Create Test User (Only if needed)
 
 1. Run the rails console with: `rails console`
 2. To create a test user, run the following command:
