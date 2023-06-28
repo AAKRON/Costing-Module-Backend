@@ -12,6 +12,14 @@ module Api
         #set_pagination_header(ItemCostView.count)
         @items = ItemCostView.paginate(params.slice(:_end, :_sort, :_order))
         @items = @items.search(params[:q], :item_number) unless params.fetch(:q, '').empty?
+        @items = @items.where("description LIKE ?", "%#{params[:description]}%") unless params.fetch(:description, '').empty?
+        @items = @items.where("type_description LIKE ?", "%#{params[:type_description]}%") unless params.fetch(:type_description, '').empty?
+        @items = @items.where("lower(box_name) LIKE ?", "%#{params[:box_name]}%") unless params.fetch(:box_name, '').empty?
+        @items = @items.where("number_of_pcs_per_box = #{params[:number_of_pcs_per_box]}") unless params.fetch(:number_of_pcs_per_box, '').empty?
+        @items = @items.where("ink_cost = #{params[:ink_cost]}") unless params.fetch(:ink_cost, '').empty?
+        @items = @items.where("box_cost = #{params[:box_cost]}") unless params.fetch(:box_cost, '').empty?
+        @items = @items.where("total_price_cost = #{params[:total_price_cost]}") unless params.fetch(:total_price_cost, '').empty?
+        @items = @items.where("total_inventory_cost = #{params[:total_inventory_cost]}") unless params.fetch(:total_inventory_cost, '').empty?
 
         render_items_template(template_name: :list, status: :ok)
       end
