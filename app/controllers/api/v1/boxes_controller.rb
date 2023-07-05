@@ -11,6 +11,9 @@ module Api
       def index
         @boxes = Box.paginate(params.slice(:_end, :_sort, :_order))
         @boxes = @boxes.search(params[:q], :name) unless params.fetch(:q, '').empty?
+        @boxes = @boxes.search(params[:price], :cost_per_box) unless params.fetch(:price, '').empty?
+        @boxes = @boxes.search(params[:id], :id) unless params.fetch(:id, '').empty?
+        
 
         render template: 'api/v1/box/index.json', status: :ok
       end
