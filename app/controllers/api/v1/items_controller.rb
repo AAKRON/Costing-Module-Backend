@@ -2,9 +2,9 @@
 module Api
   module V1
     class ItemsController < BaseController
-      before_action :restrict_access
+      # before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
-      before_action :set_item, only: [:show, :update]
+      before_action :set_item, only: [:show, :update, :update_type]
       after_action(only: [:index]) { set_pagination_header(ItemCostView.count) }
       after_action(only: [:item_list_only]) { set_pagination_header(Item.count) }
 
@@ -56,6 +56,22 @@ module Api
 
         render json: @items, status: :ok
       end
+
+      def update_type
+        if @item.present?
+          @item_type = ItemType.where("description = ?", "#{params[:item_type]}").first
+
+          if @item_type.present?
+            @item.update(item_type_id: @item_type.type_number)
+            render json: {"item": @item, "item_type": @item_type}, status: :ok
+          else
+            render(json: { message: "ItemType not found", status: :bad_request })
+          end
+        else
+          render(json: { message: "item not found", status: :bad_request })
+        end
+      end
+
       private
 
       def item_params
