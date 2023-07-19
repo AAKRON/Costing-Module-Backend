@@ -43,14 +43,13 @@ module Api
         render json: "deleted successfully", status: :no_content
       end
 
-      # TODO: Update and finish it
       def update_item_blanks_only
         BlanksListingByItem.bulk_update_or_create(
           item_blanks_body(params[:blanks], params[:item_id]),
           :cell_key,
           key_as_id: false
         )
-        @blanks_listing_by_item = BlanksListingByItem.find(params[:blanks_item_id])
+        @blanks_listing_by_item = BlanksListingByItem.where(item_number: params[:item_id])
         render json: @blanks_listing_by_item, status: :ok
       end
 
@@ -89,14 +88,17 @@ module Api
         render template: "api/v1/item_blanks/#{template_name.to_s}.json", status: status
       end
 
-      # TODO: Update and finish it
-      def item_blanks_body(jobs, blank_number)
-        # jobs.map! do |row|
-        #   job_number = row[:job_listing_id].to_i
-        #   Hash[:hour_per_piece, row[:hour_per_piece].to_f, :blank_id, params[:blank_number],
-        #          :job_listing_id, job_number, :cell_key, job_number.to_s + blank_number.to_s
-        #   ]
-        # end
+      def item_blanks_body(blanks, item_id)
+        blanks.map! do |row|
+          blanks = row[:blank_number].to_i
+          Hash[
+            :blank_number, row[:blank_number],
+            :item_number, item_id.to_s,
+            :mult, row[:mult].to_i,
+            :div, row[:div].to_i,
+            :cell_key, item_id.to_s + row[:blank_number].to_s
+          ]
+        end
       end
 
     end

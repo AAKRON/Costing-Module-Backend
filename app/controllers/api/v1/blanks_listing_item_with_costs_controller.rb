@@ -43,7 +43,6 @@ module Api
         render json: "deleted successfully", status: :no_content
       end
 
-      # # TODO: Update and finish it
       def update_item_blanks_with_cost_only
         BlanksListingItemWithCost.bulk_update_or_create(
           item_blanks_body(params[:blanks], params[:item_id]),

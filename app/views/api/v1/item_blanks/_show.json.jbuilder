@@ -7,5 +7,7 @@ json.blanks_listing_by_item do
     json.blank_id item_blanks.blank.id
     json.blank_number item_blanks.blank_number
     json.blank_description item_blanks.blank.description
+    json.mult item_blanks.mult
+    json.div item_blanks.div
   end
 end
