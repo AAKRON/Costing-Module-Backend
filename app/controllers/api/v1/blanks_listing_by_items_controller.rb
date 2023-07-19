@@ -30,11 +30,14 @@ module Api
       end
 
       def update
-        if @blanks_listing_by_item.update(blanks_listing_by_item_params)
-          render json: @blanks_listing_by_item, status: 201
-        else
-          render json: @blanks_listing_by_item.errors, status: 400
-        end
+        params[:blanks].map do |row|
+          if row[:deleted]
+            BlanksListingByItem.where(item_number: row[:item_number], blank_number: row[:blank_number]).destroy_all
+          end
+        end if params.has_key?(:blanks)
+
+        @blanks_listing_by_item = BlanksListingByItem.where(item_number: @blanks_listing_by_item.item_number)
+        render json: @blanks_listing_by_item, status: :ok
       end
 
       def destroy
