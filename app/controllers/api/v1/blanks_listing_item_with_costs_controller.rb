@@ -50,7 +50,7 @@ module Api
           :cell_key,
           key_as_id: false
         )
-        @blanks_listing_by_item = BlanksListingItemWithCost.find(params[:blanks_item_id])
+        @blanks_listing_by_item = BlanksListingItemWithCost.where(item_number: params[:item_id])
         render json: @blanks_listing_by_item, status: :ok
       end
 
@@ -64,9 +64,9 @@ module Api
         blanks.map! do |row|
           blanks = row[:blank_number].to_i
           Hash[
-            :blank_number, params[:blank_number],
-            :item_number, params[:item_id],
-            :cell_key, item_id.to_s + blank_number.to_s
+            :blank_number, row[:blank_number],
+            :item_number, item_id.to_s,
+            :cell_key, item_id.to_s + row[:blank_number].to_s
           ]
         end
       end
