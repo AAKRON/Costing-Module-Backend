@@ -14,6 +14,7 @@ class Item < ApplicationRecord
   has_many :blanks
   has_many :item_boxes
   has_many :material_costs
+  has_many :blanks_listing_by_item, :foreign_key => :item_number
   has_many :blanks_listing_item_with_cost, :foreign_key => :item_number
   belongs_to :item_type, class_name: 'ItemType', primary_key: 'type_number', foreign_key: :item_type_id, optional: true
 

@@ -4,7 +4,7 @@ module Api
     class BlanksListingByItemsController < BaseController
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
-      before_action :set_blanks_listing_by_item, only: [:show, :update, :destroy]
+      before_action :set_blanks_listing_by_item, only: [:update, :destroy]
       after_action(only: [:index]) { set_pagination_header(BlanksListingByItem.count) }
 
       def index
@@ -15,7 +15,8 @@ module Api
       end
 
       def show
-        render json: @blanks_listing_by_item, status: :ok
+        @item = Item.find(params[:id])
+        render_item_and_item_blanks_template(template_name: __method__, status: :ok)
       end
 
       def create
@@ -42,6 +43,17 @@ module Api
         render json: "deleted successfully", status: :no_content
       end
 
+      # TODO: Update and finish it
+      def update_item_blanks_only
+        BlanksListingByItem.bulk_update_or_create(
+          item_blanks_body(params[:blanks], params[:item_id]),
+          :cell_key,
+          key_as_id: false
+        )
+        @blanks_listing_by_item = BlanksListingByItem.find(params[:blanks_item_id])
+        render json: @blanks_listing_by_item, status: :ok
+      end
+
       private
 
       def blanks_listing_by_item_params
@@ -51,6 +63,21 @@ module Api
       def set_blanks_listing_by_item
         @blanks_listing_by_item = BlanksListingByItem.find(params[:id])
       end
+
+      def render_item_and_item_blanks_template(template_name: :index, status: :ok)
+        render template: "api/v1/item_blanks/#{template_name.to_s}.json", status: status
+      end
+
+      # TODO: Update and finish it
+      def item_blanks_body(jobs, blank_number)
+        # jobs.map! do |row|
+        #   job_number = row[:job_listing_id].to_i
+        #   Hash[:hour_per_piece, row[:hour_per_piece].to_f, :blank_id, params[:blank_number],
+        #          :job_listing_id, job_number, :cell_key, job_number.to_s + blank_number.to_s
+        #   ]
+        # end
+      end
+
     end
   end
 end

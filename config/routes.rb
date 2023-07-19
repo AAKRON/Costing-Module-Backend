@@ -46,6 +46,9 @@ Rails.application.routes.draw do
       get '/blank-download/:cost_type', to: 'files#blank_download'
       put '/job-cost-calculate/:id', to: 'job_listings#job_cost_calculate'
       post '/cost-pdf-download', to: 'files#cost_pdf_download'
+      put '/update-item-blanks-only/:id', to: 'blanks_listing_by_items#update_item_blanks_only'
+      # put '/update-item-blanks-only/:id', to: 'blanks_listing_item_with_costs#update_item_blanks_only'
+      # put '/update-item-blanks-data', to: 'blanks_listing_item_with_costs#update_item_blanks_data'
     end
   end
 end
