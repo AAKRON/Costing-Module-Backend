@@ -4,7 +4,7 @@ module Api
     class BlanksListingItemWithCostsController < BaseController
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
-      before_action :set_blanks_listing_item_with_cost, only: [:show, :update, :destroy]
+      before_action :set_blanks_listing_item_with_cost, only: [:update, :destroy]
       after_action(only: [:index]) { set_pagination_header(ItemWithBlankPerCostView.count) }
 
       def index
@@ -15,7 +15,8 @@ module Api
       end
 
       def show
-        render json: @blanks_listing_item_with_cost, status: :ok
+        @item = Item.find(params[:id])
+        render_item_and_item_blanks_template(template_name: __method__, status: :ok)
       end
 
       def create
@@ -42,7 +43,43 @@ module Api
         render json: "deleted successfully", status: :no_content
       end
 
+      # # TODO: Update and finish it
+      # def update_item_blanks_with_cost_only
+      #   BlanksListingByItem.bulk_update_or_create(
+      #     item_blanks_body(params[:blanks], params[:item_id]),
+      #     :cell_key,
+      #     key_as_id: false
+      #   )
+      #   @blanks_listing_by_item = BlanksListingByItem.find(params[:blanks_item_id])
+      #   render json: @blanks_listing_by_item, status: :ok
+      # end
+
+      # def update_item_blanks_with_cost_data
+      #   @item = Item.find(params[:id])
+
+      #   if @item.present?
+      #     @blanks_listing_by_item = BlanksListingByItem.find(params[:blanks_item_id])
+      #     if @blanks_listing_by_item
+      #       @blanks_listing_by_item.update(
+      #         job_listing_id: params[:job_listing_id],
+      #         hour_per_piece:params[:hour_per_piece]
+      #       )
+      #       @blanks_listing_by_item = BlanksListingByItem.find(params[:blanks_item_id])
+
+      #       render json: @blanks_listing_by_item, status: :ok
+      #     else
+      #       render json: @blanks_listing_by_item.errors.messages, status: :bad_request
+      #     end
+      #   else
+      #     render(json: { message: "item not found",status: :bad_request })
+      #   end
+      # end
+
       private
+
+      def render_item_and_item_blanks_template(template_name: :index, status: :ok)
+        render template: "api/v1/item_blanks/#{template_name.to_s}.json", status: status
+      end
 
       def blanks_listing_item_with_cost_params
         params.require(:blanks_listing_item_with_cost).permit(:id, :item_number, :blank_number, :cost_per_blank)
