@@ -71,6 +71,76 @@ module Api
         end
       end
 
+
+      def raw_material_download
+
+        if (params.key?("blanks") && params[:blanks] !='')
+          raws = params[:blanks].split(",")          
+          @raws = RawMaterialView.where(id: raws).order(:id)
+        else
+          @raws = RawMaterialView.order(:id)
+        end
+
+        respond_to do |format|
+            format.csv { send_data @raws.listing_csv}
+        end
+      end
+
+      def raw_material_type_download
+
+        if (params.key?("blanks") && params[:blanks] !='')
+          rawstypes = params[:blanks].split(",")          
+          @rawstypes = Rawmaterialtype.where(id: rawstypes).order(:id)
+        else
+          @rawstypes = Rawmaterialtype.order(:id)
+        end
+
+        respond_to do |format|
+            format.csv { send_data @rawstypes.listing_csv}
+        end
+      end
+
+      def color_download
+
+        if (params.key?("blanks") && params[:blanks] !='')
+          colors = params[:blanks].split(",")          
+          @colors = Color.where(id: colors).order(:id)
+        else
+          @colors = Color.order(:id)
+        end
+
+        respond_to do |format|
+            format.csv { send_data @colors.listing_csv}
+        end
+      end
+
+      def units_download
+
+        if (params.key?("blanks") && params[:blanks] !='')
+          units = params[:blanks].split(",")          
+          @units = UnitsOfMeasure.where(id: units).order(:id)
+        else
+          @units = UnitsOfMeasure.order(:id)
+        end
+
+        respond_to do |format|
+            format.csv { send_data @units.listing_csv}
+        end
+      end
+
+      def vendors_download
+
+        if (params.key?("blanks") && params[:blanks] !='')
+          vendors = params[:blanks].split(",")          
+          @vendors = Vendor.where(id: vendors).order(:id)
+        else
+          @vendors = Vendor.order(:id)
+        end
+        respond_to do |format|
+            format.csv { send_data @vendors.listing_csv}
+        end
+      end
+
       def cost_pdf_download
         @cost_data = params[:data]
         kit = PDFKit.new(to_cost_calculator_html, page_size: 'A4')
