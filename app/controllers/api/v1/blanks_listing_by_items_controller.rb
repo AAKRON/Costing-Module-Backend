@@ -52,6 +52,11 @@ module Api
           :cell_key,
           key_as_id: false
         )
+        BlanksListingItemWithCost.bulk_update_or_create(
+          item_blanks_with_costs_body(params[:blanks], params[:item_id]),
+          :cell_key,
+          key_as_id: false
+        )
         @blanks_listing_by_item = BlanksListingByItem.where(item_number: params[:item_id])
         render json: @blanks_listing_by_item, status: :ok
       end
@@ -104,6 +109,16 @@ module Api
         end
       end
 
+      def item_blanks_with_costs_body(blanks, item_id)
+        blanks.map! do |row|
+          blanks = row[:blank_number].to_i
+          Hash[
+            :blank_number, row[:blank_number],
+            :item_number, item_id.to_s,
+            :cell_key, item_id.to_s + row[:blank_number].to_s
+          ]
+        end
+      end
     end
   end
 end

@@ -48,6 +48,11 @@ module Api
 
       def update_item_blanks_with_cost_only
         BlanksListingItemWithCost.bulk_update_or_create(
+          item_blanks_with_costs_body(params[:blanks], params[:item_id]),
+          :cell_key,
+          key_as_id: false
+        )
+        BlanksListingByItem.bulk_update_or_create(
           item_blanks_body(params[:blanks], params[:item_id]),
           :cell_key,
           key_as_id: false
@@ -63,6 +68,19 @@ module Api
       end
 
       def item_blanks_body(blanks, item_id)
+        blanks.map! do |row|
+          blanks = row[:blank_number].to_i
+          Hash[
+            :blank_number, row[:blank_number],
+            :item_number, item_id.to_s,
+            :mult, row[:mult].to_i,
+            :div, row[:div].to_i,
+            :cell_key, item_id.to_s + row[:blank_number].to_s
+          ]
+        end
+      end
+
+      def item_blanks_with_costs_body(blanks, item_id)
         blanks.map! do |row|
           blanks = row[:blank_number].to_i
           Hash[
