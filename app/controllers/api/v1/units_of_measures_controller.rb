@@ -11,7 +11,8 @@ module Api
       # GET /units_of_measures.json
       def index
         @units_of_measures = UnitsOfMeasure.all.paginate(params.slice(:_end, :_sort, :_order))
-        @units_of_measures = @units_of_measures.search(params[:q], :name) unless params.fetch(:q, '').empty?
+        @units_of_measures = @units_of_measures.search(params[:name], :name) unless params.fetch(:name, '').empty?
+        @units_of_measures = @units_of_measures.search(params[:abbr], :abbr) unless params.fetch(:abbr, '').empty?
         render json: @units_of_measures, status: :ok
       end
 

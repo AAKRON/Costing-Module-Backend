@@ -8,7 +8,8 @@ module Api
 	  after_action(only: [:vendor_list_only]) { set_pagination_header(Vendor.count) }	
       def index
         @vendors = Vendor.all.paginate(params.slice(:_end, :_sort, :_order))
-        @vendors = @vendors.search(params[:q], :code) unless params.fetch(:q, '').empty?
+        @vendors = @vendors.search(params[:name], :name) unless params.fetch(:name, '').empty?
+        @vendors = @vendors.search(params[:code], :code) unless params.fetch(:code, '').empty?
         render json: @vendors, status: :ok
       end
 
