@@ -64,17 +64,21 @@ module Api
       end
 
       def update_type
-        if @item.present?
-          @item_type = ItemType.where("description = ?", "#{params[:item_type]}").first
-
-          if @item_type.present?
-            @item.update(item_type_id: @item_type.type_number)
-            render json: {"item": @item, "item_type": @item_type}, status: :ok
-          else
-            render(json: { message: "ItemType not found", status: :bad_request })
-          end
+        if params[:apikey] != "Aakron2023$"
+          render json: { message: 'Not Authorized' }, status: 401
         else
-          render(json: { message: "item not found", status: :bad_request })
+          if @item.present?
+            @item_type = ItemType.where("description = ?", "#{params[:item_type]}").first
+
+            if @item_type.present?
+              @item.update(item_type_id: @item_type.type_number)
+              render json: {"item": @item, "item_type": @item_type}, status: :ok
+            else
+              render(json: { message: "ItemType not found", status: :bad_request })
+            end
+          else
+            render(json: { message: "item not found", status: :bad_request })
+          end
         end
       end
 
