@@ -9,14 +9,19 @@ module Api
       after_action(only: [:blank_list_only]) { set_pagination_header(Blank.count) }
 
       def index
+        blank_number = (params.fetch(:blank_number, '') == 'null' ) ? '' : params.fetch(:blank_number, '')
         blank_type_id = (params.fetch(:blank_type_id, '') == 'null' ) ? '' : params.fetch(:blank_type_id, '')
+        cost = (params.fetch(:cost, '') == 'null' ) ? '' : params.fetch(:cost, '')
+        total_blank_cost_for_price = (params.fetch(:total_blank_cost_for_price, '') == 'null' ) ? '' : params.fetch(:total_blank_cost_for_price, '')
+        total_blank_cost_for_inventory = (params.fetch(:total_blank_cost_for_inventory, '') == 'null' ) ? '' : params.fetch(:total_blank_cost_for_inventory, '')
+
         @blanks = BlankCostView.paginate(params.slice(:_end, :_sort, :_order))
-        @blanks = @blanks.where("blank_number = #{params[:blank_number]}") unless params.fetch(:blank_number, '').empty?
+        @blanks = @blanks.search(blank_number, :blank_number) unless blank_number.empty?
         @blanks = @blanks.where("blank_type_id = #{blank_type_id}") unless blank_type_id.empty?
-        @blanks = @blanks.where("description LIKE ?", "%#{params[:description]}%") unless params.fetch(:description, '').empty?
-        @blanks = @blanks.where("cost = #{params[:cost]}") unless params.fetch(:cost, '').empty?
-        @blanks = @blanks.where("total_blank_cost_for_price = #{params[:total_blank_cost_for_price]}") unless params.fetch(:total_blank_cost_for_price, '').empty?
-        @blanks = @blanks.where("total_blank_cost_for_inventory = #{params[:total_blank_cost_for_inventory]}") unless params.fetch(:total_blank_cost_for_inventory, '').empty?
+        @blanks = @blanks.search(params[:description], :description) unless params.fetch(:description, '').empty?
+        @blanks = @blanks.search(cost, :cost) unless cost.empty?
+        @blanks = @blanks.search(total_blank_cost_for_price, :total_blank_cost_for_price) unless total_blank_cost_for_price.empty?
+        @blanks = @blanks.search(total_blank_cost_for_inventory, :total_blank_cost_for_inventory) unless total_blank_cost_for_inventory.empty?
 
         render_blanks_template(template_name: :list, status: :ok)
       end

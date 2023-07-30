@@ -8,8 +8,13 @@ module Api
 
       def index
         #set_pagination_header(ItemWithJobCount.count)
+        item_number = (params.fetch(:item_number, '') == 'null' ) ? '' : params.fetch(:item_number, '')
+        number_of_jobs = (params.fetch(:number_of_jobs, '') == 'null' ) ? '' : params.fetch(:number_of_jobs, '')
+
         @items = ItemWithJobCount.paginate(params.slice(:_end, :_sort, :_order))
-        @items = @items.search(params[:q], :item_number) unless params.fetch(:q, '').empty?
+        @items = @items.search(params[:item_number], :item_number) unless params.fetch(:item_number, '').empty?
+        @items = @items.search(params[:description], :description) unless params.fetch(:description, '').empty?
+        @items = @items.where("number_of_jobs = #{number_of_jobs}") unless number_of_jobs.empty?
 
         render_item_and_item_jobs_template(template_name: :list, status: :ok)
       end

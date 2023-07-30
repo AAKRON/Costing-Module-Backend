@@ -7,10 +7,12 @@ module Api
       after_action(only: [:index]) { set_pagination_header(BlankJobView.count) }
 
       def index
+        blank_number = (params.fetch(:blank_number, '') == 'null' ) ? '' : params.fetch(:blank_number, '')
+        number_of_jobs = (params.fetch(:number_of_jobs, '') == 'null' ) ? '' : params.fetch(:number_of_jobs, '')
         @blank_jobs = BlankJobView.paginate(params.slice(:_end, :_sort, :_order))
-        @blank_jobs = @blank_jobs.where("blank_number = #{params[:blank_number]}") unless params.fetch(:blank_number, '').empty?
-        @blank_jobs = @blank_jobs.where("description LIKE ?", "%#{params[:description]}%") unless params.fetch(:description, '').empty?
-        @blank_jobs = @blank_jobs.where("number_of_jobs = #{params[:number_of_jobs]}") unless params.fetch(:number_of_jobs, '').empty?
+        @blank_jobs = @blank_jobs.search(blank_number, :blank_number) unless blank_number.empty?
+        @blank_jobs = @blank_jobs.search(params[:description], :description) unless params.fetch(:description, '').empty?
+        @blank_jobs = @blank_jobs.where("number_of_jobs = #{number_of_jobs}") unless number_of_jobs.empty?
 
         render_item_and_item_jobs_template(template_name: :list, status: :ok)
       end
