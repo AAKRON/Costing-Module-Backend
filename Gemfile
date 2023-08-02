@@ -21,6 +21,11 @@ gem 'sentry-raven'
 gem 'sidekiq'
 gem 'upsert'
 gem 'wkhtmltopdf-heroku'
+gem 'smarter_csv'
+gem 'axlsx'
+gem 'axlsx_rails'
+gem 'roo'
+
 
 group :development, :test do
   gem 'byebug', platform: :mri
