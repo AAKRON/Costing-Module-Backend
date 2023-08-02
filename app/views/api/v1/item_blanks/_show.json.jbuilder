@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+json.id blanks_listing_by_item.id
 json.item_id item.id
 json.item_number item.item_number
 json.blanks_listing_by_item do
