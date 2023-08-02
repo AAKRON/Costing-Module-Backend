@@ -7,7 +7,7 @@ class ItemsAndBlanksListingJob < ApplicationJob
   def perform(file_content, filename)
     Base64StringToSpreadsheet.perform(base_64_string: file_content, filename: filename) do |spreadsheet|
       first_spreadsheet = spreadsheet[0]
-
+      printf(first_spreadsheet)
       Item.bulk_update_or_create(
         Extractor::Item.new(first_spreadsheet).item_number_and_description,
         :item_number

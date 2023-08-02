@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 require "pdfkit"
+require 'roo'
 module Api
   module V1
     class FilesController < BaseController
@@ -140,6 +141,58 @@ module Api
             format.csv { send_data @vendors.listing_csv}
         end
       end
+     
+      def box_download       
+        @boxes = Box.all.order(:id)      
+        respond_to do |format|
+          format.xlsx { send_data Box.listing_xlsx(@boxes), filename: "5 - BOX LIST FOR COSTING MODULE.xlsx", type: Mime::Type.lookup_by_extension(:xlsx) }
+        end
+      end      
+    
+      def update_or_create_boxes
+        
+      
+        file = params[:file]
+        xlsx = Roo::Spreadsheet.open(file.path)
+      
+        updated = 0
+        created = 0
+      
+        Rails.logger.info "Reading Excel file..."
+      
+        xlsx.sheets.each do |sheet|
+          Rails.logger.info "Reading sheet: #{sheet}"
+          current_sheet = xlsx.sheet(sheet)
+          num_rows = current_sheet.last_row
+          Rails.logger.info "Number of rows in sheet: #{num_rows}"
+      
+          2.upto(num_rows) do |i|
+            row = current_sheet.row(i)
+            box_id = row[0].to_i
+            box = Box.find_or_initialize_by(id: box_id)
+      
+            if box.new_record?
+              Rails.logger.info "Creating new box with id: #{box_id}"
+              created += 1
+            else
+              Rails.logger.info "Updating box with id: #{box_id}"
+              updated += 1
+            end
+      
+            cost_per_box = row[2].to_f
+            box.update(name: row[1], cost_per_box: cost_per_box)
+          end
+        end
+      
+        Rails.logger.info "Boxes updated: #{updated}"
+        Rails.logger.info "Boxes created: #{created}"
+      
+        render json: { message: "Your boxes were updated or created. Updated: #{updated}, Created: #{created}" }, status: :ok
+      rescue => e
+        Rails.logger.error "Error: #{e.message}"
+        render json: { message: e.message }, status: :bad_request
+      end     
+
 
       def cost_pdf_download
         @cost_data = params[:data]

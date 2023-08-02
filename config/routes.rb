@@ -47,7 +47,7 @@ Rails.application.routes.draw do
       get '/blank-download/:cost_type', to: 'files#blank_download'
       get '/raw-material-download/:cost_type', to: 'files#raw_material_download'
       get '/color-download/:cost_type', to: 'files#color_download'
-      get '/units-download/:cost_type', to: 'files#units_download'
+      get '/units-download/:cost_type', to: 'files#units_download'      
       get '/raw-material-type-download/:cost_type', to: 'files#raw_material_type_download'
       get '/vendors-download/:cost_type', to: 'files#vendors_download'
       put '/job-cost-calculate/:id', to: 'job_listings#job_cost_calculate'
@@ -55,6 +55,12 @@ Rails.application.routes.draw do
       put '/update-item-blanks-only/:item_id', to: 'blanks_listing_by_items#update_item_blanks_only'
       put '/update-item-blanks-data', to: 'blanks_listing_by_items#update_item_blanks_data'
       put '/update-item-blanks-with-cost-only/:item_id', to: 'blanks_listing_item_with_costs#update_item_blanks_with_cost_only'
+
+      ###### BOXES ########
+      get '/box-list-for-costing-module-download/:cost_type', to: 'files#box_download'
+      post'/box_list_for_costing_module', to: 'files#update_or_create_boxes'
+
+      ##### 
     end
   end
 end
