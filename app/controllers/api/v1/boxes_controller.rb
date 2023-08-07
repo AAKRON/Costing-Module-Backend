@@ -11,7 +11,6 @@ module Api
       def index
         id = (params.fetch(:id, '') == 'null' ) ? '' : params.fetch(:id, '')
         cost_per_box = (params.fetch(:cost_per_box, '') == 'null' ) ? '' : params.fetch(:cost_per_box, '')
-        logger.debug "cost #{cost_per_box}"
         @boxes = Box.paginate(params.slice(:_end, :_sort, :_order))
         @boxes = @boxes.search(id, :id) unless id.empty?
         @boxes = @boxes.search(params[:box_name], :name) unless params.fetch(:box_name, '').empty?

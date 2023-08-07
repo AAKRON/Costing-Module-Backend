@@ -5,6 +5,7 @@ The API service for the costing module
 ### 1. Install dependencies (On MacOS)
 
 1. Install postgreSQL with `brew install postgresql`
+1. Install postgreSQL with `brew install redis`
 2. Install dependencies with `sudo bundle install`
 
 ### 2. Migrate and seed the test db

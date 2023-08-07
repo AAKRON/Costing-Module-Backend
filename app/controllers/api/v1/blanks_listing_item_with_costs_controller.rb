@@ -47,13 +47,14 @@ module Api
       end
 
       def update_item_blanks_with_cost_only
-        BlanksListingItemWithCost.bulk_update_or_create(
-          item_blanks_with_costs_body(params[:blanks], params[:item_id]),
+        logger.debug "item_blanks_with_costs_body #{params[:blanks]}"
+        BlanksListingByItem.bulk_update_or_create(
+          item_blanks_body(params[:blanks], params[:item_id]),
           :cell_key,
           key_as_id: false
         )
-        BlanksListingByItem.bulk_update_or_create(
-          item_blanks_body(params[:blanks], params[:item_id]),
+        BlanksListingItemWithCost.bulk_update_or_create(
+          item_blanks_with_costs_body(params[:blanks], params[:item_id]),
           :cell_key,
           key_as_id: false
         )
@@ -92,7 +93,7 @@ module Api
       end
 
       def blanks_listing_item_with_cost_params
-        params.require(:blanks_listing_item_with_cost).permit(:id, :item_number, :blank_number, :cost_per_blank)
+        params.require(:blanks_listing_item_with_cost).permit(:id, :item_number, :blank_number, :cost_per_blank, :mult, :div)
       end
 
       def set_blanks_listing_item_with_cost
