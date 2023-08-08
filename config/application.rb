@@ -28,5 +28,7 @@ module CostingModuleApi
     config.api_only = true
     config.autoload_paths += %W(#{config.root}/lib)
     config.active_job.queue_adapter = :sidekiq
+    config.assets.enabled = false
+    config.assets.compile = false
   end
 end
