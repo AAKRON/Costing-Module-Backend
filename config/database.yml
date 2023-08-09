@@ -19,6 +19,11 @@ development:
 test:
   <<: *default
   database: costing_test_db
+  host: <%= ENV['PGHOST'] %>
+  port: <%= ENV['PGPORT'] %>
+  username: <%= ENV['PGUSER'] %>
+  password: <%= ENV['PGPASSWORD'] %>
+
 
 production:
   <<: *default
