@@ -22,8 +22,8 @@ gem 'sidekiq'
 gem 'upsert'
 gem 'wkhtmltopdf-heroku'
 gem 'smarter_csv'
-gem 'axlsx'
-gem 'axlsx_rails'
+gem 'caxlsx'
+gem 'caxlsx_rails'
 gem 'roo'
 
 

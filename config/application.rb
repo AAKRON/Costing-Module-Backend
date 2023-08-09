@@ -9,7 +9,6 @@ require "action_controller/railtie"
 require "action_mailer/railtie"
 require "action_view/railtie"
 require "action_cable/engine"
-# require "sprockets/railtie"
 require "rails/test_unit/railtie"
 require 'csv'
 # Require the gems listed in Gemfile, including any gems
@@ -28,7 +27,5 @@ module CostingModuleApi
     config.api_only = true
     config.autoload_paths += %W(#{config.root}/lib)
     config.active_job.queue_adapter = :sidekiq
-    config.assets.enabled = false
-    config.assets.compile = false
   end
 end
