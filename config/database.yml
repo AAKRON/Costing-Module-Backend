@@ -22,4 +22,9 @@ test:
 
 production:
   <<: *default
-  database: costing_production_db
+  # database: costing_production_db
+  database: costing_development_db
+  host: <%= ENV['PGHOST'] %>
+  port: <%= ENV['PGPORT'] %>
+  username: <%= ENV['PGUSER'] %>
+  password: <%= ENV['PGPASSWORD'] %>
