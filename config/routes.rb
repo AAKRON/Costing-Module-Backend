@@ -59,8 +59,12 @@ Rails.application.routes.draw do
       ###### BOXES ########
       get '/box-list-for-costing-module-download/:cost_type', to: 'files#box_download'
       post'/box_list_for_costing_module', to: 'files#update_or_create_boxes'
+      
+      ##### RAW MATERIAL #######
+      get '/raw-materials-download/:cost_type', to: 'files#raw_materials'
+      post'/raw_materials_dashboard', to: 'files#update_or_create_raw_materials'
 
-      ##### 
+
     end
   end
 end

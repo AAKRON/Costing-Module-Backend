@@ -141,7 +141,62 @@ module Api
             format.csv { send_data @vendors.listing_csv}
         end
       end
-     
+      
+
+      def raw_materials
+        @raws = RawMaterial.all.order(:id)      
+        respond_to do |format|
+          format.xlsx { send_data RawMaterial.listing_xlsx(@raws), filename: "2 - NEW RAW CAL.xlsx", type: Mime::Type.lookup_by_extension(:xlsx) }
+        end
+
+      end
+
+      def update_or_create_raw_materials
+        begin
+          file = params[:file]
+          xlsx = Roo::Spreadsheet.open(file.path)
+      
+          updated = 0
+          created = 0
+      
+          Rails.logger.info "Reading Excel file..."
+      
+          xlsx.sheets.each do |sheet|
+            Rails.logger.info "Reading sheet: #{sheet}"
+            current_sheet = xlsx.sheet(sheet)
+            num_rows = current_sheet.last_row
+            Rails.logger.info "Number of rows in sheet: #{num_rows}"
+      
+            2.upto(num_rows) do |i|
+              row = current_sheet.row(i)
+              Rails.logger.info  "#{row[1]}"
+              raw_material_id = row[0].to_i
+              raw_material = RawMaterial.find_or_initialize_by(id: raw_material_id)
+      
+              if raw_material.new_record?
+                Rails.logger.info "Creating new raw material with id: #{raw_material_id}"
+                created += 1
+              else
+                Rails.logger.info "Updating raw material with id: #{raw_material_id}"
+                updated += 1
+              end
+              
+              cost = row[2].to_f
+              raw_material.update(name: row[1], cost: cost)
+            end
+          end
+      
+          Rails.logger.info "Raw materials updated: #{updated}"
+          Rails.logger.info "Raw materials created: #{created}"
+      
+          render json: { message: "Your raw materials were updated or created. Updated: #{updated}, Created: #{created}" }, status: :ok
+        rescue => e
+          Rails.logger.error "Error: #{e.message}"
+          render json: { message: e.message }, status: :bad_request
+        end
+      end
+      
+
       def box_download       
         @boxes = Box.all.order(:id)      
         respond_to do |format|
