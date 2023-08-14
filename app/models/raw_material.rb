@@ -17,9 +17,10 @@ class RawMaterial < ApplicationRecord
     wb = p.workbook
   
     wb.add_worksheet(name: "Raw Material") do |sheet|
-      sheet.add_row ["ID", "NAME", "COST",'UNITS_OF_MEASURE_ID', 'COLOR_ID', 'VENDOR_ID','RAWMATERIALTYPE_ID']
+      # sheet.add_row ["ID", "NAME", "COST",'UNITS_OF_MEASURE_ID', 'COLOR_ID', 'VENDOR_ID','RAWMATERIALTYPE_ID']
+      sheet.add_row ["ID", "NAME", "COST"]
       raws.each do |result|
-        sheet.add_row [result.id, result.name, result.cost, result.units_of_measure_id,result.color_id,result.vendor_id,result.rawmaterialtype_id]
+        sheet.add_row [result.id, result.name, result.cost]
       end
     end
   
