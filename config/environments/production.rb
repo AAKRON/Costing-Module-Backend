@@ -77,5 +77,5 @@ Rails.application.configure do
   config.active_record.dump_schema_after_migration = false
 
   # Allow hosts
-  config.hosts << /[a-z0-9]+\.railway\.app/
+  config.hosts << "aakron-costing-module-api-production.up.railway.app"
 end

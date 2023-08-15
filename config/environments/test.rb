@@ -41,5 +41,5 @@ Rails.application.configure do
   # config.action_view.raise_on_missing_translations = true
 
   # Allow hosts
-  config.hosts << /[a-z0-9]+\.railway\.app/
+  config.hosts << "aakron-costing-module-api-production.up.railway.app"
 end
