@@ -2,17 +2,7 @@
   services:
     app:
       image: aakron_api
-      environment:
-        PGHOST: containers-us-west-201.railway.app
-        PGPORT: 7847
-        PGUSER: postgres
-        PGPASSWORD: CeFgkIewzVpTIBPs4Fua
-        PG_DB_DEV: costing_development_db
-        PG_DB_TEST: costing_test_db
-        PG_DB_PROD: costing_development_db
+      env_file:
+        - .env
       ports:
         - 3000:3000
-    db:
-      image: postgres:alpine3.15
-      environment:
-        POSTGRES_PASSWORD: example
