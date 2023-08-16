@@ -56,15 +56,33 @@ Rails.application.routes.draw do
       put '/update-item-blanks-data', to: 'blanks_listing_by_items#update_item_blanks_data'
       put '/update-item-blanks-with-cost-only/:item_id', to: 'blanks_listing_item_with_costs#update_item_blanks_with_cost_only'
 
-      ###### BOXES ########
-      get '/box-list-for-costing-module-download/:cost_type', to: 'files#box_download'
-      post'/box_list_for_costing_module', to: 'files#update_or_create_boxes'
-      
+      ###### JOB LISTING ########
+      get '/jobs_and_blanks_download/:document_type', to: 'files#job_listing_download'
+      post '/job_listing_dashboard' ,to: 'files#update_or_create_jobs'
       ##### RAW MATERIAL #######
-      get '/raw-materials-download/:cost_type', to: 'files#raw_materials'
-      post'/raw_materials_dashboard', to: 'files#update_or_create_raw_materials'
-
-
+      get '/raw_materials_download/:document_type', to: 'files#raw_materials'
+      post '/raw_materials_dashboard', to: 'files#update_or_create_raw_materials'
+      ###### BLANK LISTING WITH COST ########
+      get '/blanks_listing_item_with_cost_download/:document_type', to: 'files#blanks_listing_item_with_cost_download'
+      post '/blanks_listing_item_with_cost_dashboard', to: 'files#update_or_create_blanks_listing_item_with_cost'
+      ###### BLANK ITEMS BY ITEM ########
+      get '/blanks_listing_by_item_download/:document_type', to: 'files#blanks_listing_by_item_download'
+      post '/blanks_listing_by_item_dashboard', to: 'files#update_or_create_blanks_listing_by_item'
+      ###### BOXES ########
+      get '/box_list_for_costing_module_download/:document_type', to: 'files#box_download'
+      post '/box_list_for_costing_module', to: 'files#update_or_create_boxes'      
+      ###### ITEM LISTING FOR COSTING ########
+      get '/item_list_for_costing_module_download/:document_type', to: 'files#item_list_for_costing_module_download'
+      post '/item_list_for_costing_module_dashboard', to: 'files#update_or_create_item_list_for_costing_module'    
+      ###### SCREEN CLICHE SIZES ########
+      get '/screen_cliche_sizes_for_costing_module_download/:document_type', to: 'files#screen_cliche_sizes_for_costing_module_download'
+      post '/screen_cliche_sizes_for_costing_module_dashboard', to: 'files#update_or_create_screen_cliche_sizes_for_costing_module'  
+      ###### BLANKS REPORT ########
+      get '/blanks_report_download/:document_type', to: 'files#blanks_report_download'
+      post '/blanks_report_dashboard', to: 'files#update_or_create_blanks_report'      
+      ###### ITEM LISTING WITH ITEM TYPES ########
+      get '/item_listing_with_item_types_download/:document_type', to: 'files#item_listing_with_item_types_download'
+      post '/item_listing_with_item_types_dashboard', to: 'files#update_or_create_item_listing_with_item_types'      
     end
   end
 end
