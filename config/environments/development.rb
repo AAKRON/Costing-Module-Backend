@@ -46,5 +46,5 @@ Rails.application.configure do
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
   # Allow hosts
-  config.hosts << "aakron-costing-module-api-production.up.railway.app"
+  config.hosts << ENV['BACKEND_HOST']
 end
