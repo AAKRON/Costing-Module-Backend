@@ -26,5 +26,10 @@ The API service for the costing module
 ### 4. Create Test User (Only if needed)
 
 1. Run the rails console with: `rails console`
-2. To create a test user, run the following command:
-   `u = User.create(username: 'test', role:'admin')`
+2. To create a test user, run the following command: `u = User.create(username: 'test', role:'admin')`
+
+### 5. OPTIONAL - Build and run docker
+
+1. Build docker image with: `docker build -t aakron_api .` (Only one tine)
+2. To run a container from our image: `docker-compose up`
+3. To run the container bash run: `docker-compose exec aakron_api bash`
