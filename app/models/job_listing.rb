@@ -23,4 +23,19 @@ class JobListing < ApplicationRecord
       end
     end
   end
+
+  def self.listing_xlsx(jobs)
+    p = Axlsx::Package.new
+    wb = p.workbook
+  
+    wb.add_worksheet(name: "Jobs") do |sheet|
+      sheet.add_row ["ID", "DESCRIPTION", "WAGES_PER_HOUR"]
+      jobs.each do |result|
+        sheet.add_row [result.id, result.description, result.wages_per_hour]
+      end
+    end
+  
+    p.to_stream.read
+  end
+  
 end
