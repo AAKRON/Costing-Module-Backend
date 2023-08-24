@@ -30,6 +30,6 @@ The API service for the costing module
 
 ### 5. OPTIONAL - Build and run docker
 
-1. Build docker image with: `docker build -t aakron_api .` (Only one tine)
+1. Build docker image with: `docker build -t aakron_api .` (Only one time)
 2. To run a container from our image: `docker-compose up`
 3. To run the container bash run: `docker-compose exec aakron_api bash`

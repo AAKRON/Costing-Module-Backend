@@ -62,16 +62,17 @@ module Api
       end
 
       def update_item_blanks_data
-        @item = Item.find(params[:id])
+        @item = Item.find(params[:item_id])
 
         if @item.present?
-          @blanks_listing_by_item = BlanksListingByItem.find(params[:blanks_item_id])
+          @blanks_listing_by_item = BlanksListingByItem.find(params[:blanks_listing_by_item])
           if @blanks_listing_by_item
             @blanks_listing_by_item.update(
               blank_number: params[:blank_number],
-              hour_per_piece:params[:hour_per_piece]
+              mult: params[:mult],
+              div: params[:div]
             )
-            @blanks_listing_by_item = BlanksListingByItem.find(params[:blanks_item_id])
+            @blanks_listing_by_item = BlanksListingByItem.find(params[:blanks_listing_by_item])
 
             render json: @blanks_listing_by_item, status: :ok
           else
