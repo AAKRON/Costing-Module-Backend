@@ -12,7 +12,7 @@ module Api
         type_number = (params.fetch(:type_number, '') == 'null' ) ? '' : params.fetch(:type_number, '')
         @blank_types = BlankType.paginate(params.slice(:_end, :_sort, :_order))
         @blank_types = @blank_types.where("type_number = #{type_number}") unless type_number.empty?
-        @blank_types = @blank_types.where("description LIKE ?", "%#{params[:description]}%") unless params.fetch(:description, '').empty?
+        @blank_types = @blank_types.where("description ILIKE ?", "%#{params[:description]}%") unless params.fetch(:description, '').empty?
         # @blank_types = @blank_types.search(params[:description], :description) unless params.fetch(:description, '').empty?
 
         render json: @blank_types, status: :ok
