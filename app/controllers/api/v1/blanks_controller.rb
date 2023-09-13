@@ -15,7 +15,11 @@ module Api
         total_blank_cost_for_price = (params.fetch(:total_blank_cost_for_price, '') == 'null' ) ? '' : params.fetch(:total_blank_cost_for_price, '')
         total_blank_cost_for_inventory = (params.fetch(:total_blank_cost_for_inventory, '') == 'null' ) ? '' : params.fetch(:total_blank_cost_for_inventory, '')
 
-        @blanks = BlankCostView.paginate(params.slice(:_end, :_sort, :_order))
+
+        _start = params[:_start].to_i
+        _end = params[:_end].to_i
+        # @blanks = BlankCostView.paginate(params.slice(:_end, :_sort, :_order))        
+        @blanks = BlankCostView.order("#{params[:_sort]} #{params[:_order]}").offset(_start).limit(_end - _start)               
         @blanks = @blanks.search(blank_number, :blank_number) unless blank_number.empty?
         @blanks = @blanks.where("blank_type_id = #{blank_type_id}") unless blank_type_id.empty?
         @blanks = @blanks.search(params[:description], :description) unless params.fetch(:description, '').empty?

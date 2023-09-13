@@ -11,7 +11,11 @@ module Api
         item_number = (params.fetch(:item_number, '') == 'null' ) ? '' : params.fetch(:item_number, '')
         number_of_jobs = (params.fetch(:number_of_jobs, '') == 'null' ) ? '' : params.fetch(:number_of_jobs, '')
 
-        @items = ItemWithJobCount.paginate(params.slice(:_end, :_sort, :_order))
+        _start = params[:_start].to_i
+        _end = params[:_end].to_i
+        
+        # @items = ItemWithJobCount.paginate(params.slice(:_end, :_sort, :_order))
+        @items = ItemWithJobCount.order("#{params[:_sort]} #{params[:_order]}").offset(_start).limit(_end - _start)
         @items = @items.search(params[:item_number], :item_number) unless params.fetch(:item_number, '').empty?
         @items = @items.search(params[:description], :description) unless params.fetch(:description, '').empty?
         @items = @items.where("number_of_jobs = #{number_of_jobs}") unless number_of_jobs.empty?

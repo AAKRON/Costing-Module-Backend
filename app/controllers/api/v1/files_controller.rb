@@ -62,9 +62,10 @@ module Api
 
         if (params.key?("blanks") && params[:blanks] !='')
           blanks = params[:blanks].split(",")
-          @blanks = BlankCostView.where("type_number = 1").where(blank_number: blanks).order(:blank_number)
+          # @blanks = BlankCostView.where("type_number = 1").where(blank_number: blanks).order(:blank_number)
+          @blanks = BlankCostView.where(blank_number: blanks).order(:blank_number)
         else
-          @blanks = BlankCostView.where("type_number = 1").order(:blank_number)
+          @blanks = BlankCostView.order(:blank_number)
         end
 
         respond_to do |format|

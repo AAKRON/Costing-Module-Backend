@@ -14,7 +14,10 @@ module Api
         job_number = (params.fetch(:job_number, '') == 'null' ) ? '' : params.fetch(:job_number, '')
 
         # set_pagination_header(JobWithScreenListing.count)
-        @job_listings = JobWithScreenListing.paginate(params.slice(:_end, :_sort, :_order))
+        _start = params[:_start].to_i
+        _end = params[:_end].to_i
+        # @job_listings = JobWithScreenListing.paginate(params.slice(:_end, :_sort, :_order))
+        @job_listings = JobWithScreenListing.order("#{params[:_sort]} #{params[:_order]}").offset(_start).limit(_end - _start)
         @job_listings = @job_listings.search(job_number, :job_number) unless job_number.empty?
         @job_listings = @job_listings.where("screen_id = #{screen_id}") unless screen_id.empty?
         @job_listings = @job_listings.search(params[:description], :description) unless params.fetch(:description, '').empty?

@@ -8,7 +8,10 @@ module Api
       after_action(only: [:index]) { set_pagination_header(BlanksListingByItem.count) }
 
       def index
-        @blanks_listing_by_item = BlanksListingByItem.paginate(params.slice(:_end, :_sort, :_order))
+        _start = params[:_start].to_i
+        _end = params[:_end].to_i
+        # @blanks_listing_by_item = BlanksListingByItem.paginate(params.slice(:_end, :_sort, :_order))
+        @blanks_listing_by_item = BlanksListingByItem.order("#{params[:_sort]} #{params[:_order]}").offset(_start).limit(_end - _start)
         @blanks_listing_by_item = @blanks_listing_by_item.search(params[:q], :item_number) unless params.fetch(:q, '').empty?
 
         render json: @blanks_listing_by_item, status: :ok

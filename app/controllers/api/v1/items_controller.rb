@@ -2,7 +2,7 @@
 module Api
   module V1
     class ItemsController < BaseController
-      # before_action :restrict_access
+      before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
       before_action :set_item, only: [:show, :update, :update_type]
       after_action(only: [:index]) { set_pagination_header(ItemCostView.count) }
@@ -16,7 +16,10 @@ module Api
         total_price_cost = (params.fetch(:total_price_cost, '') == 'null' ) ? '' : params.fetch(:total_price_cost, '')
         total_inventory_cost = (params.fetch(:total_inventory_cost, '') == 'null' ) ? '' : params.fetch(:total_inventory_cost, '')
 
-        @items = ItemCostView.paginate(params.slice(:_end, :_sort, :_order))
+        _start = params[:_start].to_i
+        _end = params[:_end].to_i
+        # @items = ItemCostView.paginate(params.slice(:_end, :_sort, :_order))
+        @items = ItemCostView.order("#{params[:_sort]} #{params[:_order]}").offset(_start).limit(_end - _start)
         @items = @items.search(item_id, :item_number) unless item_id.empty?
         @items = @items.search(params[:description], :description) unless params.fetch(:description, '').empty?
         @items = @items.search(params[:type_description], :type_description) unless params.fetch(:type_description, '').empty?
