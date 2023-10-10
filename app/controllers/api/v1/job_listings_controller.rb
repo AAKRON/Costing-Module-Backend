@@ -5,7 +5,7 @@ module Api
     class JobListingsController < BaseController
       before_action :restrict_access
       before_action :set_user_access_level, only: %i[destroy update]
-      before_action :set_job, only: %i[job_cost_calculate update]
+      before_action :set_job, only: %i[job_cost_calculate update show]
       after_action(only: [:index]) { set_pagination_header(JobWithScreenListing.count) }
       after_action(only: [:job_list_only]) { set_pagination_header(JobListing.count) }
 
@@ -33,6 +33,10 @@ module Api
         else
           render json: @job_listing.errors, status: 400
         end
+      end
+
+      def show
+        render json: @job, status: :ok
       end
 
       def jobs_by_params

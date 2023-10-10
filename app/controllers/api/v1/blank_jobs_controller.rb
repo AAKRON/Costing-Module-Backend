@@ -3,7 +3,8 @@ module Api
   module V1
     class BlankJobsController < BaseController
       before_action :restrict_access
-      before_action :set_user_access_level, only:[:destroy, :update]
+      before_action :set_user_access_level, only:[:destroy, :update, :destroy_jobs]
+      before_action :set_blank_job, only: [:update]
       after_action(only: [:index]) { set_pagination_header(BlankJobView.count) }
 
       def index
@@ -62,14 +63,21 @@ module Api
       end
 
       def update
-        params[:jobs].map do |row|
-          if row[:deleted]
-            BlankJob.where(blank_id: params[:id], job_listing_id: row[:job_listing_id]).destroy_all
+        if @blankJob.update(job_listing_id: params[:job_listing_id], hour_per_piece: params[:hour_per_piece])
+            render json: @blankJob, status: :ok
+          else
+            render json: @blankJob.errors.messages, status: :bad_request
           end
-        end if params.has_key?(:jobs)
-        @blankJobs = BlankJob.where(blank_id: params[:id])
+      end
 
-        render json: @blankJobs, status: :ok
+      def destroy
+        params[:jobs].map do |row|
+            if row[:deleted]
+              BlankJob.where(blank_id: params[:id], job_listing_id: row[:job_listing_id]).destroy_all
+            end
+          end if params.has_key?(:jobs)
+          @blank = Blank.find_by_id!(params[:id])
+          render_item_and_item_jobs_template(template_name: 'show', status: :ok)
       end
 
       def show
@@ -82,6 +90,10 @@ module Api
 
       def blank_job_params
         params.permit(:blank_number, blank_jobs: [:job_listing_id, :hour_per_piece])
+      end
+
+      def set_blank_job
+        @blankJob = BlankJob.find(params[:id])
       end
 
       def render_item_and_item_jobs_template(template_name: :index, status: :ok)

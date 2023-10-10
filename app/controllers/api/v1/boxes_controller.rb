@@ -39,8 +39,7 @@ module Api
 
       def show
         @box = Box.find(params[:id])
-
-        render template: 'api/v1/box/show.json', status: 201
+        render json: @box, status: :ok
       end
 
       def destroy
