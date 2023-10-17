@@ -50,6 +50,7 @@ Rails.application.routes.draw do
       get '/units-download/:cost_type', to: 'files#units_download'      
       get '/raw-material-type-download/:cost_type', to: 'files#raw_material_type_download'
       get '/vendors-download/:cost_type', to: 'files#vendors_download'
+      get '/charts', to: 'charts#get_charts_info'
       put '/job-cost-calculate/:id', to: 'job_listings#job_cost_calculate'
       post '/cost-pdf-download', to: 'files#cost_pdf_download'
       put '/update-item-blanks-only/:item_id', to: 'blanks_listing_by_items#update_item_blanks_only'
