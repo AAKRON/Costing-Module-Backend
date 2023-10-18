@@ -4,6 +4,7 @@ module Api
     class ItemJobsController < BaseController
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
+      before_action :set_item_job, only: [:update]
       after_action(only: [:index]) { set_pagination_header(ItemWithJobCount.count) }
 
       def index
@@ -30,22 +31,6 @@ module Api
         render_item_and_item_jobs_template(template_name: :show, status: :created) if @item.save
         render json: @item.errors, status: :bad_request unless @item.save
       end
-      
-      def update_item_jobs_data
-        @item = Item.where(item_number: params[:item_number])
-        if @item.present?
-			@itemJob = ItemJob.find(params[:item_job_id])
-			if @itemJob
-				@itemJob.update(job_listing_id: params[:job_listing_id],hour_per_piece:params[:hour_per_piece])
-				@itemJobs = ItemJob.where(item_id: params[:item_number])
-				render json: @itemJobs, status: :ok
-			else
-				render json: @itemJob.errors.messages, status: :bad_request
-			end
-		else
-			render(json: { message: "item not found",status: :bad_request })
-		end
-      end
 
       def update_item_jobs_only
         ItemJob.bulk_update_or_create(
@@ -58,19 +43,25 @@ module Api
       end
 
       def update
+        if @itemJob.update(job_listing_id: params[:job_listing_id],hour_per_piece:params[:hour_per_piece])
+            render json: @itemJob, status: :ok
+        else
+            render json: @itemJob.errors.messages, status: :bad_request
+        end
+      end
+
+      def destroy
         params[:jobs].map do |row|
-          if row[:deleted]
-            ItemJob.where(item_id: params[:id], job_listing_id: row[:job_listing_id]).destroy_all
-          end
+            if row[:deleted]
+              ItemJob.where(item_id: params[:id], job_listing_id: row[:job_listing_id]).destroy_all
+            end
         end if params.has_key?(:jobs)
         @itemJobs = ItemJob.where(item_id: params[:id])
-
         render json: @itemJobs, status: :ok
       end
 
       def show
         @item = Item.find_by_id!(params[:id])
-
         render_item_and_item_jobs_template(template_name: __method__, status: :ok)
       end
 
@@ -78,6 +69,10 @@ module Api
 
       def item_job_params
         params.permit(:item_number, item_jobs: [:job_listing_id, :hour_per_piece])
+      end
+
+      def set_item_job
+        @itemJob = ItemJob.find(params[:id])
       end
 
       def render_item_and_item_jobs_template(template_name: :index, status: :ok)

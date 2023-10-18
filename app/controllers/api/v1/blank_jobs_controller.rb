@@ -3,7 +3,7 @@ module Api
   module V1
     class BlankJobsController < BaseController
       before_action :restrict_access
-      before_action :set_user_access_level, only:[:destroy, :update, :destroy_jobs]
+      before_action :set_user_access_level, only:[:destroy, :update,]
       before_action :set_blank_job, only: [:update]
       after_action(only: [:index]) { set_pagination_header(BlankJobView.count) }
 
@@ -30,27 +30,6 @@ module Api
         render json: @blank.errors, status: :bad_request unless @blank.save
       end
 
-	  def update_blank_jobs_data
-        @blank = Blank.where(blank_number: params[:blank_number])
-        #puts "#{@blank.count}"
-        #abort
-        if @blank.present?
-			@blankJob = BlankJob.find(params[:blank_job_id])
-			if @blankJob
-				#puts "#{@blankJob.to_json}"
-				#puts "Hiii"
-				@blankJob.update(job_listing_id: params[:job_listing_id],hour_per_piece:params[:hour_per_piece])
-				@blankJobs = BlankJob.where(blank_id: params[:blank_number])
-				render json: @blankJobs, status: :ok
-				#puts itemJobs.errors.full_messages
-			else
-				render json: @blankJob.errors.messages, status: :bad_request
-			end
-		else
-			render(json: { message: "item not found",status: :bad_request })
-		end
-      end
-
       def update_blank_jobs_only
         BlankJob.bulk_update_or_create(
           blank_job_body(params[:copy_jobs], params[:blank_number]),
@@ -65,19 +44,19 @@ module Api
       def update
         if @blankJob.update(job_listing_id: params[:job_listing_id], hour_per_piece: params[:hour_per_piece])
             render json: @blankJob, status: :ok
-          else
+        else
             render json: @blankJob.errors.messages, status: :bad_request
-          end
+        end
       end
 
       def destroy
         params[:jobs].map do |row|
             if row[:deleted]
-              BlankJob.where(blank_id: params[:id], job_listing_id: row[:job_listing_id]).destroy_all
+                BlankJob.where(blank_id: params[:id], job_listing_id: row[:job_listing_id]).destroy_all
             end
-          end if params.has_key?(:jobs)
-          @blank = Blank.find_by_id!(params[:id])
-          render_item_and_item_jobs_template(template_name: 'show', status: :ok)
+        end if params.has_key?(:jobs)
+        @blank = Blank.find_by_id!(params[:id])
+        render_item_and_item_jobs_template(template_name: 'show', status: :ok)
       end
 
       def show
