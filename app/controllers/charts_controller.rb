@@ -31,7 +31,10 @@ module Api
       private
 
       def set_jobs_charts
-        jobs_by_date = JobListing.order('DATE(created_at) ASC').group("DATE(created_at)").count
+        jobs_by_date = JobListing.where("created_at > ?", "%#{params[:start_date]}%")
+        .where("created_at < ?", "%#{params[:end_date]}%")
+        .order('DATE(created_at) ASC')
+        .group("DATE(created_at)").count
         @jobs_dates = jobs_by_date.keys
         @jobs_counts = jobs_by_date.values
 
@@ -41,7 +44,11 @@ module Api
       end
 
       def set_blanks_charts
-        blanks_by_date = Blank.order('DATE(created_at) ASC').group("DATE(created_at)").count
+        blanks_by_date = Blank.where("created_at > ?", "%#{params[:start_date]}%")
+        .where("created_at < ?", "%#{params[:end_date]}%")
+        .order('DATE(created_at) ASC')
+        .group("DATE(created_at)").count
+
         @blanks_dates = blanks_by_date.keys
         @blanks_counts = blanks_by_date.values
 
