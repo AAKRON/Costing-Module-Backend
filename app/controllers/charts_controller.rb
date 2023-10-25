@@ -12,10 +12,10 @@ module Api
                 dates: @jobs_dates,
                 data: @jobs_counts
             },
-            number_of_jobs_created_each_month: {
-                dates: @jobs_months,
-                data: @jobs_months_counts
-            },
+            # number_of_jobs_created_each_month: {
+            #     dates: @jobs_months,
+            #     data: @jobs_months_counts
+            # },
             number_of_blanks_created_each_day: {
                 dates: @blanks_dates,
                 data: @blanks_counts
@@ -43,12 +43,12 @@ module Api
         @jobs_dates = jobs_by_date.keys
         @jobs_counts = jobs_by_date.values
 
-        # Get jobs by month
-        jobs_by_month = jobs_with_filters
-        .group('extract(month from created_at)').count
+        # # Get jobs by month
+        # jobs_by_month = jobs_with_filters
+        # .group('extract(month from created_at)').count
 
-        @jobs_months = jobs_by_date.keys
-        @jobs_months_counts = jobs_by_date.values
+        # @jobs_months = jobs_by_date.keys
+        # @jobs_months_counts = jobs_by_date.values
       end
 
       def set_blanks_charts
