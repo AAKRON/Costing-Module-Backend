@@ -7,6 +7,6 @@ json.blanks_listing_by_item do
     json.blanks_listing_item_with_cost_id item_blanks.id
     json.blank_id item_blanks.blank.id
     json.blank_number item_blanks.blank_number
-		json.blank_description item_blanks.blank.description
+	json.blank_description item_blanks.blank.description
   end
 end

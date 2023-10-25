@@ -4,13 +4,12 @@ module Api
     class BlanksListingByItemsController < BaseController
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
-      before_action :set_blanks_listing_by_item, only: [:show, :update, :destroy]
+      before_action :set_blanks_listing_by_item, only: [:show]
       after_action(only: [:index]) { set_pagination_header(BlanksListingByItem.count) }
 
       def index
         _start = params[:_start].to_i
         _end = params[:_end].to_i
-        # @blanks_listing_by_item = BlanksListingByItem.paginate(params.slice(:_end, :_sort, :_order))
         @blanks_listing_by_item = BlanksListingByItem.order("#{params[:_sort]} #{params[:_order]}").offset(_start).limit(_end - _start)
         @blanks_listing_by_item = @blanks_listing_by_item.search(params[:q], :item_number) unless params.fetch(:q, '').empty?
 
@@ -33,20 +32,27 @@ module Api
       end
 
       def update
-        params[:blanks].map do |row|
-          if row[:deleted]
-            BlanksListingByItem.where(item_number: row[:item_number], blank_number: row[:blank_number]).destroy_all
-          end
-        end if params.has_key?(:blanks)
-
-        @blanks_listing_by_item = BlanksListingByItem.where(item_number: @blanks_listing_by_item.item_number)
-        render json: @blanks_listing_by_item, status: :ok
+        @blanks_listing_by_item = BlanksListingByItem.where(item_number: params[:id], blank_number: params[:blank_number])
+        if @blanks_listing_by_item.update(
+            mult: params[:mult],
+            div: params[:div]
+        )
+            @blanks_listing_by_item = BlanksListingByItem.where(item_number: params[:id])
+            render json: @blanks_listing_by_item, status: :ok
+        else
+            render json: @blanks_listing_by_item.errors.messages, status: :bad_request
+        end
       end
 
       def destroy
-        @blanks_listing_by_item.destroy
+        params[:blanks].map do |row|
+            if row[:deleted]
+                BlanksListingByItem.where(item_number: params[:id], blank_number: row[:blank_number]).destroy_all
+            end
+        end if params.has_key?(:blanks)
 
-        render json: "deleted successfully", status: :no_content
+        @blanks_listing_by_item = BlanksListingByItem.where(item_number: params[:id])
+        render json: @blanks_listing_by_item, status: :ok
       end
 
       def update_item_blanks_only
@@ -62,28 +68,6 @@ module Api
         )
         @blanks_listing_by_item = BlanksListingByItem.where(item_number: params[:item_id])
         render json: @blanks_listing_by_item, status: :ok
-      end
-
-      def update_item_blanks_data
-        @item = Item.find(params[:item_id])
-
-        if @item.present?
-          @blanks_listing_by_item = BlanksListingByItem.find(params[:blanks_listing_by_item])
-          if @blanks_listing_by_item
-            @blanks_listing_by_item.update(
-              blank_number: params[:blank_number],
-              mult: params[:mult],
-              div: params[:div]
-            )
-            @blanks_listing_by_item = BlanksListingByItem.find(params[:blanks_listing_by_item])
-
-            render json: @blanks_listing_by_item, status: :ok
-          else
-            render json: @blanks_listing_by_item.errors.messages, status: :bad_request
-          end
-        else
-          render(json: { message: "item not found",status: :bad_request })
-        end
       end
 
       private

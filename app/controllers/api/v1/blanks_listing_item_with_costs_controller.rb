@@ -4,7 +4,7 @@ module Api
     class BlanksListingItemWithCostsController < BaseController
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
-      before_action :set_blanks_listing_item_with_cost, only: [:show, :update, :destroy]
+      before_action :set_blanks_listing_item_with_cost, only: [:show]
       after_action(only: [:index]) { set_pagination_header(ItemWithBlankPerCostView.count) }
 
       def index
@@ -18,6 +18,7 @@ module Api
       end
 
       def show
+        # TODO
         @item = Item.find(@blanks_listing_item_with_cost.item_number)
         render_item_and_item_blanks_template(template_name: __method__, status: :ok)
       end
@@ -33,20 +34,29 @@ module Api
       end
 
       def update
-        params[:blanks].map do |row|
-          if row[:deleted]
-            BlanksListingItemWithCost.where(item_number: row[:item_number], blank_number: row[:blank_number]).destroy_all
-          end
-        end if params.has_key?(:blanks)
-
-        @blanks_listing_item_with_cost = BlanksListingItemWithCost.where(item_number: @blanks_listing_item_with_cost.item_number)
-        render json: @blanks_listing_item_with_cost, status: :ok
+        @blanks_listing_by_item = BlanksListingByItem.where(item_number: params[:id], blank_number: params[:blank_number])
+        if @blanks_listing_by_item.update(
+            mult: params[:mult],
+            div: params[:div]
+        )
+            # TODO
+            @blanks_listing_by_item = BlanksListingByItem.where(item_number: params[:id])
+            render json: @blanks_listing_by_item, status: :ok
+        else
+            render json: @blanks_listing_by_item.errors.messages, status: :bad_request
+        end
       end
 
       def destroy
-        @blanks_listing_item_with_cost.destroy
+        params[:blanks].map do |row|
+            if row[:deleted]
+              BlanksListingItemWithCost.where(item_number: params[:id], blank_number: row[:blank_number]).destroy_all
+            end
+        end if params.has_key?(:blanks)
 
-        render json: "deleted successfully", status: :no_content
+        # TODO
+        @blanks_listing_item_with_cost = BlanksListingItemWithCost.where(item_number: params[:id])
+        render json: @blanks_listing_item_with_cost, status: :ok
       end
 
       def update_item_blanks_with_cost_only

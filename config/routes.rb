@@ -30,11 +30,9 @@ Rails.application.routes.draw do
       get '/job-list-only', to: 'job_listings#job_list_only'
       get '/jobs-by-params', to: 'job_listings#jobs_by_params'
       put '/update-item-jobs-only/:id', to: 'item_jobs#update_item_jobs_only'
-      put '/update-item-job-data', to: 'item_jobs#update_item_jobs_data'
       get '/blank-list-only', to: 'blanks#blank_list_only'
       get '/vendors-list-only', to: 'vendors#vendor_list_only'
       put '/update-blank-jobs-only/:id', to: 'blank_jobs#update_blank_jobs_only'
-      put '/update-blank-job-data', to: 'blank_jobs#update_blank_jobs_data'
       get 'download/:file_type', to: 'files#download'
       get '/box-list-only', to: 'boxes#box_list_only'
       get '/item-type-list-only', to: 'item_types#item_type_list_only'
@@ -54,7 +52,6 @@ Rails.application.routes.draw do
       put '/job-cost-calculate/:id', to: 'job_listings#job_cost_calculate'
       post '/cost-pdf-download', to: 'files#cost_pdf_download'
       put '/update-item-blanks-only/:item_id', to: 'blanks_listing_by_items#update_item_blanks_only'
-      put '/update-item-blanks-data/:item_id', to: 'blanks_listing_by_items#update_item_blanks_data'
       put '/update-item-blanks-with-cost-only/:item_id', to: 'blanks_listing_item_with_costs#update_item_blanks_with_cost_only'
 
       ###### JOB LISTING ########
