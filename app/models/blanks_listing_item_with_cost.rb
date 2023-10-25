@@ -6,23 +6,6 @@ class BlanksListingItemWithCost < ApplicationRecord
   belongs_to :blank, foreign_key: :blank_number
   before_save { |record| record.cell_key = item_number + blank_number }
 
-  # def self.listing_xlsx(blanks)
-  #   p = Axlsx::Package.new
-  #   wb = p.workbook
-    
-
-  #   wb.add_worksheet(name: "Blanks Item Cost") do |sheet|
-  #     sheet.add_row ["ID", "ITEM NUMBER", "BLANK NUMBER","COST PER BLANK"]
-  #     blanks.each do |result|
-
-  #       @item = Item.find(result.item_number)
-  #       Rails.logger.info "Blank #{@item}"
-  #       sheet.add_row [result.id, result.item_number, result.blank_number,result.cost_per_blank]
-  #     end
-  #   end
-  
-  #   p.to_stream.read
-  # end
   def self.listing_xlsx(blanks)
     p = Axlsx::Package.new
     wb = p.workbook

@@ -40,8 +40,8 @@ module Api
             div: params[:div]
         )
             # TODO
-            @blanks_listing_by_item = BlanksListingByItem.where(item_number: params[:id])
-            render json: @blanks_listing_by_item, status: :ok
+            @blanks_listing_item_with_cost = BlanksListingItemWithCost.where(item_number: params[:id])
+            render json: @blanks_listing_item_with_cost, status: :ok
         else
             render json: @blanks_listing_by_item.errors.messages, status: :bad_request
         end
