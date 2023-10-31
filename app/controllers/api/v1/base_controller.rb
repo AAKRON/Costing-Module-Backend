@@ -5,7 +5,7 @@ include ActionController::MimeResponds
 class Api::V1::BaseController < ApplicationController
   before_action :destroy_session
   before_action :set_raven_context
-  before_action :set_current_database
+#   before_action :set_current_database
 
   private
 
@@ -14,9 +14,9 @@ class Api::V1::BaseController < ApplicationController
         connection_config = Rails.application.config.database_configuration[Rails.env]
 
         if request.headers['Database'] != Time.now.year.to_s
-            database = (request.headers['Database'] == 'null' ) ? connection_config['database'] : 'costing_module_db_' + request.headers['Database']
+            database = (request.headers['Database'] == 'null' ) ? ENV['PG_DB_DEV'] : 'costing_module_db_' + request.headers['Database']
         else
-            database = connection_config['database']
+            database = ENV['PG_DB_DEV']
         end
 
         connection_config['database'] = database
