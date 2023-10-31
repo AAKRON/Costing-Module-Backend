@@ -5,26 +5,24 @@ include ActionController::MimeResponds
 class Api::V1::BaseController < ApplicationController
   before_action :destroy_session
   before_action :set_raven_context
-#   before_action :set_current_database
+  before_action :set_current_database
 
   private
 
   def set_current_database
-    if request.headers['Database']
-        connection_config = Rails.application.config.database_configuration[Rails.env]
+    connection_config = Rails.application.config.database_configuration[Rails.env]
+    database = ENV['PG_DB_DEV']
 
-        if request.headers['Database'] != Time.now.year.to_s
-            database = (request.headers['Database'] == 'null' ) ? ENV['PG_DB_DEV'] : 'costing_module_db_' + request.headers['Database']
-        else
-            database = ENV['PG_DB_DEV']
-        end
-
-        connection_config['database'] = database
-        # logger.debug "Current database #{database}"
-        # logger.debug "connection_config #{connection_config}"
-
-        ActiveRecord::Base.establish_connection(connection_config)
+    if request.headers['Database'] && request.headers['Database'] != Time.now.year.to_s
+        database ='costing_module_db_' + request.headers['Database']
     end
+
+    # logger.debug "Header database #{request.headers['Database']}"
+    # logger.debug "Current database #{database}"
+    # logger.debug "connection_config database #{Rails.configuration.database_configuration}"
+
+    connection_config['database'] = database
+    ActiveRecord::Base.establish_connection(connection_config)
   end
 
   def restrict_access
