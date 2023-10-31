@@ -5,6 +5,7 @@ module Api
       before_action :restrict_access
       before_action :set_jobs_charts, only: [:get_charts_info]
       before_action :set_blanks_charts, only: [:get_charts_info]
+      before_action :set_items_charts, only: [:get_charts_info]
 
       def get_charts_info
         result_data = {
@@ -24,6 +25,14 @@ module Api
                 categories: @blanks_types,
                 data: @blanks_type_counts
             },
+            number_of_items_created_each_day: {
+                dates: @items_dates,
+                data: @items_counts
+            },
+            number_of_items_by_type: {
+                categories: @items_types,
+                data: @items_type_counts
+            },
         }
         render json: result_data, status: :ok
       end
@@ -32,8 +41,8 @@ module Api
 
       def set_jobs_charts
         # Get jobs with the filters applied
-        jobs_with_filters = JobListing.where("job_listings.created_at > ?", "%#{params[:start_date]}%")
-                                        .where("job_listings.created_at < ?", "%#{params[:end_date]}%")
+        jobs_with_filters = JobListing.where("job_listings.created_at >= ?", "%#{params[:start_date]}%")
+                                        .where("job_listings.created_at <= ?", "%#{params[:end_date]}%")
 
         # Get jobs by date
         jobs_by_date = jobs_with_filters
@@ -53,8 +62,8 @@ module Api
 
       def set_blanks_charts
         # Get blanks with the filters applied
-        blanks_with_filters = Blank.where("blanks.created_at > ?", "%#{params[:start_date]}%")
-                                .where("blanks.created_at < ?", "%#{params[:end_date]}%")
+        blanks_with_filters = Blank.where("blanks.created_at >= ?", "%#{params[:start_date]}%")
+                                .where("blanks.created_at <= ?", "%#{params[:end_date]}%")
 
         # Get blanks by date
         blanks_by_date = blanks_with_filters
@@ -65,13 +74,36 @@ module Api
         @blanks_counts = blanks_by_date.values
 
         # Get blanks per type
-        blanks_by_type = blanks_with_filters
+        blanks_by_type = Blank
                             .left_outer_joins(:blank_type)
                             .group('blank_types.description')
                             .count
 
         @blanks_types = blanks_by_type.keys
         @blanks_type_counts = blanks_by_type.values
+      end
+
+      def set_items_charts
+        # Get items with the filters applied
+        items_with_filters = Item.where("items.created_at >= ?", "%#{params[:start_date]}%")
+                                .where("items.created_at <= ?", "%#{params[:end_date]}%")
+
+        # Get items by date
+        items_by_date = items_with_filters
+                            .order('DATE(created_at) ASC')
+                            .group("DATE(created_at)").count
+
+        @items_dates = items_by_date.keys
+        @items_counts = items_by_date.values
+
+        # Get items per type
+        items_by_type = Item
+                            .left_outer_joins(:item_type)
+                            .group('item_types.description')
+                            .count
+
+        @items_types = items_by_type.keys
+        @items_type_counts = items_by_type.values
       end
     end
   end
