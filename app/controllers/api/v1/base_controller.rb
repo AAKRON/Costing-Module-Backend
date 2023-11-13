@@ -5,7 +5,7 @@ include ActionController::MimeResponds
 class Api::V1::BaseController < ApplicationController
   before_action :destroy_session
   before_action :set_raven_context
-  before_action :set_current_database
+#   before_action :set_current_database
 
   private
 
