@@ -5,7 +5,7 @@ include ActionController::MimeResponds
 class Api::V1::BaseController < ApplicationController
   before_action :destroy_session
   before_action :set_raven_context
-#   before_action :set_current_database
+  before_action :set_current_database
 
   private
 
@@ -17,12 +17,14 @@ class Api::V1::BaseController < ApplicationController
         database ='costing_module_db_' + request.headers['Database']
     end
 
-    # logger.debug "Header database #{request.headers['Database']}"
-    # logger.debug "Current database #{database}"
-    # logger.debug "connection_config database #{Rails.configuration.database_configuration}"
+    if ActiveRecord::Base.connection.current_database != database
+        logger.debug "Cambiando"
+        connection_config['database'] = database
+        ActiveRecord::Base.establish_connection(connection_config)
+    end
 
-    connection_config['database'] = database
-    ActiveRecord::Base.establish_connection(connection_config)
+    # logger.debug "Selected database #{database}"
+    # logger.debug "current_database #{ActiveRecord::Base.connection.current_database}"
   end
 
   def restrict_access
