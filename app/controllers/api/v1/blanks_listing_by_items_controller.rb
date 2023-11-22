@@ -22,6 +22,10 @@ module Api
       end
 
       def create
+        # Create BlanksListingItemWithCost
+        BlanksListingItemWithCost.find_or_create_by(blanks_listing_item_with_cost_params)
+
+        # Create BlanksListingByItem
         @blanks_listing_by_item = BlanksListingByItem.new(blanks_listing_by_item_params)
 
         if @blanks_listing_by_item.save
@@ -48,6 +52,7 @@ module Api
         params[:blanks].map do |row|
             if row[:deleted]
                 BlanksListingByItem.where(item_number: params[:id], blank_number: row[:blank_number]).destroy_all
+                BlanksListingItemWithCost.where(item_number: params[:id], blank_number: row[:blank_number]).destroy_all
             end
         end if params.has_key?(:blanks)
 
@@ -61,11 +66,6 @@ module Api
           :cell_key,
           key_as_id: false
         )
-        BlanksListingItemWithCost.bulk_update_or_create(
-          item_blanks_with_costs_body(params[:blanks], params[:item_id]),
-          :cell_key,
-          key_as_id: false
-        )
         @blanks_listing_by_item = BlanksListingByItem.where(item_number: params[:item_id])
         render json: @blanks_listing_by_item, status: :ok
       end
@@ -74,6 +74,10 @@ module Api
 
       def blanks_listing_by_item_params
         params.require(:blanks_listing_by_item).permit(:id, :item_number, :blank_number, :mult, :div)
+      end
+
+      def blanks_listing_item_with_cost_params
+        params.require(:blanks_listing_by_item).permit(:item_number, :blank_number)
       end
 
       def set_blanks_listing_by_item
@@ -97,16 +101,6 @@ module Api
         end
       end
 
-      def item_blanks_with_costs_body(blanks, item_id)
-        blanks.map! do |row|
-          blanks = row[:blank_number].to_i
-          Hash[
-            :blank_number, row[:blank_number],
-            :item_number, item_id.to_s,
-            :cell_key, item_id.to_s + row[:blank_number].to_s
-          ]
-        end
-      end
     end
   end
 end

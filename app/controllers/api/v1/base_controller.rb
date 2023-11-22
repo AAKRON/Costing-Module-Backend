@@ -18,7 +18,6 @@ class Api::V1::BaseController < ApplicationController
     end
 
     if ActiveRecord::Base.connection.current_database != database
-        logger.debug "Cambiando"
         connection_config['database'] = database
         ActiveRecord::Base.establish_connection(connection_config)
     end
