@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+
+* {
+    line-height: 24px;
+    font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+}
+
+.tabla-precios {
+  font-size: 14px;
+  border-collapse: collapse;
+  border: 1px solid rgb(204, 204, 204);
+  width: 100%;
+}
+
+.tabla-precios th, .tabla-precios td {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid rgb(204, 204, 204);
+  border-top: 1px solid rgb(204, 204, 204);
+}
+
+.tabla-precios th {
+  background-color: #04AA6D;
+  color: white;
+}
+.bold {
+    font-weight: 700;
+}
+.border-all {
+    border: 1px solid rgb(204, 204, 204);
+}
+.border-left {
+    border-left: 1px solid rgb(204, 204, 204);
+}
+</style>
+</head>
+<body>
+
+<h2>Item Report</h2>
+
+<table class="tabla-información">
+    <tr>
+      <td>Item number:</td>
+      <td>101</td>
+    </tr>
+    <tr>
+      <td>Description:</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td>Box:</td>
+      <td>101</td>
+    </tr>
+    <tr>
+      <td>Item type:</td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td>Ink cost($):</td>
+      <td>101</td>
+    </tr>
+    <tr>
+      <td>Number Of PCS/Box:</td>
+      <td>-</td>
+    </tr>
+</table>
+
+<br>
+
+<h3>Price Cost($) : $561.6778</h3>
+
+<table class="tabla-precios">
+    <!-- Blanks -->
+    <tr class="bold">
+        <td class="border-all" rowspan="2">Blanks</td>
+        <td>Blank</td>
+        <td>Blank Type</td>
+        <td>Cost($)</td>
+        <td>Multiplication</td>
+        <td>Division</td>
+        <td>Cost($)</td>
+    </tr>
+    <tr>
+        <td>Blank -</td>
+        <td>Blank Type -</td>
+        <td>Cost($) -</td>
+        <td>Multiplication -</td>
+        <td>Division -</td>
+        <td>$0.165</td>
+    </tr>
+
+    <!-- Jobs -->
+    <tr class="bold">
+        <td class="border-all" rowspan="2">Jobs</td>
+        <td>Job</td>
+        <td>Wages($)/hr</td>
+        <td>Hr/pcs</td>
+        <td>Direct Labor ($)</td>
+        <td>Overhead Price</td>
+        <td>Cost($)</td>
+    </tr>
+    <tr>
+        <td>Job</td>
+        <td>Wages($)/hr</td>
+        <td>Hr/pcs</td>
+        <td>Direct Labor ($)</td>
+        <td>Overhead Price</td>
+        <td>Cost($)</td>
+    </tr>
+
+    <!-- Screens -->
+    <tr class="bold">
+        <td class="border-all" rowspan="2">Screens</td>
+        <td colspan="3">Job</td>
+        <td colspan="2" >Screen Name</td>
+        <td>Cost($)</td>
+    </tr>
+    <tr>
+        <td colspan="3">Job</td>
+        <td colspan="2" >Screen Name</td>
+        <td>Cost($)</td>
+    </tr>
+
+    <!-- Box -->
+    <tr class="bold">
+        <td class="border-all" rowspan="2">Box</td>
+        <td colspan="2">Name</td>
+        <td>Cost</td>
+        <td colspan="2" >Number Of pcs/box</td>
+        <td>Cost($)</td>
+    </tr>
+    <tr>
+        <td colspan="2">Name</td>
+        <td>Cost</td>
+        <td colspan="2" >Number Of pcs/box</td>
+        <td>Cost($)</td>
+    </tr>
+
+    <!-- Ink Cost -->
+    <tr class="bold">
+        <td class="border-all">Ink Cost</td>
+        <td colspan="5"></td>
+        <td>$0.004</td>
+    </tr>
+
+    <!-- Total -->
+    <tr class="bold">
+        <td colspan="5" class="border-left"></td>
+        <td>Total Price Cost($)	</td>
+        <td>$0.004</td>
+    </tr>
+</table>
+
+</body>
+</html>
+
+

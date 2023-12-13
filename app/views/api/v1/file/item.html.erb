@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+
+* {
+    line-height: 24px;
+    font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
+}
+
+.tabla-precios {
+  font-size: 14px;
+  border-collapse: collapse;
+  border: 1px solid rgb(204, 204, 204);
+  width: 100%;
+}
+
+.tabla-precios th, .tabla-precios td {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 1px solid rgb(204, 204, 204);
+  border-top: 1px solid rgb(204, 204, 204);
+}
+
+.tabla-precios th {
+  background-color: #04AA6D;
+  color: white;
+}
+.bold {
+    font-weight: 700;
+}
+.border-all {
+    border: 1px solid rgb(204, 204, 204);
+}
+.border-left {
+    border-left: 1px solid rgb(204, 204, 204);
+}
+</style>
+</head>
+<body>
+
+<h2>Item Report</h2>
+
+<table class="tabla-información">
+    <tr>
+      <td>Item number:</td>
+      <td><%= @item['item_number'] %></td>
+    </tr>
+    <tr>
+      <td>Description:</td>
+      <td><%= @item['description'] %></td>
+    </tr>
+    <tr>
+      <td>Box:</td>
+      <td><%= @item['box_id'] %></td>
+    </tr>
+    <tr>
+      <td>Item type:</td>
+      <td><%= @item['item_type_id'] %></td>
+    </tr>
+    <tr>
+      <td>Ink cost($):</td>
+      <td><%= @item['ink_cost'] %></td>
+    </tr>
+    <tr>
+      <td>Number Of PCS/Box:</td>
+      <td><%= @item['number_of_pcs_per_box'] %></td>
+    </tr>
+</table>
+
+<br>
+
+<h3>Price Cost($): $<%= @item['total_price_cost'] %></h3>
+
+<table class="tabla-precios">
+    <!-- Blanks -->
+    <% if @item['blanks'].length > 0 %>
+    <tr class="bold">
+        <td class="border-all" rowspan="<%= @item['blanks'].length + 1 %>">Blanks</td>
+        <td>Blank</td>
+        <td>Blank Type</td>
+        <td>Cost($)</td>
+        <td>Multiplication</td>
+        <td>Division</td>
+        <td>Cost($)</td>
+    </tr>
+    <% @item['blanks'].each do |blank| %>
+    <tr>
+        <td><%= blank['blank_number'] %> - <%= blank['description'] %></td>
+        <td><%= blank['blank_type'] %></td>
+        <td>$<%= blank['total_blank_cost_for_price'] %></td>
+        <td><%= blank['multiplication'] %></td>
+        <td><%= blank['division'] %></td>
+        <td>$<%= blank['total_blank_cost_for_price_modify'] %></td>
+    </tr>
+    <% end %>
+    <% end %>
+
+    <!-- Jobs -->
+    <% if @item['jobs'].length > 0 %>
+    <tr class="bold">
+        <td class="border-all" rowspan="<%= @item['jobs'].length + 1 %>">Jobs</td>
+        <td>Job</td>
+        <td>Wages($)/hr</td>
+        <td>Hr/pcs</td>
+        <td>Direct Labor ($)</td>
+        <td>Overhead Price</td>
+        <td>Cost($)</td>
+    </tr>
+    <% @item['jobs'].each do |job| %>
+    <tr>
+        <td><%= job['job_number'] %> - <%= job['description'] %></td>
+        <td>$<%= job['wages_per_hour'] %></td>
+        <td><%= job['hour_per_piece'] %></td>
+        <td>$<%= job['direct_labor_cost'] %></td>
+        <td>$<%= job['overhead_pricing_cost'] %></td>
+        <td>$<%= job['total_pricing_cost'] %></td>
+    </tr>
+    <% end %>
+    <% end %>
+
+    <!-- Screens -->
+    <% if @item['screen'].length > 0 %>
+    <tr class="bold">
+        <td class="border-all" rowspan="<%= @item['screen'].length + 1 %>">Screens</td>
+        <td colspan="3">Job</td>
+        <td colspan="2" >Screen Name</td>
+        <td>Cost($)</td>
+    </tr>
+    <% @item['screen'].each do |screen| %>
+    <tr>
+        <td colspan="3"><%= screen['job_number'] %> - <%= screen['description'] %></td>
+        <td colspan="2" ><%= screen['screen_name'] %></td>
+        <td>$<%= screen['screen_cost'] %></td>
+    </tr>
+    <% end %>
+    <% end %>
+
+    <!-- Box -->
+    <tr class="bold">
+        <td class="border-all" rowspan="2">Box</td>
+        <td colspan="2">Name</td>
+        <td>Cost</td>
+        <td colspan="2" >Number Of pcs/box</td>
+        <td>Cost($)</td>
+    </tr>
+    <tr>
+        <td colspan="2"><%= @item['box_name'] %></td>
+        <td>$<%= @item['box_cost'] %></td>
+        <td colspan="2" <%= @item['number_of_pcs_per_box'] %></td>
+        <td>$<%= @item['item_box_cost'] %></td>
+    </tr>
+
+    <!-- Ink Cost -->
+    <tr class="bold">
+        <td class="border-all">Ink Cost</td>
+        <td colspan="5"></td>
+        <td>$<%= @item['ink_cost'] %></td>
+    </tr>
+
+    <!-- Total -->
+    <tr class="bold">
+        <td colspan="4" class="border-left"></td>
+        <td colspan="2">Total Price Cost($)	</td>
+        <td>$<%= @item['total_price_cost'] %></td>
+    </tr>
+</table>
+
+<br>
+
+<h3>Inventory Cost($): $<%= @item['total_inventory_cost'] %></h3>
+
+<table class="tabla-precios">
+    <!-- Blanks -->
+    <% if @item['blanks'].length > 0 %>
+    <tr class="bold">
+        <td class="border-all" rowspan="<%= @item['blanks'].length + 1 %>">Blanks</td>
+        <td>Blank</td>
+        <td>Blank Type</td>
+        <td>Cost($)</td>
+        <td>Multiplication</td>
+        <td>Division</td>
+        <td>Cost($)</td>
+    </tr>
+    <% @item['blanks'].each do |blank| %>
+    <tr>
+        <td><%= blank['blank_number'] %> - <%= blank['description'] %></td>
+        <td><%= blank['blank_type'] %></td>
+        <td>$<%= blank['total_blank_cost_for_inventory'] %></td>
+        <td><%= blank['multiplication'] %></td>
+        <td><%= blank['division'] %></td>
+        <td>$<%= blank['total_blank_cost_for_inventory_modify'] %></td>
+    </tr>
+    <% end %>
+    <% end %>
+
+    <!-- Jobs -->
+    <% if @item['jobs'].length > 0 %>
+    <tr class="bold">
+        <td class="border-all" rowspan="<%= @item['jobs'].length + 1 %>">Jobs</td>
+        <td>Job</td>
+        <td>Wages($)/hr</td>
+        <td>Hr/pcs</td>
+        <td>Direct Labor ($)</td>
+        <td>Overhead Price</td>
+        <td>Cost($)</td>
+    </tr>
+    <% @item['jobs'].each do |job| %>
+    <tr>
+        <td><%= job['job_number'] %> - <%= job['description'] %></td>
+        <td>$<%= job['wages_per_hour'] %></td>
+        <td><%= job['hour_per_piece'] %></td>
+        <td>$<%= job['direct_labor_cost'] %></td>
+        <td>$<%= job['overhead_inventory_cost'] %></td>
+        <td>$<%= job['total_inventory_cost'] %></td>
+    </tr>
+    <% end %>
+    <% end %>
+
+    <!-- Screens -->
+    <% if @item['screen'].length > 0 %>
+    <tr class="bold">
+        <td class="border-all" rowspan="<%= @item['screen'].length + 1 %>">Screens</td>
+        <td colspan="3">Job</td>
+        <td colspan="2" >Screen Name</td>
+        <td>Cost($)</td>
+    </tr>
+    <% @item['screen'].each do |screen| %>
+    <tr>
+        <td colspan="3"><%= screen['job_number'] %> - <%= screen['description'] %></td>
+        <td colspan="2" ><%= screen['screen_name'] %></td>
+        <td>$<%= screen['screen_cost'] %></td>
+    </tr>
+    <% end %>
+    <% end %>
+
+    <!-- Box -->
+    <tr class="bold">
+        <td class="border-all" rowspan="2">Box</td>
+        <td colspan="2">Name</td>
+        <td>Cost</td>
+        <td colspan="2" >Number Of pcs/box</td>
+        <td>Cost($)</td>
+    </tr>
+    <tr>
+        <td colspan="2"><%= @item['box_name'] %></td>
+        <td>$<%= @item['box_cost'] %></td>
+        <td colspan="2" <%= @item['number_of_pcs_per_box'] %></td>
+        <td>$<%= @item['item_box_cost'] %></td>
+    </tr>
+
+    <!-- Ink Cost -->
+    <tr class="bold">
+        <td class="border-all">Ink Cost</td>
+        <td colspan="5"></td>
+        <td>$<%= @item['ink_cost'] %></td>
+    </tr>
+
+    <!-- Total -->
+    <tr class="bold">
+        <td colspan="4" class="border-left"></td>
+        <td colspan="2">Total Inventory Cost($)	</td>
+        <td>$<%= @item['total_inventory_cost'] %></td>
+    </tr>
+</table>
+
+</body>
+</html>
+
+

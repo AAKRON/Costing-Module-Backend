@@ -71,6 +71,8 @@ Rails.application.routes.draw do
       post '/box_list_for_costing_module', to: 'files#update_or_create_boxes'      
       ###### ITEM LISTING FOR COSTING ########
       get '/item_list_for_costing_module_download/:document_type', to: 'files#item_list_for_costing_module_download'
+      get '/item_excel_report_download/:id/:document_type', to: 'files#item_excel_report_download'
+      get '/item_pdf_download/:id/:document_type', to: 'files#item_pdf_download'
       post '/item_list_for_costing_module_dashboard', to: 'files#update_or_create_item_list_for_costing_module'    
       ###### SCREEN CLICHE SIZES ########
       get '/screen_cliche_sizes_for_costing_module_download/:document_type', to: 'files#screen_cliche_sizes_for_costing_module_download'

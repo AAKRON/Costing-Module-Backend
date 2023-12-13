@@ -654,6 +654,39 @@ module Api
         end
       end
 
+      def item_excel_report_download
+        @item = Item.find(params[:id])
+
+        if @item.present?
+            # Get the item template structure
+            item_json = render_to_string(template: "api/v1/items/show.json", status: status)
+            @item = JSON.parse(item_json)
+
+            respond_to do |format|
+                format.xlsx { send_data ItemListForCostingModuleJob.show_item_xlsx(@item), filename: "item-report.xlsx", type: Mime::Type.lookup_by_extension(:xlsx) }
+            end
+        else
+            render(json: { message: "item not found", status: :bad_request })
+        end
+      end
+
+      def item_pdf_download
+        @item = Item.find(params[:id])
+
+        if @item.present?
+            # Get the item template structure
+            item_json = render_to_string(template: "api/v1/items/show.json", status: status)
+            @item = JSON.parse(item_json)
+
+            kit = PDFKit.new(to_item_html, page_size: 'A4')
+            respond_to do |format|
+                format.pdf { send_data kit.to_pdf, filename: "item-report.pdf", type: "application/pdf" }
+            end
+        else
+            render(json: { message: "item not found", status: :bad_request })
+        end
+      end
+
       private
 
       def file_params
@@ -662,6 +695,10 @@ module Api
 
       def to_cost_calculator_html
         render_to_string(template: 'api/v1/file/cost_calculator.html.erb', :layout => false, :disposition => 'inline', locals: {cost_data: @cost_data})
+      end
+
+      def to_item_html
+        render_to_string(template: 'api/v1/file/item.html.erb', :layout => false, :disposition => 'inline', locals: {item: @item})
       end
     end
   end
