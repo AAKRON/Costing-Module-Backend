@@ -22,6 +22,7 @@ Rails.application.routes.draw do
       resources :blanks_listing_by_items
       resources :blank_types
       resources :boxes
+      resources :inks
       resources :users
       resources :item_types
       resources :app_constants
@@ -35,6 +36,7 @@ Rails.application.routes.draw do
       put '/update-blank-jobs-only/:id', to: 'blank_jobs#update_blank_jobs_only'
       get 'download/:file_type', to: 'files#download'
       get '/box-list-only', to: 'boxes#box_list_only'
+      get '/ink-list-only', to: 'inks#ink_list_only'
       get '/item-type-list-only', to: 'item_types#item_type_list_only'
       get '/units-of-measure-list-only', to: 'units_of_measures#units_of_measure_list_only'
       get '/color-list-only', to: 'colors#color_list_only'

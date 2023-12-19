@@ -5,6 +5,7 @@ job_inventory_cost = 0.0
 blank_price_cost = 0.0
 blank_inventory_cost = 0.0
 job_screen_cost = 0.0
+ink_cost = ink_column_exists ? item.ink.ink_cost.round(5) : item.ink_cost.round(5)
 
 default_blank_cost_modifier_multi = 1
 default_blank_cost_modifier_div = 1
@@ -13,11 +14,13 @@ json.id item.id
 json.item_number item.item_number
 json.description item.description
 json.number_of_pcs_per_box item.number_of_pcs_per_box
-json.ink_cost item.ink_cost.round(5)
+json.ink_cost ink_cost
 json.box_cost item.box_cost
 json.box_id item.box_id
+json.secondary_box_id (secondary_box_id_exists ? item.secondary_box_id : nil)
 json.item_type_id item.item_type_id
 json.type_number item.item_type.type_number
+
 json.jobs do
   json.array! item.item_jobs do |job|
     job = ItemJobDecorator.new(job)
@@ -91,8 +94,8 @@ json.item_box_cost item.box_cost.round(5)
 json.blank_price_cost blank_price_cost.round(5)
 json.blank_inventory_cost blank_inventory_cost.round(5)
 
-total_price_cost = blank_price_cost.round(5) + job_price_cost.round(5) + job_screen_cost.round(5) + item.box_cost.round(5) + item.ink_cost.to_f.round(5)
+total_price_cost = blank_price_cost.round(5) + job_price_cost.round(5) + job_screen_cost.round(5) + item.box_cost.round(5) + ink_cost
 json.total_price_cost total_price_cost.round(5)
 
-total_inventory_cost = blank_inventory_cost.round(5) + job_inventory_cost.round(5) + job_screen_cost.round(5) + item.box_cost.round(5) + item.ink_cost.to_f.round(5)
+total_inventory_cost = blank_inventory_cost.round(5) + job_inventory_cost.round(5) + job_screen_cost.round(5) + item.box_cost.round(5) + ink_cost
 json.total_inventory_cost total_inventory_cost.round(5)

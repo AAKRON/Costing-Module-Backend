@@ -34,6 +34,8 @@ module Api
       end
 
       def show
+        @ink_column_exists = Item.column_names.include?('ink_id') && @item.ink.present?
+        @secondary_box_id_exists = Item.column_names.include?('secondary_box_id')
         render_items_template(template_name: __method__, status: :ok)
       end
 
@@ -48,7 +50,7 @@ module Api
       end
 
       def update
-        if @item.update(item_params)
+        if @item.update(item_update_params)
           render json: @item, status: :ok
         else
           render json: @item.errors.messages, status: :bad_request
@@ -88,7 +90,11 @@ module Api
       private
 
       def item_params
-        params.require(:item).permit(:item_number, :description, :box_id, :item_type_id, :number_of_pcs_per_box, :ink_cost)
+        params.require(:item).permit(:item_number, :description, :box_id, :secondary_box_id, :item_type_id, :number_of_pcs_per_box, :ink_id)
+      end
+
+      def item_update_params
+        params.require(:item).permit(:description, :box_id, :secondary_box_id, :item_type_id, :number_of_pcs_per_box, :ink_id)
       end
 
       def set_item
