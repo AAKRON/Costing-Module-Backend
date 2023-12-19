@@ -6,6 +6,7 @@ blank_price_cost = 0.0
 blank_inventory_cost = 0.0
 job_screen_cost = 0.0
 ink_cost = ink_column_exists ? item.ink.ink_cost.round(5) : item.ink_cost.round(5)
+ink_id = ink_column_exists ? item.ink_id : nil
 
 default_blank_cost_modifier_multi = 1
 default_blank_cost_modifier_div = 1
@@ -15,6 +16,7 @@ json.item_number item.item_number
 json.description item.description
 json.number_of_pcs_per_box item.number_of_pcs_per_box
 json.ink_cost ink_cost
+json.ink_id ink_id
 json.box_cost item.box_cost
 json.box_id item.box_id
 json.secondary_box_id (secondary_box_id_exists ? item.secondary_box_id : nil)
@@ -82,9 +84,15 @@ json.screen do
     end
   end
 end
+
 unless item.box.nil?
   json.box_name item.box.name
   json.box_cost item.box.cost_per_box.to_f.round(5)
+end
+
+if secondary_box_id_exists
+  json.secondary_box_name item.secondary_box.name
+  json.secondary_box_cost item.secondary_box.cost_per_box.to_f.round(5)
 end
 
 json.job_price_cost job_price_cost.round(5)

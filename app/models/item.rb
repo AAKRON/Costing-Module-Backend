@@ -2,7 +2,7 @@
 class Item < ApplicationRecord
   belongs_to :box, foreign_key: :box_id
   belongs_to :ink, foreign_key: :ink_id
-  belongs_to :box, foreign_key: :secondary_box_id
+  belongs_to :secondary_box, class_name: 'Box', foreign_key: :secondary_box_id
   before_save { |record| record.id = item_number}
 
   include Paginatable

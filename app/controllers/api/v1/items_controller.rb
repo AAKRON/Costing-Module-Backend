@@ -96,9 +96,9 @@ module Api
       end
 
       def set_item
-        @ink_column_exists = Item.column_names.include?('ink_id') && @item.ink.present?
-        @secondary_box_id_exists = Item.column_names.include?('secondary_box_id')
         @item = Item.find(params[:id])
+        @ink_column_exists = Item.column_names.include?('ink_id') && @item.ink_id.present?
+        @secondary_box_id_exists = Item.column_names.include?('secondary_box_id') && @item.secondary_box_id.present?
       end
 
       def render_items_template(template_name: :index, status: :ok)
