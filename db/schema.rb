@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_12_19_015552) do
+ActiveRecord::Schema.define(version: 2023_12_19_175915) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -410,49 +410,6 @@ ActiveRecord::Schema.define(version: 2023_12_19_015552) do
        LEFT JOIN blank_cost_views bcv ON ((bcv.id = bliwc.blank_number)))
        LEFT JOIN blanks_listing_by_items blbi ON (((blbi.item_number = bliwc.item_number) AND (blbi.blank_number = bliwc.blank_number))));
   SQL
-  create_view "item_cost_views", sql_definition: <<-SQL
-      SELECT i.id,
-      i.item_number,
-      i.description,
-      it.description AS type_description,
-      i.item_type_id,
-      b.name AS box_name,
-      i.number_of_pcs_per_box,
-      (i.ink_cost)::numeric(10,5) AS ink_cost,
-      ((COALESCE(b.cost_per_box, (0)::numeric) / (
-          CASE
-              WHEN (i.number_of_pcs_per_box = 0) THEN 1
-              ELSE i.number_of_pcs_per_box
-          END)::numeric))::numeric(10,5) AS box_cost,
-      ((((((COALESCE(ibc.item_blank_cost_for_price, (0)::numeric) + COALESCE(ijcws.cost_for_price, (0)::numeric)) + ((COALESCE(b.cost_per_box, (0)::numeric) / (
-          CASE
-              WHEN (i.number_of_pcs_per_box = 0) THEN 1
-              ELSE i.number_of_pcs_per_box
-          END)::numeric))::numeric(10,5)))::double precision + COALESCE(ijcws.screen_cost, (0)::double precision)) + (i.ink_cost)::double precision))::numeric(10,5) AS total_price_cost,
-      ((((((COALESCE(ibc.item_blank_cost_for_inventory, (0)::numeric) + COALESCE(ijcws.cost_for_inventory, (0)::numeric)) + ((COALESCE(b.cost_per_box, (0)::numeric) / (
-          CASE
-              WHEN (i.number_of_pcs_per_box = 0) THEN 1
-              ELSE i.number_of_pcs_per_box
-          END)::numeric))::numeric(10,5)))::double precision + COALESCE(ijcws.screen_cost, (0)::double precision)) + (i.ink_cost)::double precision))::numeric(10,5) AS total_inventory_cost
-     FROM ((((items i
-       LEFT JOIN boxes b ON ((i.box_id = b.id)))
-       LEFT JOIN ( SELECT iwbpcv.item_number,
-              sum((iwbpcv.cost + iwbpcv.total_blank_cost_for_price)) AS item_blank_cost_for_price,
-              sum((iwbpcv.cost + iwbpcv.total_blank_cost_for_inventory)) AS item_blank_cost_for_inventory
-             FROM item_with_blank_per_cost_views iwbpcv
-            GROUP BY iwbpcv.item_number) ibc ON ((ibc.item_number = i.id)))
-       LEFT JOIN ( SELECT ij.item_id,
-              sum(((((jl.wages_per_hour * ((ij.hour_per_piece)::numeric(10,5))::double precision))::numeric(10,5) + (((jl.wages_per_hour * ((ij.hour_per_piece)::numeric(10,5))::double precision))::numeric(10,5) * (acpo.value)::numeric)))::numeric(10,5)) AS cost_for_price,
-              sum(((((jl.wages_per_hour * ((ij.hour_per_piece)::numeric(10,5))::double precision))::numeric(10,5) + (((jl.wages_per_hour * ((ij.hour_per_piece)::numeric(10,5))::double precision))::numeric(10,5) * (acio.value)::numeric)))::numeric(10,5)) AS cost_for_inventory,
-              sum(COALESCE(s.cost, (0)::double precision)) AS screen_cost
-             FROM ((((item_jobs ij
-               LEFT JOIN job_listings jl ON ((jl.id = ij.job_listing_id)))
-               LEFT JOIN screens s ON ((s.id = jl.screen_id)))
-               LEFT JOIN app_constants acpo ON (((acpo.name)::text = 'price_overhead_percentage'::text)))
-               LEFT JOIN app_constants acio ON (((acio.name)::text = 'inventory_overhead_percentage'::text)))
-            GROUP BY ij.item_id) ijcws ON ((ijcws.item_id = i.id)))
-       LEFT JOIN item_types it ON ((it.type_number = i.item_type_id)));
-  SQL
   create_view "item_with_box_costs", sql_definition: <<-SQL
       SELECT t1.id,
       t1.item_number,
@@ -496,5 +453,49 @@ ActiveRecord::Schema.define(version: 2023_12_19_015552) do
        JOIN vendors t3 ON ((t1.vendor_id = t3.id)))
        JOIN rawmaterialtypes t4 ON ((t1.rawmaterialtype_id = t4.id)))
        JOIN units_of_measures t5 ON ((t1.units_of_measure_id = t5.id)));
+  SQL
+  create_view "item_cost_views", sql_definition: <<-SQL
+      SELECT i.id,
+      i.item_number,
+      i.description,
+      it.description AS type_description,
+      i.item_type_id,
+      b.name AS box_name,
+      i.number_of_pcs_per_box,
+      (COALESCE(inks.ink_cost, i.ink_cost))::numeric(10,5) AS ink_cost,
+      ((COALESCE(b.cost_per_box, (0)::numeric) / (
+          CASE
+              WHEN (i.number_of_pcs_per_box = 0) THEN 1
+              ELSE i.number_of_pcs_per_box
+          END)::numeric))::numeric(10,5) AS box_cost,
+      ((((((COALESCE(ibc.item_blank_cost_for_price, (0)::numeric) + COALESCE(ijcws.cost_for_price, (0)::numeric)) + ((COALESCE(b.cost_per_box, (0)::numeric) / (
+          CASE
+              WHEN (i.number_of_pcs_per_box = 0) THEN 1
+              ELSE i.number_of_pcs_per_box
+          END)::numeric))::numeric(10,5)))::double precision + COALESCE(ijcws.screen_cost, (0)::double precision)) + (COALESCE(inks.ink_cost, i.ink_cost))::double precision))::numeric(10,5) AS total_price_cost,
+      ((((((COALESCE(ibc.item_blank_cost_for_inventory, (0)::numeric) + COALESCE(ijcws.cost_for_inventory, (0)::numeric)) + ((COALESCE(b.cost_per_box, (0)::numeric) / (
+          CASE
+              WHEN (i.number_of_pcs_per_box = 0) THEN 1
+              ELSE i.number_of_pcs_per_box
+          END)::numeric))::numeric(10,5)))::double precision + COALESCE(ijcws.screen_cost, (0)::double precision)) + (COALESCE(inks.ink_cost, i.ink_cost))::double precision))::numeric(10,5) AS total_inventory_cost
+     FROM (((((items i
+       LEFT JOIN boxes b ON ((i.box_id = b.id)))
+       LEFT JOIN inks ON ((i.ink_id = inks.id)))
+       LEFT JOIN ( SELECT iwbpcv.item_number,
+              sum((iwbpcv.cost + iwbpcv.total_blank_cost_for_price)) AS item_blank_cost_for_price,
+              sum((iwbpcv.cost + iwbpcv.total_blank_cost_for_inventory)) AS item_blank_cost_for_inventory
+             FROM item_with_blank_per_cost_views iwbpcv
+            GROUP BY iwbpcv.item_number) ibc ON ((ibc.item_number = i.id)))
+       LEFT JOIN ( SELECT ij.item_id,
+              sum(((((jl.wages_per_hour * ((ij.hour_per_piece)::numeric(10,5))::double precision))::numeric(10,5) + (((jl.wages_per_hour * ((ij.hour_per_piece)::numeric(10,5))::double precision))::numeric(10,5) * (acpo.value)::numeric)))::numeric(10,5)) AS cost_for_price,
+              sum(((((jl.wages_per_hour * ((ij.hour_per_piece)::numeric(10,5))::double precision))::numeric(10,5) + (((jl.wages_per_hour * ((ij.hour_per_piece)::numeric(10,5))::double precision))::numeric(10,5) * (acio.value)::numeric)))::numeric(10,5)) AS cost_for_inventory,
+              sum(COALESCE(s.cost, (0)::double precision)) AS screen_cost
+             FROM ((((item_jobs ij
+               LEFT JOIN job_listings jl ON ((jl.id = ij.job_listing_id)))
+               LEFT JOIN screens s ON ((s.id = jl.screen_id)))
+               LEFT JOIN app_constants acpo ON (((acpo.name)::text = 'price_overhead_percentage'::text)))
+               LEFT JOIN app_constants acio ON (((acio.name)::text = 'inventory_overhead_percentage'::text)))
+            GROUP BY ij.item_id) ijcws ON ((ijcws.item_id = i.id)))
+       LEFT JOIN item_types it ON ((it.type_number = i.item_type_id)));
   SQL
 end
