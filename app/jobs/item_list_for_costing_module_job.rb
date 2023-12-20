@@ -63,24 +63,24 @@ class ItemListForCostingModuleJob < ApplicationJob
 
         sheet.add_row ["Blanks", "Blank", "Blank Type", "Cost($)", "Multiplication", "Division", "Cost($)"]
         item['blanks'].each do |blank|
-            sheet.add_row ["", "#{blank['blank_number']}-#{blank['description']}", blank['blank_type'], "$#{blank['total_blank_cost_for_price']}", blank['multiplication'], blank['division'], "$#{blank['total_blank_cost_for_price_modify']}"]
+            sheet.add_row ["", "#{blank['blank_number']}-#{blank['description']}", blank['blank_type'], "#{blank['total_blank_cost_for_price']}", blank['multiplication'], blank['division'], "#{blank['total_blank_cost_for_price_modify']}"]
         end
 
         sheet.add_row ["Jobs", "Job", "Wages($)/hr", "Hr/pcs", "Direct Labor ($)", "Overhead Price", "Cost($)"]
         item['jobs'].each do |job|
-            sheet.add_row ["", "#{job['job_number']}-#{job['description']}", "$#{job['wages_per_hour']}", job['hour_per_piece'], "$#{job['direct_labor_cost']}", "$#{job['overhead_pricing_cost']}", "$#{job['total_pricing_cost']}"]
+            sheet.add_row ["", "#{job['job_number']}-#{job['description']}", "#{job['wages_per_hour']}", job['hour_per_piece'], "#{job['direct_labor_cost']}", "#{job['overhead_pricing_cost']}", "#{job['total_pricing_cost']}"]
         end
 
         sheet.add_row ["Screens", "Job", "", "", "Screen Name", "", "Cost($)"]
         item['screen'].each do |screen|
-            sheet.add_row ["", "#{screen['job_number']}-#{screen['description']}", "", "", screen['screen_name'], "", "$#{screen['screen_cost']}"]
+            sheet.add_row ["", "#{screen['job_number']}-#{screen['description']}", "", "", screen['screen_name'], "", "#{screen['screen_cost']}"]
         end
 
         sheet.add_row ["Box", "Name", "", "Cost", "Number Of pcs/box", "", "Cost($)"]
-        sheet.add_row ["", item['box_name'], "", "$#{item['box_cost']}", item['number_of_pcs_per_box'], "", "$#{item['item_box_cost']}"]
+        sheet.add_row ["", item['box_name'], "", "#{item['box_cost']}", item['number_of_pcs_per_box'], "", "#{item['item_box_cost']}"]
 
-        sheet.add_row ["Ink Cost", "", "", "", "", "", "$#{item['ink_cost']}"]
-        sheet.add_row ["", "", "", "", "", "Total Price Cost($)", "$#{item['total_price_cost']}"]
+        sheet.add_row ["Ink Cost", "", "", "", "", "", "#{item['ink_cost']}"]
+        sheet.add_row ["", "", "", "", "", "Total Price Cost($)", "#{item['total_price_cost']}"]
 
         # Add inventory costs table
         sheet.add_row []
@@ -90,24 +90,24 @@ class ItemListForCostingModuleJob < ApplicationJob
 
         sheet.add_row ["Blanks", "Blank", "Blank Type", "Cost($)", "Multiplication", "Division", "Cost($)"]
         item['blanks'].each do |blank|
-            sheet.add_row ["", "#{blank['blank_number']}-#{blank['description']}", blank['blank_type'], "$#{blank['total_blank_cost_for_inventory']}", blank['multiplication'], blank['division'], "$#{blank['total_blank_cost_for_inventory_modify']}"]
+            sheet.add_row ["", "#{blank['blank_number']}-#{blank['description']}", blank['blank_type'], "#{blank['total_blank_cost_for_inventory']}", blank['multiplication'], blank['division'], "#{blank['total_blank_cost_for_inventory_modify']}"]
         end
 
         sheet.add_row ["Jobs", "Job", "Wages($)/hr", "Hr/pcs", "Direct Labor ($)", "Overhead Price", "Cost($)"]
         item['jobs'].each do |job|
-            sheet.add_row ["", "#{job['job_number']}-#{job['description']}", "$#{job['wages_per_hour']}", job['hour_per_piece'], "$#{job['direct_labor_cost']}", "$#{job['overhead_inventory_cost']}", "$#{job['total_inventory_cost']}"]
+            sheet.add_row ["", "#{job['job_number']}-#{job['description']}", "#{job['wages_per_hour']}", job['hour_per_piece'], "#{job['direct_labor_cost']}", "#{job['overhead_inventory_cost']}", "#{job['total_inventory_cost']}"]
         end
 
         sheet.add_row ["Screens", "Job", "", "", "Screen Name", "", "Cost($)"]
         item['screen'].each do |screen|
-            sheet.add_row ["", "#{screen['job_number']}-#{screen['description']}", "", "", screen['screen_name'], "", "$#{screen['screen_cost']}"]
+            sheet.add_row ["", "#{screen['job_number']}-#{screen['description']}", "", "", screen['screen_name'], "", "#{screen['screen_cost']}"]
         end
 
         sheet.add_row ["Box", "Name", "", "Cost", "Number Of pcs/box", "", "Cost($)"]
-        sheet.add_row ["", item['box_name'], "", "$#{item['box_cost']}", item['number_of_pcs_per_box'], "", "$#{item['item_box_cost']}"]
+        sheet.add_row ["", item['box_name'], "", "#{item['box_cost']}", item['number_of_pcs_per_box'], "", "#{item['item_box_cost']}"]
 
-        sheet.add_row ["Ink Cost", "", "", "", "", "", "$#{item['ink_cost']}"]
-        sheet.add_row ["", "", "", "", "", "Total Inventory Cost($)", "$#{item['total_inventory_cost']}"]
+        sheet.add_row ["Ink Cost", "", "", "", "", "", "#{item['ink_cost']}"]
+        sheet.add_row ["", "", "", "", "", "Total Inventory Cost($)", "#{item['total_inventory_cost']}"]
 
         # Merge cells
         num_blanks = item['blanks'].length
