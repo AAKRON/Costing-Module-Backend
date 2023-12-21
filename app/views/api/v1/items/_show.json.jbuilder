@@ -17,11 +17,23 @@ json.description item.description
 json.number_of_pcs_per_box item.number_of_pcs_per_box
 json.ink_cost ink_cost
 json.ink_id ink_id
-json.box_cost item.box_cost
 json.box_id item.box_id
 json.secondary_box_id (secondary_box_id_exists ? item.secondary_box_id : nil)
+json.number_of_pcs_per_secondary_box (secondary_box_id_exists ? item.number_of_pcs_per_secondary_box : nil)
 json.item_type_id item.item_type_id
 json.type_number item.item_type.type_number
+json.box_cost item.box_cost
+
+unless item.box.nil?
+  json.box_cost item.box.cost_per_box.to_f.round(5)
+  json.box_name item.box.name
+end
+
+if secondary_box_id_exists
+  json.secondary_box_cost item.secondary_box.cost_per_box.to_f.round(5)
+  json.secondary_box_name item.secondary_box.name
+end
+
 
 json.jobs do
   json.array! item.item_jobs do |job|
@@ -83,16 +95,6 @@ json.screen do
       job_screen_cost = job_screen_cost + job_listings.screen.cost.to_f
     end
   end
-end
-
-unless item.box.nil?
-  json.box_name item.box.name
-  json.box_cost item.box.cost_per_box.to_f.round(5)
-end
-
-if secondary_box_id_exists
-  json.secondary_box_name item.secondary_box.name
-  json.secondary_box_cost item.secondary_box.cost_per_box.to_f.round(5)
 end
 
 json.job_price_cost job_price_cost.round(5)

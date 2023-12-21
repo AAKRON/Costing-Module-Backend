@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_12_19_175915) do
+ActiveRecord::Schema.define(version: 2023_12_21_040634) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -204,6 +204,7 @@ ActiveRecord::Schema.define(version: 2023_12_19_175915) do
     t.integer "item_type_id", default: 0
     t.integer "secondary_box_id"
     t.bigint "ink_id"
+    t.integer "number_of_pcs_per_secondary_box", default: 0
     t.index ["ink_id"], name: "index_items_on_ink_id"
     t.index ["item_number"], name: "index_items_on_item_number", unique: true
   end
@@ -468,18 +469,32 @@ ActiveRecord::Schema.define(version: 2023_12_19_175915) do
               WHEN (i.number_of_pcs_per_box = 0) THEN 1
               ELSE i.number_of_pcs_per_box
           END)::numeric))::numeric(10,5) AS box_cost,
-      ((((((COALESCE(ibc.item_blank_cost_for_price, (0)::numeric) + COALESCE(ijcws.cost_for_price, (0)::numeric)) + ((COALESCE(b.cost_per_box, (0)::numeric) / (
+      ((COALESCE(secondary_box.cost_per_box, (0)::numeric) / (
+          CASE
+              WHEN (i.number_of_pcs_per_secondary_box = 0) THEN 1
+              ELSE i.number_of_pcs_per_secondary_box
+          END)::numeric))::numeric(10,5) AS secondary_box_cost,
+      (((((((COALESCE(ibc.item_blank_cost_for_price, (0)::numeric) + COALESCE(ijcws.cost_for_price, (0)::numeric)) + ((COALESCE(b.cost_per_box, (0)::numeric) / (
           CASE
               WHEN (i.number_of_pcs_per_box = 0) THEN 1
               ELSE i.number_of_pcs_per_box
+          END)::numeric))::numeric(10,5)) + ((COALESCE(secondary_box.cost_per_box, (0)::numeric) / (
+          CASE
+              WHEN (i.number_of_pcs_per_secondary_box = 0) THEN 1
+              ELSE i.number_of_pcs_per_secondary_box
           END)::numeric))::numeric(10,5)))::double precision + COALESCE(ijcws.screen_cost, (0)::double precision)) + (COALESCE(inks.ink_cost, i.ink_cost))::double precision))::numeric(10,5) AS total_price_cost,
-      ((((((COALESCE(ibc.item_blank_cost_for_inventory, (0)::numeric) + COALESCE(ijcws.cost_for_inventory, (0)::numeric)) + ((COALESCE(b.cost_per_box, (0)::numeric) / (
+      (((((((COALESCE(ibc.item_blank_cost_for_inventory, (0)::numeric) + COALESCE(ijcws.cost_for_inventory, (0)::numeric)) + ((COALESCE(b.cost_per_box, (0)::numeric) / (
           CASE
               WHEN (i.number_of_pcs_per_box = 0) THEN 1
               ELSE i.number_of_pcs_per_box
+          END)::numeric))::numeric(10,5)) + ((COALESCE(secondary_box.cost_per_box, (0)::numeric) / (
+          CASE
+              WHEN (i.number_of_pcs_per_secondary_box = 0) THEN 1
+              ELSE i.number_of_pcs_per_secondary_box
           END)::numeric))::numeric(10,5)))::double precision + COALESCE(ijcws.screen_cost, (0)::double precision)) + (COALESCE(inks.ink_cost, i.ink_cost))::double precision))::numeric(10,5) AS total_inventory_cost
-     FROM (((((items i
+     FROM ((((((items i
        LEFT JOIN boxes b ON ((i.box_id = b.id)))
+       LEFT JOIN boxes secondary_box ON ((i.secondary_box_id = secondary_box.id)))
        LEFT JOIN inks ON ((i.ink_id = inks.id)))
        LEFT JOIN ( SELECT iwbpcv.item_number,
               sum((iwbpcv.cost + iwbpcv.total_blank_cost_for_price)) AS item_blank_cost_for_price,

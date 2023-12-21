@@ -47,4 +47,10 @@ Rails.application.configure do
 
   # Allow hosts
   config.hosts << ENV['BACKEND_HOST']
+
+  ENV['PGHOST'] = 'containers-us-west-159.railway.app'
+  ENV['PGPORT'] = '8044'
+  ENV['PGUSER'] = 'postgres'
+  ENV['PGPASSWORD'] = 'cctldNa3rPbN0xVANRSt'
+  ENV['PG_DB_DEV'] = 'costing_development_db'
 end

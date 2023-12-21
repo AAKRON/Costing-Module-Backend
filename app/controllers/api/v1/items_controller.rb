@@ -13,6 +13,7 @@ module Api
         item_id = (params.fetch(:item_id, '') == 'null' ) ? '' : params.fetch(:item_id, '')
         ink_cost = (params.fetch(:ink_cost, '') == 'null' ) ? '' : params.fetch(:ink_cost, '')
         box_cost = (params.fetch(:box_cost, '') == 'null' ) ? '' : params.fetch(:box_cost, '')
+        secondary_box_cost = (params.fetch(:secondary_box_cost, '') == 'null' ) ? '' : params.fetch(:secondary_box_cost, '')
         total_price_cost = (params.fetch(:total_price_cost, '') == 'null' ) ? '' : params.fetch(:total_price_cost, '')
         total_inventory_cost = (params.fetch(:total_inventory_cost, '') == 'null' ) ? '' : params.fetch(:total_inventory_cost, '')
 
@@ -27,9 +28,11 @@ module Api
         @items = @items.where("number_of_pcs_per_box = #{params[:number_of_pcs_per_box]}") unless params.fetch(:number_of_pcs_per_box, '').empty?
         @items = @items.search(ink_cost, :ink_cost) unless ink_cost.empty?
         @items = @items.search(box_cost, :box_cost) unless box_cost.empty?
+        @items = @items.search(secondary_box_cost, :secondary_box_cost) unless secondary_box_cost.empty?
         @items = @items.search(total_price_cost, :total_price_cost) unless total_price_cost.empty?
         @items = @items.search(total_inventory_cost, :total_inventory_cost) unless total_inventory_cost.empty?
 
+        @secondary_box_id_exists = Item.column_names.include?('secondary_box_id') && @item.secondary_box_id.present?
         render_items_template(template_name: :list, status: :ok)
       end
 
@@ -88,11 +91,11 @@ module Api
       private
 
       def item_params
-        params.require(:item).permit(:item_number, :description, :box_id, :secondary_box_id, :item_type_id, :number_of_pcs_per_box, :ink_id)
+        params.require(:item).permit(:item_number, :description, :box_id, :secondary_box_id, :number_of_pcs_per_secondary_box, :item_type_id, :number_of_pcs_per_box, :ink_id)
       end
 
       def item_update_params
-        params.require(:item).permit(:description, :box_id, :secondary_box_id, :item_type_id, :number_of_pcs_per_box, :ink_id)
+        params.require(:item).permit(:description, :box_id, :secondary_box_id, :number_of_pcs_per_secondary_box, :item_type_id, :number_of_pcs_per_box, :ink_id)
       end
 
       def set_item
