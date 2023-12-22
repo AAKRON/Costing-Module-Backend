@@ -32,7 +32,9 @@ json.color_two_cost color_two_cost
 final_color_one_cost = ((color_one_cost * final_calculation.percentage_of_colorant_one) / final_calculation.number_of_pieces_per_unit_one).round(5)
 json.fina_color_one_cost final_color_one_cost
 
-final_color_two_cost = ((color_two_cost*final_calculation.percentage_of_colorant_two)/final_calculation.number_of_pieces_per_unit_two).round(5)
+number_of_pieces_per_unit_two = (final_calculation.number_of_pieces_per_unit_two && final_calculation.number_of_pieces_per_unit_two != 0) ? final_calculation.number_of_pieces_per_unit_two : 1
+percentage_of_colorant_two = final_calculation.percentage_of_colorant_two ? final_calculation.percentage_of_colorant_two : 0
+final_color_two_cost = ((color_two_cost * percentage_of_colorant_two) / number_of_pieces_per_unit_two).round(5)
 json.fina_color_two_cost final_color_two_cost
 
 cost_of_colorant_or_lacquer = (final_color_one_cost + final_color_two_cost).round(5)

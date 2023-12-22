@@ -10,9 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_12_21_040634) do
+ActiveRecord::Schema.define(version: 2023_12_22_050035) do
 
   # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
   enable_extension "timescaledb"
 
@@ -329,51 +330,6 @@ ActiveRecord::Schema.define(version: 2023_12_21_040634) do
        LEFT JOIN colors c2 ON (((c2.name)::text = (fc.colorant_two)::text)))
        LEFT JOIN raw_materials rm ON ((rm.id = fc.raw_material_id)));
   SQL
-  create_view "blank_average_costs", sql_definition: <<-SQL
-      SELECT final_calculation_views.blank_id,
-      (avg((((COALESCE(final_calculation_views.raw_material_cost, (0)::double precision) / (final_calculation_views.number_of_pieces_per_unit_one)::double precision) + ((COALESCE(final_calculation_views.cost_of_color_one, (0)::double precision) * COALESCE(final_calculation_views.percentage_of_colorant_one, (0)::double precision)) / (final_calculation_views.number_of_pieces_per_unit_one)::double precision)) + ((COALESCE(final_calculation_views.cost_of_color_two, (0)::double precision) * COALESCE(final_calculation_views.percentage_of_colorant_two, (0)::double precision)) / (final_calculation_views.number_of_pieces_per_unit_two)::double precision))))::numeric(10,5) AS average_cost_of_blank
-     FROM final_calculation_views
-    GROUP BY final_calculation_views.blank_id;
-  SQL
-  create_view "blank_cost_views", sql_definition: <<-SQL
-      SELECT DISTINCT ON (b.blank_number) b.id,
-      b.blank_number,
-      b.description,
-      (b.cost)::numeric(10,5) AS cost,
-      bt.id AS blank_type_id,
-      bt.type_number,
-      bt.description AS blank_type,
-      COALESCE(((bc.cost_for_price + (COALESCE(bac.average_cost_of_blank, (0)::numeric))::double precision))::numeric(10,5), (0)::numeric) AS total_blank_cost_for_price,
-      COALESCE(((bc.cost_for_inventory + (COALESCE(bac.average_cost_of_blank, (0)::numeric))::double precision))::numeric(10,5), (0)::numeric) AS total_blank_cost_for_inventory
-     FROM (((( SELECT bj.blank_id,
-              sum(((jl.wages_per_hour * (bj.hour_per_piece)::double precision) + ((jl.wages_per_hour * (bj.hour_per_piece)::double precision) * ((acpo.value)::numeric)::double precision))) AS cost_for_price,
-              sum(((jl.wages_per_hour * (bj.hour_per_piece)::double precision) + ((jl.wages_per_hour * (bj.hour_per_piece)::double precision) * ((acio.value)::numeric)::double precision))) AS cost_for_inventory
-             FROM (((blank_jobs bj
-               LEFT JOIN job_listings jl ON ((jl.id = bj.job_listing_id)))
-               LEFT JOIN app_constants acpo ON (((acpo.name)::text = 'price_overhead_percentage'::text)))
-               LEFT JOIN app_constants acio ON (((acio.name)::text = 'inventory_overhead_percentage'::text)))
-            GROUP BY bj.blank_id) bc
-       LEFT JOIN blank_average_costs bac ON ((bac.blank_id = bc.blank_id)))
-       RIGHT JOIN blanks b ON ((b.id = bc.blank_id)))
-       LEFT JOIN blank_types bt ON ((b.blank_type_id = bt.type_number)));
-  SQL
-  create_view "blank_final_calculations_views", sql_definition: <<-SQL
-      SELECT fc.id,
-      fc.blank_id AS blank_number,
-      b.description AS blank_name,
-      rm.name AS raw_material,
-      fc.color_description,
-      ((COALESCE(rm.cost, (0)::double precision) / (fc.number_of_pieces_per_unit_one)::double precision))::numeric(10,5) AS raw_calculated,
-      (((((COALESCE(c1.cost_of_color, (0)::double precision) * COALESCE(fc.percentage_of_colorant_one, (0)::double precision)) / (fc.number_of_pieces_per_unit_one)::double precision))::numeric(10,5) + (((COALESCE(c2.cost_of_color, (0)::double precision) * COALESCE(fc.percentage_of_colorant_two, (0)::double precision)) / (COALESCE(fc.number_of_pieces_per_unit_two, 1))::double precision))::numeric(10,5)))::numeric(10,5) AS cost_of_colorant_or_lacquer,
-      ((((COALESCE(rm.cost, (0)::double precision) / (fc.number_of_pieces_per_unit_one)::double precision))::numeric(10,5) + ((((COALESCE(c1.cost_of_color, (0)::double precision) * COALESCE(fc.percentage_of_colorant_one, (0)::double precision)) / (fc.number_of_pieces_per_unit_one)::double precision) + ((COALESCE(c2.cost_of_color, (0)::double precision) * COALESCE(fc.percentage_of_colorant_two, (0)::double precision)) / (COALESCE(fc.number_of_pieces_per_unit_two, 1))::double precision)))::numeric(10,5)))::numeric(10,5) AS total,
-      bac.average_cost_of_blank AS ave_cost
-     FROM (((((final_calculations fc
-       LEFT JOIN colors c1 ON (((c1.name)::text = (fc.colorant_one)::text)))
-       LEFT JOIN colors c2 ON (((c2.name)::text = (fc.colorant_two)::text)))
-       LEFT JOIN raw_materials rm ON ((rm.id = fc.raw_material_id)))
-       LEFT JOIN blanks b ON ((b.id = fc.blank_id)))
-       LEFT JOIN blank_average_costs bac ON ((bac.blank_id = fc.blank_id)));
-  SQL
   create_view "blank_job_views", sql_definition: <<-SQL
       SELECT t1.id,
       t1.blank_number,
@@ -393,23 +349,6 @@ ActiveRecord::Schema.define(version: 2023_12_21_040634) do
       t1.cost
      FROM (blanks t1
        LEFT JOIN blank_types t2 ON ((t1.blank_type_id = t2.type_number)));
-  SQL
-  create_view "item_with_blank_per_cost_views", sql_definition: <<-SQL
-      SELECT bliwc.id,
-      bliwc.item_number,
-      bliwc.blank_number,
-      (((bcv.cost * (COALESCE(blbi.mult, 1))::numeric) / (COALESCE(blbi.div, 1))::numeric))::numeric(10,5) AS cost,
-          CASE
-              WHEN (bcv.type_number = 1) THEN (((bcv.total_blank_cost_for_price * (COALESCE(blbi.mult, 1))::numeric) / (COALESCE(blbi.div, 1))::numeric))::numeric(10,5)
-              ELSE (0)::numeric
-          END AS total_blank_cost_for_price,
-          CASE
-              WHEN (bcv.type_number = 1) THEN (((bcv.total_blank_cost_for_inventory * (COALESCE(blbi.mult, 1))::numeric) / (COALESCE(blbi.div, 1))::numeric))::numeric(10,5)
-              ELSE (0)::numeric
-          END AS total_blank_cost_for_inventory
-     FROM ((blanks_listing_item_with_costs bliwc
-       LEFT JOIN blank_cost_views bcv ON ((bcv.id = bliwc.blank_number)))
-       LEFT JOIN blanks_listing_by_items blbi ON (((blbi.item_number = bliwc.item_number) AND (blbi.blank_number = bliwc.blank_number))));
   SQL
   create_view "item_with_box_costs", sql_definition: <<-SQL
       SELECT t1.id,
@@ -455,6 +394,88 @@ ActiveRecord::Schema.define(version: 2023_12_21_040634) do
        JOIN rawmaterialtypes t4 ON ((t1.rawmaterialtype_id = t4.id)))
        JOIN units_of_measures t5 ON ((t1.units_of_measure_id = t5.id)));
   SQL
+  create_view "blank_average_costs", sql_definition: <<-SQL
+      SELECT blank_id,
+      (avg((((COALESCE(raw_material_cost, (0)::double precision) / (COALESCE(
+          CASE
+              WHEN (number_of_pieces_per_unit_one = 0) THEN 1
+              ELSE number_of_pieces_per_unit_one
+          END, 1))::double precision) + ((COALESCE(cost_of_color_one, (0)::double precision) * COALESCE(percentage_of_colorant_one, (0)::double precision)) / (COALESCE(
+          CASE
+              WHEN (number_of_pieces_per_unit_one = 0) THEN 1
+              ELSE number_of_pieces_per_unit_one
+          END, 1))::double precision)) + ((COALESCE(cost_of_color_two, (0)::double precision) * COALESCE(percentage_of_colorant_two, (0)::double precision)) / (COALESCE(
+          CASE
+              WHEN (number_of_pieces_per_unit_two = 0) THEN 1
+              ELSE number_of_pieces_per_unit_two
+          END, 1))::double precision))))::numeric(10,5) AS average_cost_of_blank
+     FROM final_calculation_views
+    GROUP BY blank_id;
+  SQL
+  create_view "blank_final_calculations_views", sql_definition: <<-SQL
+      SELECT fc.id,
+      fc.blank_id AS blank_number,
+      b.description AS blank_name,
+      rm.name AS raw_material,
+      fc.color_description,
+      ((COALESCE(rm.cost, (0)::double precision) / (fc.number_of_pieces_per_unit_one)::double precision))::numeric(10,5) AS raw_calculated,
+      (((((COALESCE(c1.cost_of_color, (0)::double precision) * COALESCE(fc.percentage_of_colorant_one, (0)::double precision)) / (fc.number_of_pieces_per_unit_one)::double precision))::numeric(10,5) + (((COALESCE(c2.cost_of_color, (0)::double precision) * COALESCE(fc.percentage_of_colorant_two, (0)::double precision)) / (COALESCE(
+          CASE
+              WHEN (fc.number_of_pieces_per_unit_two = 0) THEN 1
+              ELSE fc.number_of_pieces_per_unit_two
+          END, 1))::double precision))::numeric(10,5)))::numeric(10,5) AS cost_of_colorant_or_lacquer,
+      ((((COALESCE(rm.cost, (0)::double precision) / (fc.number_of_pieces_per_unit_one)::double precision))::numeric(10,5) + ((((COALESCE(c1.cost_of_color, (0)::double precision) * COALESCE(fc.percentage_of_colorant_one, (0)::double precision)) / (fc.number_of_pieces_per_unit_one)::double precision) + ((COALESCE(c2.cost_of_color, (0)::double precision) * COALESCE(fc.percentage_of_colorant_two, (0)::double precision)) / (COALESCE(
+          CASE
+              WHEN (fc.number_of_pieces_per_unit_two = 0) THEN 1
+              ELSE fc.number_of_pieces_per_unit_two
+          END, 1))::double precision)))::numeric(10,5)))::numeric(10,5) AS total,
+      bac.average_cost_of_blank AS ave_cost
+     FROM (((((final_calculations fc
+       LEFT JOIN colors c1 ON (((c1.name)::text = (fc.colorant_one)::text)))
+       LEFT JOIN colors c2 ON (((c2.name)::text = (fc.colorant_two)::text)))
+       LEFT JOIN raw_materials rm ON ((rm.id = fc.raw_material_id)))
+       LEFT JOIN blanks b ON ((b.id = fc.blank_id)))
+       LEFT JOIN blank_average_costs bac ON ((bac.blank_id = fc.blank_id)));
+  SQL
+  create_view "blank_cost_views", sql_definition: <<-SQL
+      SELECT DISTINCT ON (b.blank_number) b.id,
+      b.blank_number,
+      b.description,
+      (b.cost)::numeric(10,5) AS cost,
+      bt.id AS blank_type_id,
+      bt.type_number,
+      bt.description AS blank_type,
+      COALESCE(((bc.cost_for_price + (COALESCE(bac.average_cost_of_blank, (0)::numeric))::double precision))::numeric(10,5), (0)::numeric) AS total_blank_cost_for_price,
+      COALESCE(((bc.cost_for_inventory + (COALESCE(bac.average_cost_of_blank, (0)::numeric))::double precision))::numeric(10,5), (0)::numeric) AS total_blank_cost_for_inventory
+     FROM (((( SELECT bj.blank_id,
+              sum(((jl.wages_per_hour * (bj.hour_per_piece)::double precision) + ((jl.wages_per_hour * (bj.hour_per_piece)::double precision) * ((acpo.value)::numeric)::double precision))) AS cost_for_price,
+              sum(((jl.wages_per_hour * (bj.hour_per_piece)::double precision) + ((jl.wages_per_hour * (bj.hour_per_piece)::double precision) * ((acio.value)::numeric)::double precision))) AS cost_for_inventory
+             FROM (((blank_jobs bj
+               LEFT JOIN job_listings jl ON ((jl.id = bj.job_listing_id)))
+               LEFT JOIN app_constants acpo ON (((acpo.name)::text = 'price_overhead_percentage'::text)))
+               LEFT JOIN app_constants acio ON (((acio.name)::text = 'inventory_overhead_percentage'::text)))
+            GROUP BY bj.blank_id) bc
+       LEFT JOIN blank_average_costs bac ON ((bac.blank_id = bc.blank_id)))
+       RIGHT JOIN blanks b ON ((b.id = bc.blank_id)))
+       LEFT JOIN blank_types bt ON ((b.blank_type_id = bt.type_number)));
+  SQL
+  create_view "item_with_blank_per_cost_views", sql_definition: <<-SQL
+      SELECT bliwc.id,
+      bliwc.item_number,
+      bliwc.blank_number,
+      (((bcv.cost * (COALESCE(blbi.mult, 1))::numeric) / (COALESCE(blbi.div, 1))::numeric))::numeric(10,5) AS cost,
+          CASE
+              WHEN (bcv.type_number = 1) THEN (((bcv.total_blank_cost_for_price * (COALESCE(blbi.mult, 1))::numeric) / (COALESCE(blbi.div, 1))::numeric))::numeric(10,5)
+              ELSE (0)::numeric
+          END AS total_blank_cost_for_price,
+          CASE
+              WHEN (bcv.type_number = 1) THEN (((bcv.total_blank_cost_for_inventory * (COALESCE(blbi.mult, 1))::numeric) / (COALESCE(blbi.div, 1))::numeric))::numeric(10,5)
+              ELSE (0)::numeric
+          END AS total_blank_cost_for_inventory
+     FROM ((blanks_listing_item_with_costs bliwc
+       LEFT JOIN blank_cost_views bcv ON ((bcv.id = bliwc.blank_number)))
+       LEFT JOIN blanks_listing_by_items blbi ON (((blbi.item_number = bliwc.item_number) AND (blbi.blank_number = bliwc.blank_number))));
+  SQL
   create_view "item_cost_views", sql_definition: <<-SQL
       SELECT i.id,
       i.item_number,
@@ -463,39 +484,24 @@ ActiveRecord::Schema.define(version: 2023_12_21_040634) do
       i.item_type_id,
       b.name AS box_name,
       i.number_of_pcs_per_box,
-      (COALESCE(inks.ink_cost, i.ink_cost))::numeric(10,5) AS ink_cost,
+      (i.ink_cost)::numeric(10,5) AS ink_cost,
       ((COALESCE(b.cost_per_box, (0)::numeric) / (
           CASE
               WHEN (i.number_of_pcs_per_box = 0) THEN 1
               ELSE i.number_of_pcs_per_box
           END)::numeric))::numeric(10,5) AS box_cost,
-      ((COALESCE(secondary_box.cost_per_box, (0)::numeric) / (
-          CASE
-              WHEN (i.number_of_pcs_per_secondary_box = 0) THEN 1
-              ELSE i.number_of_pcs_per_secondary_box
-          END)::numeric))::numeric(10,5) AS secondary_box_cost,
-      (((((((COALESCE(ibc.item_blank_cost_for_price, (0)::numeric) + COALESCE(ijcws.cost_for_price, (0)::numeric)) + ((COALESCE(b.cost_per_box, (0)::numeric) / (
+      ((((((COALESCE(ibc.item_blank_cost_for_price, (0)::numeric) + COALESCE(ijcws.cost_for_price, (0)::numeric)) + ((COALESCE(b.cost_per_box, (0)::numeric) / (
           CASE
               WHEN (i.number_of_pcs_per_box = 0) THEN 1
               ELSE i.number_of_pcs_per_box
-          END)::numeric))::numeric(10,5)) + ((COALESCE(secondary_box.cost_per_box, (0)::numeric) / (
-          CASE
-              WHEN (i.number_of_pcs_per_secondary_box = 0) THEN 1
-              ELSE i.number_of_pcs_per_secondary_box
-          END)::numeric))::numeric(10,5)))::double precision + COALESCE(ijcws.screen_cost, (0)::double precision)) + (COALESCE(inks.ink_cost, i.ink_cost))::double precision))::numeric(10,5) AS total_price_cost,
-      (((((((COALESCE(ibc.item_blank_cost_for_inventory, (0)::numeric) + COALESCE(ijcws.cost_for_inventory, (0)::numeric)) + ((COALESCE(b.cost_per_box, (0)::numeric) / (
+          END)::numeric))::numeric(10,5)))::double precision + COALESCE(ijcws.screen_cost, (0)::double precision)) + (i.ink_cost)::double precision))::numeric(10,5) AS total_price_cost,
+      ((((((COALESCE(ibc.item_blank_cost_for_inventory, (0)::numeric) + COALESCE(ijcws.cost_for_inventory, (0)::numeric)) + ((COALESCE(b.cost_per_box, (0)::numeric) / (
           CASE
               WHEN (i.number_of_pcs_per_box = 0) THEN 1
               ELSE i.number_of_pcs_per_box
-          END)::numeric))::numeric(10,5)) + ((COALESCE(secondary_box.cost_per_box, (0)::numeric) / (
-          CASE
-              WHEN (i.number_of_pcs_per_secondary_box = 0) THEN 1
-              ELSE i.number_of_pcs_per_secondary_box
-          END)::numeric))::numeric(10,5)))::double precision + COALESCE(ijcws.screen_cost, (0)::double precision)) + (COALESCE(inks.ink_cost, i.ink_cost))::double precision))::numeric(10,5) AS total_inventory_cost
-     FROM ((((((items i
+          END)::numeric))::numeric(10,5)))::double precision + COALESCE(ijcws.screen_cost, (0)::double precision)) + (i.ink_cost)::double precision))::numeric(10,5) AS total_inventory_cost
+     FROM ((((items i
        LEFT JOIN boxes b ON ((i.box_id = b.id)))
-       LEFT JOIN boxes secondary_box ON ((i.secondary_box_id = secondary_box.id)))
-       LEFT JOIN inks ON ((i.ink_id = inks.id)))
        LEFT JOIN ( SELECT iwbpcv.item_number,
               sum((iwbpcv.cost + iwbpcv.total_blank_cost_for_price)) AS item_blank_cost_for_price,
               sum((iwbpcv.cost + iwbpcv.total_blank_cost_for_inventory)) AS item_blank_cost_for_inventory
