@@ -32,7 +32,7 @@ module Api
         @items = @items.search(total_price_cost, :total_price_cost) unless total_price_cost.empty?
         @items = @items.search(total_inventory_cost, :total_inventory_cost) unless total_inventory_cost.empty?
 
-        @secondary_box_id_exists = Item.column_names.include?('secondary_box_id') && @item.secondary_box_id.present?
+        @secondary_box_id_exists = ActiveRecord::Base.connection.column_exists?(:items, :secondary_box_id)
         render_items_template(template_name: :list, status: :ok)
       end
 
@@ -100,8 +100,8 @@ module Api
 
       def set_item
         @item = Item.find(params[:id])
-        @ink_column_exists = Item.column_names.include?('ink_id') && @item.ink_id.present?
-        @secondary_box_id_exists = Item.column_names.include?('secondary_box_id') && @item.secondary_box_id.present?
+        @ink_column_exists = ActiveRecord::Base.connection.column_exists?(:items, :ink_id) && @item.ink_id.present?
+        @secondary_box_id_exists = ActiveRecord::Base.connection.column_exists?(:items, :secondary_box_id) && @item.secondary_box_id.present?
       end
 
       def render_items_template(template_name: :index, status: :ok)
