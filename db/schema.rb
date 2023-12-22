@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_12_22_033951) do
+ActiveRecord::Schema.define(version: 2023_12_22_050035) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
@@ -406,8 +406,16 @@ ActiveRecord::Schema.define(version: 2023_12_22_033951) do
       rm.name AS raw_material,
       fc.color_description,
       ((COALESCE(rm.cost, (0)::double precision) / (fc.number_of_pieces_per_unit_one)::double precision))::numeric(10,5) AS raw_calculated,
-      (((((COALESCE(c1.cost_of_color, (0)::double precision) * COALESCE(fc.percentage_of_colorant_one, (0)::double precision)) / (fc.number_of_pieces_per_unit_one)::double precision))::numeric(10,5) + (((COALESCE(c2.cost_of_color, (0)::double precision) * COALESCE(fc.percentage_of_colorant_two, (0)::double precision)) / (COALESCE(fc.number_of_pieces_per_unit_two, 1))::double precision))::numeric(10,5)))::numeric(10,5) AS cost_of_colorant_or_lacquer,
-      ((((COALESCE(rm.cost, (0)::double precision) / (fc.number_of_pieces_per_unit_one)::double precision))::numeric(10,5) + ((((COALESCE(c1.cost_of_color, (0)::double precision) * COALESCE(fc.percentage_of_colorant_one, (0)::double precision)) / (fc.number_of_pieces_per_unit_one)::double precision) + ((COALESCE(c2.cost_of_color, (0)::double precision) * COALESCE(fc.percentage_of_colorant_two, (0)::double precision)) / (COALESCE(fc.number_of_pieces_per_unit_two, 1))::double precision)))::numeric(10,5)))::numeric(10,5) AS total,
+      (((((COALESCE(c1.cost_of_color, (0)::double precision) * COALESCE(fc.percentage_of_colorant_one, (0)::double precision)) / (fc.number_of_pieces_per_unit_one)::double precision))::numeric(10,5) + (((COALESCE(c2.cost_of_color, (0)::double precision) * COALESCE(fc.percentage_of_colorant_two, (0)::double precision)) / (COALESCE(
+          CASE
+              WHEN (fc.number_of_pieces_per_unit_two = 0) THEN 1
+              ELSE fc.number_of_pieces_per_unit_two
+          END, 1))::double precision))::numeric(10,5)))::numeric(10,5) AS cost_of_colorant_or_lacquer,
+      ((((COALESCE(rm.cost, (0)::double precision) / (fc.number_of_pieces_per_unit_one)::double precision))::numeric(10,5) + ((((COALESCE(c1.cost_of_color, (0)::double precision) * COALESCE(fc.percentage_of_colorant_one, (0)::double precision)) / (fc.number_of_pieces_per_unit_one)::double precision) + ((COALESCE(c2.cost_of_color, (0)::double precision) * COALESCE(fc.percentage_of_colorant_two, (0)::double precision)) / (COALESCE(
+          CASE
+              WHEN (fc.number_of_pieces_per_unit_two = 0) THEN 1
+              ELSE fc.number_of_pieces_per_unit_two
+          END, 1))::double precision)))::numeric(10,5)))::numeric(10,5) AS total,
       bac.average_cost_of_blank AS ave_cost
      FROM (((((final_calculations fc
        LEFT JOIN colors c1 ON (((c1.name)::text = (fc.colorant_one)::text)))
