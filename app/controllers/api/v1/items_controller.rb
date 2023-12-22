@@ -28,11 +28,14 @@ module Api
         @items = @items.where("number_of_pcs_per_box = #{params[:number_of_pcs_per_box]}") unless params.fetch(:number_of_pcs_per_box, '').empty?
         @items = @items.search(ink_cost, :ink_cost) unless ink_cost.empty?
         @items = @items.search(box_cost, :box_cost) unless box_cost.empty?
-        @items = @items.search(secondary_box_cost, :secondary_box_cost) unless secondary_box_cost.empty?
         @items = @items.search(total_price_cost, :total_price_cost) unless total_price_cost.empty?
         @items = @items.search(total_inventory_cost, :total_inventory_cost) unless total_inventory_cost.empty?
 
         @secondary_box_id_exists = ActiveRecord::Base.connection.column_exists?(:items, :secondary_box_id)
+        if @secondary_box_id_exists
+            @items = @items.search(secondary_box_cost, :secondary_box_cost) unless secondary_box_cost.empty?
+        end
+
         render_items_template(template_name: :list, status: :ok)
       end
 
