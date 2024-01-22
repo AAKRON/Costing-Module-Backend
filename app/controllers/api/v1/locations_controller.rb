@@ -10,7 +10,7 @@ module Api
 
         def index
           id = (params.fetch(:id, '') == 'null' ) ? '' : params.fetch(:id, '')
-          @locations = Location.paginate(params.slice(:_end, :_sort, :_order))
+          @locations = Location.order('active_flag DESC').paginate(params.slice(:_end, :_sort, :_order))
           @locations = @locations.search(id, :id) unless id.empty?
           @locations = @locations.search(params[:name], :name) unless params.fetch(:name, '').empty?
 
@@ -46,7 +46,7 @@ module Api
         end
 
         def location_list_only
-          @locations = Location.all
+          @locations = Location.where("active_flag = 1")
 
           render json: @locations, status: :ok
         end
@@ -58,7 +58,7 @@ module Api
         end
 
         def location_params
-          params.permit(:name)
+          params.permit(:name, :active_flag)
         end
       end
     end
