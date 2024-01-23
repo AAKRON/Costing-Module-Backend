@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_01_22_151505) do
+ActiveRecord::Schema.define(version: 2024_01_23_215313) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -219,6 +219,16 @@ ActiveRecord::Schema.define(version: 2024_01_22_151505) do
     t.index ["screen_id"], name: "index_job_listings_on_screen_id"
   end
 
+  create_table "job_location_prices", force: :cascade do |t|
+    t.decimal "wages_per_hour"
+    t.bigint "job_listings_id"
+    t.bigint "locations_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["job_listings_id"], name: "index_job_location_prices_on_job_listings_id"
+    t.index ["locations_id"], name: "index_job_location_prices_on_locations_id"
+  end
+
   create_table "locations", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", precision: 6, null: false
@@ -318,6 +328,8 @@ ActiveRecord::Schema.define(version: 2024_01_22_151505) do
   end
 
   add_foreign_key "items", "inks"
+  add_foreign_key "job_location_prices", "job_listings", column: "job_listings_id"
+  add_foreign_key "job_location_prices", "locations", column: "locations_id"
 
   create_view "final_calculation_views", sql_definition: <<-SQL
       SELECT fc.id,
@@ -490,47 +502,32 @@ ActiveRecord::Schema.define(version: 2024_01_22_151505) do
       i.item_type_id,
       b.name AS box_name,
       i.number_of_pcs_per_box,
-      (COALESCE(inks.ink_cost, i.ink_cost))::numeric(10,5) AS ink_cost,
+      (i.ink_cost)::numeric(10,4) AS ink_cost,
       ((COALESCE(b.cost_per_box, (0)::numeric) / (
           CASE
               WHEN (i.number_of_pcs_per_box = 0) THEN 1
               ELSE i.number_of_pcs_per_box
-          END)::numeric))::numeric(10,5) AS box_cost,
-      ((COALESCE(secondary_box.cost_per_box, (0)::numeric) / (
-          CASE
-              WHEN (i.number_of_pcs_per_secondary_box = 0) THEN 1
-              ELSE i.number_of_pcs_per_secondary_box
-          END)::numeric))::numeric(10,5) AS secondary_box_cost,
-      (((((((COALESCE(ibc.item_blank_cost_for_price, (0)::numeric) + COALESCE(ijcws.cost_for_price, (0)::numeric)) + ((COALESCE(b.cost_per_box, (0)::numeric) / (
+          END)::numeric))::numeric(10,4) AS box_cost,
+      (((((COALESCE(ibc.item_blank_cost_for_price, (0)::numeric) + COALESCE(ijcws.cost_for_price, (0)::numeric)) + ((COALESCE(b.cost_per_box, (0)::numeric) / (
           CASE
               WHEN (i.number_of_pcs_per_box = 0) THEN 1
               ELSE i.number_of_pcs_per_box
-          END)::numeric))::numeric(10,5)) + ((COALESCE(secondary_box.cost_per_box, (0)::numeric) / (
-          CASE
-              WHEN (i.number_of_pcs_per_secondary_box = 0) THEN 1
-              ELSE i.number_of_pcs_per_secondary_box
-          END)::numeric))::numeric(10,5)))::double precision + COALESCE(ijcws.screen_cost, (0)::double precision)) + (COALESCE(inks.ink_cost, i.ink_cost))::double precision))::numeric(10,5) AS total_price_cost,
-      (((((((COALESCE(ibc.item_blank_cost_for_inventory, (0)::numeric) + COALESCE(ijcws.cost_for_inventory, (0)::numeric)) + ((COALESCE(b.cost_per_box, (0)::numeric) / (
+          END)::numeric))::numeric(10,4)))::double precision + COALESCE(ijcws.screen_cost, (0)::double precision)) + (i.ink_cost)::double precision) AS total_price_cost,
+      (((((COALESCE(ibc.item_blank_cost_for_inventory, (0)::numeric) + COALESCE(ijcws.cost_for_inventory, (0)::numeric)) + ((COALESCE(b.cost_per_box, (0)::numeric) / (
           CASE
               WHEN (i.number_of_pcs_per_box = 0) THEN 1
               ELSE i.number_of_pcs_per_box
-          END)::numeric))::numeric(10,5)) + ((COALESCE(secondary_box.cost_per_box, (0)::numeric) / (
-          CASE
-              WHEN (i.number_of_pcs_per_secondary_box = 0) THEN 1
-              ELSE i.number_of_pcs_per_secondary_box
-          END)::numeric))::numeric(10,5)))::double precision + COALESCE(ijcws.screen_cost, (0)::double precision)) + (COALESCE(inks.ink_cost, i.ink_cost))::double precision))::numeric(10,5) AS total_inventory_cost
-     FROM ((((((items i
+          END)::numeric))::numeric(10,4)))::double precision + COALESCE(ijcws.screen_cost, (0)::double precision)) + (i.ink_cost)::double precision) AS total_inventory_cost
+     FROM ((((items i
        LEFT JOIN boxes b ON ((i.box_id = b.id)))
-       LEFT JOIN boxes secondary_box ON ((i.secondary_box_id = secondary_box.id)))
-       LEFT JOIN inks ON ((i.ink_id = inks.id)))
        LEFT JOIN ( SELECT iwbpcv.item_number,
               sum((iwbpcv.cost + iwbpcv.total_blank_cost_for_price)) AS item_blank_cost_for_price,
               sum((iwbpcv.cost + iwbpcv.total_blank_cost_for_inventory)) AS item_blank_cost_for_inventory
              FROM item_with_blank_per_cost_views iwbpcv
             GROUP BY iwbpcv.item_number) ibc ON ((ibc.item_number = i.id)))
        LEFT JOIN ( SELECT ij.item_id,
-              sum(((((jl.wages_per_hour * ((ij.hour_per_piece)::numeric(10,5))::double precision))::numeric(10,5) + (((jl.wages_per_hour * ((ij.hour_per_piece)::numeric(10,5))::double precision))::numeric(10,5) * (acpo.value)::numeric)))::numeric(10,5)) AS cost_for_price,
-              sum(((((jl.wages_per_hour * ((ij.hour_per_piece)::numeric(10,5))::double precision))::numeric(10,5) + (((jl.wages_per_hour * ((ij.hour_per_piece)::numeric(10,5))::double precision))::numeric(10,5) * (acio.value)::numeric)))::numeric(10,5)) AS cost_for_inventory,
+              (sum(((jl.wages_per_hour * (ij.hour_per_piece)::double precision) + ((jl.wages_per_hour * (ij.hour_per_piece)::double precision) * ((acpo.value)::numeric)::double precision))))::numeric(10,4) AS cost_for_price,
+              (sum(((jl.wages_per_hour * (ij.hour_per_piece)::double precision) + ((jl.wages_per_hour * (ij.hour_per_piece)::double precision) * ((acio.value)::numeric)::double precision))))::numeric(10,4) AS cost_for_inventory,
               sum(COALESCE(s.cost, (0)::double precision)) AS screen_cost
              FROM ((((item_jobs ij
                LEFT JOIN job_listings jl ON ((jl.id = ij.job_listing_id)))

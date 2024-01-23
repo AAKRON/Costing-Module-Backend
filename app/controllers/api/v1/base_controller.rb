@@ -6,6 +6,7 @@ class Api::V1::BaseController < ApplicationController
   before_action :destroy_session
   before_action :set_raven_context
   before_action :set_current_database
+  before_action :set_location
 
   private
 
@@ -24,6 +25,15 @@ class Api::V1::BaseController < ApplicationController
 
     # logger.debug "Selected database #{database}"
     # logger.debug "current_database #{ActiveRecord::Base.connection.current_database}"
+  end
+
+  def set_location
+    if request.headers['Location'] && request.headers['Location'] != 'null' && request.headers['Location'] != 'Chicago'
+        location = Location.where(name: request.headers['Location']).first
+        if location.present?
+            @location = location
+        end
+    end
   end
 
   def restrict_access

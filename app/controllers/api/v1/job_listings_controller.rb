@@ -13,25 +13,21 @@ module Api
         screen_id = (params.fetch(:screen_id, '') == 'null' ) ? '' : params.fetch(:screen_id, '')
         job_number = (params.fetch(:job_number, '') == 'null' ) ? '' : params.fetch(:job_number, '')
 
-        # set_pagination_header(JobWithScreenListing.count)
         _start = params[:_start].to_i
-        _end = params[:_end].to_i
-        # @job_listings = JobWithScreenListing.paginate(params.slice(:_end, :_sort, :_order))
-        @job_listings = JobWithScreenListing.order("#{params[:_sort]} #{params[:_order]}").offset(_start).limit(_end - _start)
-        @job_listings = @job_listings.search(job_number, :job_number) unless job_number.empty?
-        @job_listings = @job_listings.where("screen_id = #{screen_id}") unless screen_id.empty?
-        @job_listings = @job_listings.search(params[:description], :description) unless params.fetch(:description, '').empty?
-        @job_listings = @job_listings.search(params[:wages_hr], :wages_per_hour) unless params.fetch(:wages_hr, '').empty?
+        _limit = params[:_end].to_i - _start
+        _order = "#{params[:_sort]} #{params[:_order]}"
+        _location_id = @location ? @location.id : 0
+        @job_listings = JobWithScreenListing.filter_by_location(_location_id, _order, _start, _limit, job_number, screen_id, params[:description], params[:wages_hr])
         render template: 'api/v1/job_listings/index.json', status: :ok
       end
 
       def create
-        @job_listing = JobListing.new(job_listing_params)
-
-        if @job_listing.save
-          render json: @job_listing, status: 201
+        @job = JobListing.new(job_listing_params)
+        if @job.save
+          update_or_create_location_prices # location prices
+          render json: @job, status: 201
         else
-          render json: @job_listing.errors, status: 400
+          render json: @job.errors, status: 400
         end
       end
 
@@ -66,7 +62,9 @@ module Api
       end
 
       def update
+        job_listing_params = update_or_create_location_prices # location prices
         if @job.update(job_listing_params)
+          set_job # update location prices
           render json: @job, status: :ok
         else
           render json: @job.errors, status: :bad_request
@@ -97,7 +95,34 @@ module Api
 
       def set_job
         @job = JobListing.find_by_id!(params[:id])
+
+        # Add location prices if exist
+        if @location.present?
+            @jobs_location = JobLocationPrice.where(job_listings_id: params[:id]).where(locations_id: @location[:id]).first
+            if @jobs_location.present?
+                @job[:wages_per_hour] = @jobs_location[:wages_per_hour]
+            end
+        end
       end
+
+      def update_or_create_location_prices
+        logger.debug "update_or_create_location_prices #{6}"
+
+        if @jobs_location.present?
+            @jobs_location.update(wages_per_hour: params[:wages_per_hour])
+        else
+            @jobs_location = JobLocationPrice.new(wages_per_hour: params[:wages_per_hour], locations_id: @location[:id], job_listings_id: @job[:id])
+            @jobs_location.save
+        end
+
+        # Keep params that are not prices
+        if @location.present?
+            return params.require(:job_listing).permit(:description, :screen_id, :job_number)
+        else
+            return job_listing_params
+        end
+      end
+
     end
   end
 end
