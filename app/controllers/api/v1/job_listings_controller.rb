@@ -24,8 +24,8 @@ module Api
       def create
         @job = JobListing.new(job_listing_params)
         if @job.save
-          update_or_create_location_prices # location prices
-          render json: @job, status: 201
+            update_or_create_location_prices # location prices
+            render json: @job, status: 201
         else
           render json: @job.errors, status: 400
         end
@@ -106,20 +106,17 @@ module Api
       end
 
       def update_or_create_location_prices
-        logger.debug "update_or_create_location_prices #{6}"
-
-        if @jobs_location.present?
-            @jobs_location.update(wages_per_hour: params[:wages_per_hour])
-        else
-            @jobs_location = JobLocationPrice.new(wages_per_hour: params[:wages_per_hour], locations_id: @location[:id], job_listings_id: @job[:id])
-            @jobs_location.save
-        end
-
-        # Keep params that are not prices
         if @location.present?
+            if @jobs_location.present?
+                @jobs_location.update(wages_per_hour: params[:wages_per_hour])
+            else
+                @jobs_location = JobLocationPrice.new(wages_per_hour: params[:wages_per_hour], locations_id: @location[:id], job_listings_id: @job[:id])
+                @jobs_location.save
+            end
+            # Keep params that are not prices
             return params.require(:job_listing).permit(:description, :screen_id, :job_number)
         else
-            return job_listing_params
+            return job_listing_params  # Keep all params if there are no location
         end
       end
 
