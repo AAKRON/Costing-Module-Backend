@@ -79,6 +79,16 @@ ActiveRecord::Schema.define(version: 2024_01_26_220105) do
     t.string "cell_key"
   end
 
+  create_table "blanks_location_prices", force: :cascade do |t|
+    t.decimal "cost"
+    t.bigint "blanks_id"
+    t.bigint "locations_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["blanks_id"], name: "index_blanks_location_prices_on_blanks_id"
+    t.index ["locations_id"], name: "index_blanks_location_prices_on_locations_id"
+  end
+
   create_table "boxes", id: :serial, force: :cascade do |t|
     t.string "name"
     t.decimal "cost_per_box"
@@ -337,6 +347,8 @@ ActiveRecord::Schema.define(version: 2024_01_26_220105) do
     t.index ["name"], name: "index_vendors_on_name", unique: true
   end
 
+  add_foreign_key "blanks_location_prices", "blanks", column: "blanks_id"
+  add_foreign_key "blanks_location_prices", "locations", column: "locations_id"
   add_foreign_key "colors_location_prices", "colors", column: "colors_id"
   add_foreign_key "colors_location_prices", "locations", column: "locations_id"
   add_foreign_key "items", "inks"

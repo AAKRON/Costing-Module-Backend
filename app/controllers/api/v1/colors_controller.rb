@@ -25,6 +25,7 @@ module Api
       end
 
       def update
+        @color = Color.find_by_id!(params[:id])
         color_params = update_or_create_location_prices # location prices
         if @color.update(color_params)
           set_color # update location prices
