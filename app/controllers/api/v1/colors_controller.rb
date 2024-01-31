@@ -4,43 +4,38 @@ module Api
     class ColorsController < BaseController
       before_action :restrict_access
       before_action :set_user_access_level, only:[:destroy, :update]
+      before_action :set_color, only: %i[update show]
       after_action(only: [:index]) { set_pagination_header(Color.count) }
       after_action(only: [:color_list_only]) { set_pagination_header(Color.count) }
 
       def index
-        #set_pagination_header(Color.count)
-        cost_of_color = (params.fetch(:cost_of_color, '') == 'null' ) ? '' : params.fetch(:cost_of_color, '')
-
-        color = Color.all.paginate(params.slice(:_end, :_sort, :_order))
-        color = color.search(params[:name], :name) unless params.fetch(:name, '').empty?
-        color = color.search(params[:code], :code) unless params.fetch(:code, '').empty?
-        color = color.search(cost_of_color, :cost_of_color) unless cost_of_color.empty?
-
+        _location_id = @location ? @location.id : 0
+        color = ColorsView.filter_by_location(_location_id, params)
         render json: color, status: :ok
       end
 
       def create
-        color = Color.new(color_params)
-        if color.save
-          render json: color, status: :created
+        @color = Color.new(color_params)
+        if @color.save
+          update_or_create_location_prices # location prices
+          render json: @color, status: :created
         else
-          render json: color.errors, status: :bad_request
+          render json: @color.errors, status: :bad_request
         end
       end
 
       def update
-        color = Color.find(params[:id])
-        if color.update(color_params)
-          render json: color, status: :ok
+        color_params = update_or_create_location_prices # location prices
+        if @color.update(color_params)
+          set_color # update location prices
+          render json: @color, status: :ok
         else
-          render json: color.errors, status: :bad_request
+          render json: @color.errors, status: :bad_request
         end
       end
 
       def show
-        color = Color.find(params[:id])
-
-        render json: color, status: :ok
+        render json: @color, status: :ok
       end
 
       def destroy
@@ -50,7 +45,6 @@ module Api
 
       def color_list_only
         @color = Color.all
-
         render json: @color, status: :ok
       end
 
@@ -58,6 +52,33 @@ module Api
 
       def color_params
         params.permit(:name, :code, :cost_of_color)
+      end
+
+      def set_color
+        @color = Color.find_by_id!(params[:id])
+
+        # Add location prices if exist
+        if @location.present?
+            @colors_location = ColorsLocationPrice.where(colors_id: params[:id]).where(locations_id: @location[:id]).first
+            if @colors_location.present?
+                @color[:cost_of_color] = @colors_location[:cost_of_color]
+            end
+        end
+      end
+
+      def update_or_create_location_prices
+        if @location.present?
+            if @colors_location.present?
+                @colors_location.update(cost_of_color: params[:cost_of_color])
+            else
+                @colors_location = ColorsLocationPrice.new(cost_of_color: params[:cost_of_color], locations_id: @location[:id], colors_id: @color[:id])
+                @colors_location.save
+            end
+            # Keep params that are not prices
+            return params.require(:color).permit(:name, :code)
+        else
+            return color_params  # Keep all params if there are no location
+        end
       end
     end
   end
