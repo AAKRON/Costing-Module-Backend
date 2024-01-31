@@ -62,6 +62,7 @@ module Api
       end
 
       def update
+        @job = JobListing.find_by_id!(params[:id])
         job_listing_params = update_or_create_location_prices # location prices
         if @job.update(job_listing_params)
           set_job # update location prices
