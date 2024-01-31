@@ -28,7 +28,7 @@ class Api::V1::BaseController < ApplicationController
   end
 
   def set_location
-    if request.headers['Location'] && request.headers['Location'] != 'null' && request.headers['Location'] != 'Chicago'
+    if request.headers['Location'] && request.headers['Location'] != 'null' && request.headers['Location'] != 'New York'
         location = Location.where(name: request.headers['Location']).first
         if location.present?
             @location = location
