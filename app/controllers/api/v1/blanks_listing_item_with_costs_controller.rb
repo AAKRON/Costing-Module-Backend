@@ -60,7 +60,6 @@ module Api
       end
 
       def update_item_blanks_with_cost_only
-        logger.debug "item_blanks_with_costs_body #{params[:blanks]}"
         BlanksListingByItem.bulk_update_or_create(
           item_blanks_body(params[:blanks], params[:item_id]),
           :cell_key,
