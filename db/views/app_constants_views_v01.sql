@@ -1,0 +1,1 @@
+select app_constants.id, app_constants.name, app_constants.value from app_constants

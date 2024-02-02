@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_01_26_220105) do
+ActiveRecord::Schema.define(version: 2024_01_31_153901) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -21,6 +21,16 @@ ActiveRecord::Schema.define(version: 2024_01_26_220105) do
     t.string "value"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "app_constants_location_prices", force: :cascade do |t|
+    t.string "value"
+    t.bigint "app_constants_id"
+    t.bigint "locations_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["app_constants_id"], name: "index_app_constants_location_prices_on_app_constants_id"
+    t.index ["locations_id"], name: "index_app_constants_location_prices_on_locations_id"
   end
 
   create_table "blank_jobs", id: :serial, force: :cascade do |t|
@@ -347,6 +357,8 @@ ActiveRecord::Schema.define(version: 2024_01_26_220105) do
     t.index ["name"], name: "index_vendors_on_name", unique: true
   end
 
+  add_foreign_key "app_constants_location_prices", "app_constants", column: "app_constants_id"
+  add_foreign_key "app_constants_location_prices", "locations", column: "locations_id"
   add_foreign_key "blanks_location_prices", "blanks", column: "blanks_id"
   add_foreign_key "blanks_location_prices", "locations", column: "locations_id"
   add_foreign_key "colors_location_prices", "colors", column: "colors_id"
@@ -582,5 +594,11 @@ ActiveRecord::Schema.define(version: 2024_01_26_220105) do
       colors.name,
       colors.cost_of_color
      FROM colors;
+  SQL
+  create_view "app_constants_views", sql_definition: <<-SQL
+      SELECT app_constants.id,
+      app_constants.name,
+      app_constants.value
+     FROM app_constants;
   SQL
 end
