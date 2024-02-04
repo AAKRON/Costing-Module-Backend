@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_01_31_153901) do
+ActiveRecord::Schema.define(version: 2024_02_04_000600) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -304,6 +304,16 @@ ActiveRecord::Schema.define(version: 2024_01_31_153901) do
     t.integer "rawmaterialtype_id"
   end
 
+  create_table "raw_materials_location_prices", force: :cascade do |t|
+    t.decimal "cost"
+    t.bigint "raw_materials_id"
+    t.bigint "locations_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["locations_id"], name: "index_raw_materials_location_prices_on_locations_id"
+    t.index ["raw_materials_id"], name: "index_raw_materials_location_prices_on_raw_materials_id"
+  end
+
   create_table "rawmaterialtypes", id: :serial, force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
@@ -366,6 +376,8 @@ ActiveRecord::Schema.define(version: 2024_01_31_153901) do
   add_foreign_key "items", "inks"
   add_foreign_key "job_location_prices", "job_listings", column: "job_listings_id"
   add_foreign_key "job_location_prices", "locations", column: "locations_id"
+  add_foreign_key "raw_materials_location_prices", "locations", column: "locations_id"
+  add_foreign_key "raw_materials_location_prices", "raw_materials", column: "raw_materials_id"
 
   create_view "final_calculation_views", sql_definition: <<-SQL
       SELECT fc.id,

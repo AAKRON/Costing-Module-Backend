@@ -38,8 +38,8 @@ BEGIN
 				) AS cost_for_inventory
 			FROM "blank_jobs" bj
 			LEFT JOIN get_jobs(location_id_param) jl ON jl.id=bj.job_listing_id
-			LEFT JOIN app_constants acpo ON acpo.name = 'price_overhead_percentage'
-			LEFT JOIN app_constants acio ON acio.name = 'inventory_overhead_percentage'
+			LEFT JOIN get_app_constants(location_id_param) acpo ON acpo.name = 'price_overhead_percentage'
+			LEFT JOIN get_app_constants(location_id_param) acio ON acio.name = 'inventory_overhead_percentage'
 			GROUP BY  bj.blank_id
 		) AS bc
 		LEFT JOIN blank_average_costs AS bac ON bac.blank_id= bc.blank_id

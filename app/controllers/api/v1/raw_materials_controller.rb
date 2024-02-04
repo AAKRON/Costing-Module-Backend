@@ -9,21 +9,25 @@ module Api
       after_action(only: [:raw_material_list_only]) { set_pagination_header(RawMaterial.count) }
 
       def index
-        #set_pagination_header(RawMaterialView.count(1))
         cost = (params.fetch(:cost, '') == 'null' ) ? '' : params.fetch(:cost, '')
+        name = params.fetch(:name, '')
+        raw_material_type = params.fetch(:raw_material_type, '')
+        vendor = params.fetch(:vendor, '')
+        unit = params.fetch(:unit, '')
+        color = params.fetch(:color, '')
 
-        @raw_materials = RawMaterialView.paginate(params.slice(:_end, :_sort, :_order))
-        @raw_materials = @raw_materials.search(params[:name], :name) unless params.fetch(:name, '').empty?
-        @raw_materials = @raw_materials.search(params[:raw_material_type], :raw_material_type) unless params.fetch(:raw_material_type, '').empty?
-        @raw_materials = @raw_materials.search(params[:vendor], :vendor) unless params.fetch(:vendor, '').empty?
-        @raw_materials = @raw_materials.search(cost, :cost) unless cost.empty?
-        @raw_materials = @raw_materials.search(params[:unit], :unit) unless params.fetch(:unit, '').empty?
-        @raw_materials = @raw_materials.search(params[:color], :color) unless params.fetch(:color, '').empty?
+        _start = params[:_start].to_i
+        _limit = params[:_end].to_i - _start
+        _order = "#{params[:_sort]} #{params[:_order]}"
+        _location_id = @location ? @location.id : 0
+
+        @raw_materials = RawMaterialView.filter_by_location(_location_id, _order, _start, _limit, cost, name, raw_material_type, vendor, unit, color)
       end
 
       def create
         @raw_material = RawMaterial.new(raw_material_params)
         if @raw_material.save
+          update_or_create_location_prices # location prices
           render json: @raw_material, status: :created
         else
           render json: @raw_material.errors, status: :not_ok
@@ -42,7 +46,10 @@ module Api
       end
 
       def update
+        @raw_material = RawMaterial.find(params[:id])
+        raw_material_params = update_or_create_location_prices # location prices
         if @raw_material.update(raw_material_params)
+          set_raw_material # update location prices
           render json: @raw_material, status: 201
         else
           render json: @raw_material.errors, status: :bad_request
@@ -64,6 +71,30 @@ module Api
 
       def set_raw_material
         @raw_material = RawMaterial.find(params[:id])
+
+        # Add location prices if exist
+        if @location.present?
+            @raw_materials_location = RawMaterialsLocationPrice.where(raw_materials_id: params[:id]).where(locations_id: @location[:id]).first
+            if @raw_materials_location.present?
+                @raw_material[:cost] = @raw_materials_location[:cost]
+            end
+        end
+      end
+
+      def update_or_create_location_prices
+        if @location.present?
+            @raw_materials_location = RawMaterialsLocationPrice.where(raw_materials_id: params[:id]).where(locations_id: @location[:id]).first
+            if @raw_materials_location.present?
+                @raw_materials_location.update(cost: params[:cost])
+            else
+                @raw_materials_location = RawMaterialsLocationPrice.new(cost: params[:cost], locations_id: @location[:id], raw_materials_id: @raw_material[:id])
+                @raw_materials_location.save
+            end
+            # Keep params that are not prices
+            return params.permit(:name, :units_of_measure_id, :color_id, :vendor_id, :rawmaterialtype_id)
+        else
+            return raw_material_params  # Keep all params if there are no location
+        end
       end
     end
   end
