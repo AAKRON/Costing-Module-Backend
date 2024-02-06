@@ -34,7 +34,7 @@ module Api
 
         def update
           @ink = Ink.find(params[:id])
-          ink_listing_params = update_or_create_location_prices # location prices
+          ink_params = update_or_create_location_prices # location prices
           if @ink.update(ink_params)
             set_ink # update location prices
             render json: @ink, status: :ok

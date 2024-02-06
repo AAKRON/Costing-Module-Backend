@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_02_06_202011) do
+ActiveRecord::Schema.define(version: 2024_02_06_211953) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -104,6 +104,16 @@ ActiveRecord::Schema.define(version: 2024_02_06_202011) do
     t.decimal "cost_per_box"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "boxes_location_prices", force: :cascade do |t|
+    t.decimal "cost_per_box"
+    t.bigint "boxes_id"
+    t.bigint "locations_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["boxes_id"], name: "index_boxes_location_prices_on_boxes_id"
+    t.index ["locations_id"], name: "index_boxes_location_prices_on_locations_id"
   end
 
   create_table "colorant_costs", id: :serial, force: :cascade do |t|
@@ -381,6 +391,8 @@ ActiveRecord::Schema.define(version: 2024_02_06_202011) do
   add_foreign_key "app_constants_location_prices", "locations", column: "locations_id"
   add_foreign_key "blanks_location_prices", "blanks", column: "blanks_id"
   add_foreign_key "blanks_location_prices", "locations", column: "locations_id"
+  add_foreign_key "boxes_location_prices", "boxes", column: "boxes_id"
+  add_foreign_key "boxes_location_prices", "locations", column: "locations_id"
   add_foreign_key "colors_location_prices", "colors", column: "colors_id"
   add_foreign_key "colors_location_prices", "locations", column: "locations_id"
   add_foreign_key "inks_location_prices", "inks", column: "inks_id"

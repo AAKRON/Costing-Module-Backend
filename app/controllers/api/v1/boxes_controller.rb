@@ -11,16 +11,20 @@ module Api
       def index
         id = (params.fetch(:id, '') == 'null' ) ? '' : params.fetch(:id, '')
         cost_per_box = (params.fetch(:cost_per_box, '') == 'null' ) ? '' : params.fetch(:cost_per_box, '')
-        @boxes = Box.paginate(params.slice(:_end, :_sort, :_order))
-        @boxes = @boxes.search(id, :id) unless id.empty?
-        @boxes = @boxes.search(params[:box_name], :name) unless params.fetch(:box_name, '').empty?
-        @boxes = @boxes.search(cost_per_box, :cost_per_box) unless cost_per_box.empty?
+        name = params.fetch(:name, '')
+
+        _start = params[:_start].to_i
+        _limit = params[:_end].to_i - _start
+        _order = "#{params[:_sort]} #{params[:_order]}"
+        _location_id = @location ? @location.id : 0
+        @boxes = BoxesLocationPrice.filter_by_location(_location_id, _order, _start, _limit, id, cost_per_box, name)
 
         render template: 'api/v1/box/index.json', status: :ok
       end
 
       def create
         @box = Box.new(box_params)
+        update_or_create_location_prices # location prices
         if @box.save
           render template: 'api/v1/box/show.json', status: 201
         else
@@ -30,7 +34,9 @@ module Api
 
       def update
         @box = Box.find(params[:id])
+        box_params = update_or_create_location_prices # location prices
         if @box.update(box_params)
+          set_box # update location prices
           render json: @box, status: :ok
         else
           render json: @box.errors, status: :bad_request
@@ -38,7 +44,6 @@ module Api
       end
 
       def show
-        @box = Box.find(params[:id])
         render json: @box, status: :ok
       end
 
@@ -49,16 +54,40 @@ module Api
 
       def box_list_only
         @boxes = Box.all
-
         render json: @boxes, status: :ok
       end
+
       private
 
       def set_box
-        @box = Box.find(params[:id])
+            @box = Box.find(params[:id])
+
+            # Add location prices if exist
+            if @location.present?
+                @boxes_location = BoxesLocationPrice.where(boxes_id: params[:id]).where(locations_id: @location[:id]).first
+                if @boxes_location.present?
+                    @box[:cost_per_box] = @boxes_location[:cost_per_box]
+                end
+            end
       end
+
       def box_params
         params.permit(:name, :cost_per_box)
+      end
+
+      def update_or_create_location_prices
+        if @location.present?
+            if @boxes_location.present?
+                @boxes_location.update(cost_per_box: params[:cost_per_box])
+            else
+                @boxes_location = BoxesLocationPrice.new(cost_per_box: params[:cost_per_box], locations_id: @location[:id], boxes_id: @box[:id])
+                @boxes_location.save
+            end
+            # Keep params that are not prices
+            return params.permit(:name)
+        else
+            return box_params  # Keep all params if there are no location
+        end
       end
     end
   end
