@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_02_06_153924) do
+ActiveRecord::Schema.define(version: 2024_02_06_202011) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -174,6 +174,16 @@ ActiveRecord::Schema.define(version: 2024_02_06_153924) do
     t.decimal "ink_cost"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "inks_location_prices", force: :cascade do |t|
+    t.decimal "ink_cost"
+    t.bigint "inks_id"
+    t.bigint "locations_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["inks_id"], name: "index_inks_location_prices_on_inks_id"
+    t.index ["locations_id"], name: "index_inks_location_prices_on_locations_id"
   end
 
   create_table "item_blank_job_pieces", id: :serial, force: :cascade do |t|
@@ -373,6 +383,8 @@ ActiveRecord::Schema.define(version: 2024_02_06_153924) do
   add_foreign_key "blanks_location_prices", "locations", column: "locations_id"
   add_foreign_key "colors_location_prices", "colors", column: "colors_id"
   add_foreign_key "colors_location_prices", "locations", column: "locations_id"
+  add_foreign_key "inks_location_prices", "inks", column: "inks_id"
+  add_foreign_key "inks_location_prices", "locations", column: "locations_id"
   add_foreign_key "items", "inks"
   add_foreign_key "job_location_prices", "job_listings", column: "job_listings_id"
   add_foreign_key "job_location_prices", "locations", column: "locations_id"
