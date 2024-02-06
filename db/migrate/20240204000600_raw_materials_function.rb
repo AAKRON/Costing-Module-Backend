@@ -1,5 +1,4 @@
 class RawMaterialsFunction < ActiveRecord::Migration[6.1]
-  def change
     def up
         connection.execute(%q(
             CREATE OR REPLACE FUNCTION get_raw_materials(IN location_id_param INT)
@@ -35,5 +34,4 @@ class RawMaterialsFunction < ActiveRecord::Migration[6.1]
             drop function get_raw_materials(integer)
         ))
     end
-  end
 end

@@ -7,17 +7,17 @@ module Api
       after_action(only: [:index]) { set_pagination_header(BlankFinalCalculationsView.count) }
 
       def index
-        _start = params[:_start].to_i
-        _end = params[:_end].to_i
-        # @final_calculations = BlankFinalCalculationsView.paginate(params.slice(:_end, :_sort, :_order))
-        @final_calculations = BlankFinalCalculationsView.order("#{params[:_sort]} #{params[:_order]}").offset(_start).limit(_end - _start)
-        # Rails.logger.debug(@final_calculations.to_json)      
-        # Rails.logger.debug(params.to_json)
-        @final_calculations = @final_calculations.search(params[:q], :blank_number) unless params.fetch(:q, '').empty?       
-        @final_calculations = @final_calculations.where("color_description ILIKE ?", "%#{params[:color_description]}%") unless params.fetch(:color_description, '').empty?
-        @final_calculations = @final_calculations.where("blank_name ILIKE ?", "%#{params[:blank_name]}%") unless params.fetch(:blank_name, '').empty?
-        @final_calculations = @final_calculations.where("raw_material ILIKE ?", "%#{params[:raw_material]}%") unless params.fetch(:raw_material, '').empty?
+        color_description = params.fetch(:color_description, '')
+        blank_name = params.fetch(:blank_name, '')
+        blank_number = params.fetch(:q, '')
+        raw_material = params.fetch(:raw_material, '')
 
+        _start = params[:_start].to_i
+        _limit = params[:_end].to_i - _start
+        _order = "#{params[:_sort]} #{params[:_order]}"
+        _location_id = @location ? @location.id : 0
+
+        @final_calculations = BlankFinalCalculationsView.filter_by_location(_location_id, _order, _start, _limit, color_description, blank_name, blank_number, raw_material)
         render_final_calculation_template(template_name: :list, status: :ok)
       end
 
@@ -43,7 +43,6 @@ module Api
 
       def show
         @final_calculation = FinalCalculation.find(params[:id])
-
         render_final_calculation_template(template_name: __method__, status: :ok)
       end
 
