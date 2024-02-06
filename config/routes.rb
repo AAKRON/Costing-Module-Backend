@@ -30,7 +30,6 @@ Rails.application.routes.draw do
       post '/items/:id/update-type', to: 'items#update_type'
       get '/item-list-only', to: 'items#item_list_only'
       get '/job-list-only', to: 'job_listings#job_list_only'
-      get '/jobs-by-params', to: 'job_listings#jobs_by_params'
       put '/update-item-jobs-only/:id', to: 'item_jobs#update_item_jobs_only'
       get '/blank-list-only', to: 'blanks#blank_list_only'
       get '/vendors-list-only', to: 'vendors#vendor_list_only'
