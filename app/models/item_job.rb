@@ -5,6 +5,7 @@ class ItemJob < ApplicationRecord
 
   belongs_to :item, required: true
   belongs_to :job_listing, required: true
+  attr_accessor :location_id
 
   validates :hour_per_piece, presence: true
 

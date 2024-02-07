@@ -8,14 +8,12 @@ module Api
       after_action(only: [:index]) { set_pagination_header(ItemWithJobCount.count) }
 
       def index
-        #set_pagination_header(ItemWithJobCount.count)
         item_number = (params.fetch(:item_number, '') == 'null' ) ? '' : params.fetch(:item_number, '')
         number_of_jobs = (params.fetch(:number_of_jobs, '') == 'null' ) ? '' : params.fetch(:number_of_jobs, '')
 
         _start = params[:_start].to_i
         _end = params[:_end].to_i
         
-        # @items = ItemWithJobCount.paginate(params.slice(:_end, :_sort, :_order))
         @items = ItemWithJobCount.order("#{params[:_sort]} #{params[:_order]}").offset(_start).limit(_end - _start)
         @items = @items.search(params[:item_number], :item_number) unless params.fetch(:item_number, '').empty?
         @items = @items.search(params[:description], :description) unless params.fetch(:description, '').empty?
@@ -24,6 +22,7 @@ module Api
         render_item_and_item_jobs_template(template_name: :list, status: :ok)
       end
 
+      # Currently It is not used
       def create
         @item = Item.find_by_item_number!(item_job_params[:item_number])
         @item.item_jobs.build(item_job_params[:item_jobs]) if item_job_params[:item_jobs]
@@ -32,6 +31,7 @@ module Api
         render json: @item.errors, status: :bad_request unless @item.save
       end
 
+      # Create the item job
       def update_item_jobs_only
         ItemJob.bulk_update_or_create(
           item_job_body(params[:copy_jobs], params[:item_number]),
@@ -62,6 +62,9 @@ module Api
 
       def show
         @item = Item.find_by_id!(params[:id])
+        @item.item_jobs.map do |item_job|
+            item_job.location_id = @location ? @location.id : 0
+        end
         render_item_and_item_jobs_template(template_name: __method__, status: :ok)
       end
 
