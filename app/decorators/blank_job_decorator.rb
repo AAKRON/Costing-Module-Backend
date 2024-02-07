@@ -8,7 +8,13 @@ class BlankJobDecorator < SimpleDelegator
   end
 
   def wages_per_hour
-    job_listing.wages_per_hour || BigDecimal('0')
+    if location_id.present?
+        jobs_location = JobLocationPrice.where(job_listings_id: job_listing.job_number).where(locations_id: location_id).first
+        if jobs_location.present?
+            return jobs_location[:wages_per_hour].to_f
+        end
+    end
+    return job_listing.wages_per_hour || BigDecimal('0')
   end
 
   def direct_labor_cost

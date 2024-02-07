@@ -61,7 +61,9 @@ module Api
 
       def show
         @blank = Blank.find_by_id!(params[:id])
-
+        @blank.blank_jobs.map do |blank_job|
+            blank_job.location_id = @location ? @location.id : 0
+        end
         render_item_and_item_jobs_template(template_name: __method__, status: :ok)
       end
 
