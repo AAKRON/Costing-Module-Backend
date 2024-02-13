@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_02_06_211953) do
+ActiveRecord::Schema.define(version: 2024_02_13_211035) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -355,6 +355,16 @@ ActiveRecord::Schema.define(version: 2024_02_06_211953) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "screens_location_prices", force: :cascade do |t|
+    t.decimal "cost"
+    t.bigint "screens_id"
+    t.bigint "locations_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["locations_id"], name: "index_screens_location_prices_on_locations_id"
+    t.index ["screens_id"], name: "index_screens_location_prices_on_screens_id"
+  end
+
   create_table "unitofmeasures", id: :serial, force: :cascade do |t|
     t.string "name"
     t.string "abbr"
@@ -402,6 +412,8 @@ ActiveRecord::Schema.define(version: 2024_02_06_211953) do
   add_foreign_key "job_location_prices", "locations", column: "locations_id"
   add_foreign_key "raw_materials_location_prices", "locations", column: "locations_id"
   add_foreign_key "raw_materials_location_prices", "raw_materials", column: "raw_materials_id"
+  add_foreign_key "screens_location_prices", "locations", column: "locations_id"
+  add_foreign_key "screens_location_prices", "screens", column: "screens_id"
 
   create_view "final_calculation_views", sql_definition: <<-SQL
       SELECT fc.id,
