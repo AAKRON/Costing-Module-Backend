@@ -48,6 +48,7 @@ module Api
         end
 
         def destroy
+          InksLocationPrice.where(inks_id: params[:id]).first.try(:destroy)
           Ink.find(params[:id]).destroy
           head :no_content
         end

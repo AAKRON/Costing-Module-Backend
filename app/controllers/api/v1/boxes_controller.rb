@@ -11,7 +11,7 @@ module Api
       def index
         id = (params.fetch(:id, '') == 'null' ) ? '' : params.fetch(:id, '')
         cost_per_box = (params.fetch(:cost_per_box, '') == 'null' ) ? '' : params.fetch(:cost_per_box, '')
-        name = params.fetch(:name, '')
+        name = params.fetch(:box_name, '')
 
         _start = params[:_start].to_i
         _limit = params[:_end].to_i - _start
@@ -24,8 +24,8 @@ module Api
 
       def create
         @box = Box.new(box_params)
-        update_or_create_location_prices # location prices
         if @box.save
+          update_or_create_location_prices # location prices
           render template: 'api/v1/box/show.json', status: 201
         else
           render json: @box.errors, status: :bad_request
@@ -48,6 +48,7 @@ module Api
       end
 
       def destroy
+        @BoxesLocationPrice.where(boxes_id: params[:id]).first.try(:destroy)
         Box.find(params[:id]).destroy
         head :no_content
       end

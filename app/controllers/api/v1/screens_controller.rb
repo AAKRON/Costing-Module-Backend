@@ -43,7 +43,7 @@ module Api
       end
 
       def destroy
-        @screens_location.destroy
+        ScreensLocationPrice.where(screens_id: params[:id]).first.try(:destroy)
         @screen.destroy
         render json: "deleted successfully", status: :no_content
       end

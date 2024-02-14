@@ -47,7 +47,7 @@ module Api
       end
 
       def destroy
-        @jobs_location.destroy
+        JobLocationPrice.where(job_listings_id: params[:id]).first.try(:destroy)
         @job.destroy
       end
 

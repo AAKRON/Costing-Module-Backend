@@ -7,7 +7,7 @@ class BoxesLocationPrice < ApplicationRecord
         where_clauses = "WHERE TRUE "
         where_clauses = "#{where_clauses} AND id::text LIKE '#{id}%'" unless id.blank?
         where_clauses = "#{where_clauses} AND cost_per_box::text LIKE '#{cost_per_box}%'" unless cost_per_box.blank?
-        where_clauses = "#{where_clauses} AND name LIKE '#{name}%'" unless name.blank?
+        where_clauses = "#{where_clauses} AND LOWER(name) LIKE LOWER('#{name}%')" unless name.blank?
 
         find_by_sql("SELECT * FROM get_boxes(#{location_id}) #{where_clauses};")
     }

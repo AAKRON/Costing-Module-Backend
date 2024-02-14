@@ -57,6 +57,7 @@ module Api
       end
 
       def destroy
+        BlanksLocationPrice.where(blanks_id: params[:id]).first.try(:destroy)
         Blank.find_by_id!(params[:id]).destroy
       end
 
