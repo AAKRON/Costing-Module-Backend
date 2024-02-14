@@ -8,12 +8,12 @@ module Api
       after_action(only: [:index]) { set_pagination_header(ItemWithBlankPerCostView.count) }
 
       def index
+        item_number = params[:q]
         _start = params[:_start].to_i
-        _end = params[:_end].to_i
-        # @blanks_listing_item_with_cost = ItemWithBlankPerCostView.paginate(params.slice(:_end, :_sort, :_order))
-        @blanks_listing_item_with_cost = ItemWithBlankPerCostView.order("#{params[:_sort]} #{params[:_order]}").offset(_start).limit(_end - _start)
-        @blanks_listing_item_with_cost = @blanks_listing_item_with_cost.search(params[:q], :item_number) unless params.fetch(:q, '').empty?
+        _limit = params[:_end].to_i - _start
+        _location_id = @location ? @location.id : 0
 
+        @blanks_listing_item_with_cost = ItemWithBlankPerCostView.filter_by_location(_location_id, _start, _limit, item_number)
         render json: @blanks_listing_item_with_cost, status: :ok
       end
 

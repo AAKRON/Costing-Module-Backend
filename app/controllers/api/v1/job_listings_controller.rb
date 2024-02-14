@@ -5,7 +5,7 @@ module Api
     class JobListingsController < BaseController
       before_action :restrict_access
       before_action :set_user_access_level, only: %i[destroy update]
-      before_action :set_job, only: %i[job_cost_calculate update show]
+      before_action :set_job, only: %i[job_cost_calculate update show destroy]
       after_action(only: [:index]) { set_pagination_header(JobWithScreenListing.count) }
       after_action(only: [:job_list_only]) { set_pagination_header(JobListing.count) }
 
@@ -47,7 +47,8 @@ module Api
       end
 
       def destroy
-        JobListing.find_by_id!(params[:id]).destroy
+        @jobs_location.destroy
+        @job.destroy
       end
 
       def job_list_only
