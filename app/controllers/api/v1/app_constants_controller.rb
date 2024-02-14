@@ -24,8 +24,6 @@ module Api
       end
 
       def show
-        @app_constant = AppConstant.find(params[:id])
-
         render json: @app_constant, status: 201
       end
 
@@ -41,6 +39,7 @@ module Api
       end
 
       def destroy
+        AppConstantsLocationPrice.where(app_constants_id: params[:id]).first.try(:destroy)
         @app_constant = AppConstant.find(params[:id])
         @app_constant.destroy
 

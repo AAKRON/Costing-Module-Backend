@@ -42,6 +42,7 @@ module Api
       end
 
       def destroy
+        RawMaterialsLocationPrice.where(raw_materials_id: params[:id]).first.try(:destroy)
         @raw_material.destroy
       end
 

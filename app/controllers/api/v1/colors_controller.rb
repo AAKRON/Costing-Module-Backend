@@ -9,8 +9,12 @@ module Api
       after_action(only: [:color_list_only]) { set_pagination_header(Color.count) }
 
       def index
+        _start = params[:_start].to_i
+        _limit = params[:_end].to_i - _start
+        _order = "#{params[:_sort]} #{params[:_order]}"
         _location_id = @location ? @location.id : 0
-        color = ColorsView.filter_by_location(_location_id, params)
+
+        color = ColorsView.filter_by_location(_location_id, _order, _start, _limit, params)
         render json: color, status: :ok
       end
 
@@ -40,6 +44,7 @@ module Api
       end
 
       def destroy
+        ColorsLocationPrice.where(colors_id: params[:id]).first.try(:destroy)
         Color.find(params[:id]).destroy
         head :no_content
       end

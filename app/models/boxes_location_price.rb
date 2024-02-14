@@ -9,6 +9,6 @@ class BoxesLocationPrice < ApplicationRecord
         where_clauses = "#{where_clauses} AND cost_per_box::text LIKE '#{cost_per_box}%'" unless cost_per_box.blank?
         where_clauses = "#{where_clauses} AND LOWER(name) LIKE LOWER('#{name}%')" unless name.blank?
 
-        find_by_sql("SELECT * FROM get_boxes(#{location_id}) #{where_clauses};")
+        find_by_sql("SELECT * FROM get_boxes(#{location_id}) #{where_clauses} ORDER BY #{_order} LIMIT #{_limit} OFFSET #{_start};")
     }
 end
