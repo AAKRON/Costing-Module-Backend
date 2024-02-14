@@ -36,4 +36,15 @@ class ItemJobDecorator < SimpleDelegator
   def total_pricing_cost
     direct_labor_cost.to_f + overhead_pricing_cost.to_f
   end
+
+  def screen_location_cost
+    if location_id.present?
+        screens_location = ScreensLocationPrice.where(screens_id: job_listing.screen_id).where(locations_id: location_id).first
+        if screens_location.present?
+            return screens_location[:cost].to_f
+        end
+    end
+    screen = Screen.find(job_listing.screen_id)
+    return screen[:cost]
+  end
 end

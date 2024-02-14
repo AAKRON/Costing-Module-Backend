@@ -62,6 +62,7 @@ module Api
 
       def show
         @item = Item.find_by_id!(params[:id])
+        # add location id to jobs array
         @item.item_jobs.map do |item_job|
             item_job.location_id = @location ? @location.id : 0
         end

@@ -26,6 +26,10 @@ module Api
       end
 
       def show
+        # add location id to jobs array
+        @blank.blank_jobs.map do |blank_job|
+            blank_job.location_id = @location ? @location.id : 0
+        end
         render_blanks_template(template_name: __method__, status: :ok)
       end
 

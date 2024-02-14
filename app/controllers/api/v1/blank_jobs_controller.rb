@@ -61,6 +61,7 @@ module Api
 
       def show
         @blank = Blank.find_by_id!(params[:id])
+        # add location id to jobs array
         @blank.blank_jobs.map do |blank_job|
             blank_job.location_id = @location ? @location.id : 0
         end

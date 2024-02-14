@@ -31,6 +31,11 @@ module Api
       end
 
       def show
+        # add location id to jobs array
+        @item.item_jobs.map do |item_job|
+            item_job.location_id = @location ? @location.id : 0
+        end
+
         render_items_template(template_name: __method__, status: :ok)
       end
 
