@@ -58,7 +58,7 @@ json.blanks do
     _order = "id ASC"
     _start = 0
     _limit = 1000
-    blank = BlankCostView.filter_by_location(_location_id, _order, _start, _limit, blank_number, nil, nil, nil, nil, nil)
+    blank = BlankCostView.filter_by_location(_location_id, _order, _start, _limit, blank.blank_number, nil, nil, nil, nil, nil).first
 
     blank_cost_modifier = BlanksListingByItem.find_by_item_number_and_blank_number(item.item_number, blank.blank_number)
     unless blank.nil?

@@ -5,7 +5,7 @@ class FinalCalculationDecorator < SimpleDelegator
 
     def raw_material_cost
         if @final_calculation.location_id.present?
-            raw_materials_location = RawMaterialsLocationPrice.where(raw_materials_id: @final_calculation.raw_material.id).where(locations_id: @location[:id]).first
+            raw_materials_location = RawMaterialsLocationPrice.where(raw_materials_id: @final_calculation.raw_material.id).where(locations_id: @final_calculation.location_id).first
             if raw_materials_location.present?
                 return raw_materials_location[:cost]
             end
@@ -18,27 +18,33 @@ class FinalCalculationDecorator < SimpleDelegator
     end
 
     def color_one_cost
-        if @final_calculation.colorant_two != ''
-            if @location.present?
-                color = Color.where(name: @final_calculation.colorant_one)[0]
-                colors_location = ColorsLocationPrice.where(colors_id: color.id).where(locations_id: @location[:id]).first
-                if colors_location.present?
-                    return colors_location[:cost_of_color]
+        if @final_calculation.colorant_one != ''
+            color = Color.where(name: @final_calculation.colorant_one)[0]
+            if color.present?
+                if @final_calculation.location_id.present?
+                    colors_location = ColorsLocationPrice.where(colors_id: color.id).where(locations_id: @final_calculation.location_id).first
+                    if colors_location.present?
+                        return colors_location[:cost_of_color]
+                    end
                 end
             end
+            return color.try(:cost_of_color) || 0.0
         end
         return 0.0
     end
 
     def color_two_cost
         if @final_calculation.colorant_two != ''
-            if @location.present?
-                color = Color.where(name: @final_calculation.colorant_two)[0]
-                colors_location = ColorsLocationPrice.where(colors_id: color.id).where(locations_id: @location[:id]).first
-                if colors_location.present?
-                    return colors_location[:cost_of_color]
+            color = Color.where(name: @final_calculation.colorant_two)[0]
+            if color.present?
+                if @final_calculation.location_id.present?
+                    colors_location = ColorsLocationPrice.where(colors_id: color.id).where(locations_id: @final_calculation.location_id).first
+                    if colors_location.present?
+                        return colors_location[:cost_of_color]
+                    end
                 end
             end
+            return color.try(:cost_of_color) || 0.0
         end
         return 0.0
     end
