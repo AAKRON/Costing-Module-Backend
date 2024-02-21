@@ -27,6 +27,7 @@ Rails.application.routes.draw do
       resources :users
       resources :item_types
       resources :app_constants
+      post '/database-backup', to: 'database#backup'
       post '/items/:id/update-type', to: 'items#update_type'
       get '/item-list-only', to: 'items#item_list_only'
       get '/job-list-only', to: 'job_listings#job_list_only'
