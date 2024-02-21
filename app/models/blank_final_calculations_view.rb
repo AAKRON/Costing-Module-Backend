@@ -11,4 +11,8 @@ class BlankFinalCalculationsView < ApplicationRecord
 
     find_by_sql("SELECT * FROM get_blank_final_calculations(#{location_id}) #{where_clauses} ORDER BY #{_order} LIMIT #{_limit} OFFSET #{_start};")
   }
+
+  scope :get_blank_final_calculations, ->(location_id, blank_number) {
+    find_by_sql("SELECT * FROM get_blank_final_calculations(#{location_id}) WHERE blank_number=#{blank_number};")
+  }
 end

@@ -51,10 +51,7 @@ class FinalCalculationDecorator < SimpleDelegator
 
     def blank_final_calculations_view
         _location_id = @location ? @location.id : 0
-        _order = "id ASC"
-        _start = 0
-        _limit = 1000
-        return BlankFinalCalculationsView.filter_by_location(_location_id, _order, _start, _limit, nil, nil, @final_calculation.blank_id, nil)
+        return BlankFinalCalculationsView.get_blank_final_calculations(_location_id, @final_calculation.blank_id)
     end
 
     def blank_average_cost
