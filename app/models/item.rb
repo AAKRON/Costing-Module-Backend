@@ -8,6 +8,7 @@ class Item < ApplicationRecord
   include Paginatable
   include Searchable
   include Upsertable
+  attr_accessor :location_id
 
   validates :item_number, :description, presence: true
   validates :item_number, uniqueness: true

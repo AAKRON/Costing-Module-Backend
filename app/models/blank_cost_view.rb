@@ -14,6 +14,10 @@ class BlankCostView < ApplicationRecord
     find_by_sql("SELECT * FROM get_blanks(#{location_id}) #{where_clauses} ORDER BY #{_order} LIMIT #{_limit} OFFSET #{_start};")
   }
 
+  scope :get_blank_by_location, ->(location_id, blank_number) {
+    return find_by_sql("SELECT * FROM get_blanks(#{location_id}) WHERE blank_number=#{blank_number}").first
+  }
+
   def self.to_price_csv
     CSV.generate(col_sep: ';') do |csv| # Aquí se especifica que el delimitador de campo es el punto y coma
 

@@ -41,6 +41,8 @@ module Api
             blanks_listing_item_with_cost.location_id = @location ? @location.id : 0
         end
 
+        @item.location_id = @location ? @location.id : 0
+
         render_items_template(template_name: __method__, status: :ok)
       end
 
