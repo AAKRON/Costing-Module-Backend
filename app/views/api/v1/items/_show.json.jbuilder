@@ -54,7 +54,12 @@ json.jobs do
 end
 json.blanks do
   json.array! item.blanks_listing_item_with_cost do |blank|
-    blank = BlankCostView.find_by_blank_number(blank.blank_number)
+    _location_id = @location ? @location.id : 0
+    _order = "id ASC"
+    _start = 0
+    _limit = 1000
+    blank = BlankCostView.filter_by_location(_location_id, _order, _start, _limit, blank_number, nil, nil, nil, nil, nil)
+
     blank_cost_modifier = BlanksListingByItem.find_by_item_number_and_blank_number(item.item_number, blank.blank_number)
     unless blank.nil?
       json.blank_number blank.blank_number
@@ -62,16 +67,16 @@ json.blanks do
       json.blank_type blank.blank_type
       json.type_number blank.type_number
       json.cost blank.cost
-      json.total_blank_cost_for_price (blank.type_number == 1 ? blank.total_blank_cost_for_price : blank.cost)
-      json.total_blank_cost_for_inventory (blank.type_number == 1 ? blank.total_blank_cost_for_inventory : blank.cost)
+      json.total_blank_cost_for_price blank.total_blank_cost_for_price
+      json.total_blank_cost_for_inventory blank.total_blank_cost_for_inventory
       unless blank_cost_modifier.nil?
         default_blank_cost_modifier_multi = blank_cost_modifier.mult
         default_blank_cost_modifier_div = blank_cost_modifier.div
         json.multiplication default_blank_cost_modifier_multi
         json.division default_blank_cost_modifier_div
       end
-      total_blank_cost_for_price_modify = ((blank.type_number == 1 ? blank.total_blank_cost_for_price.to_f : blank.cost.round(5) ) * default_blank_cost_modifier_multi) / default_blank_cost_modifier_div
-      total_blank_cost_for_inventory_modify = ((blank.type_number == 1 ? blank.total_blank_cost_for_inventory.to_f : blank.cost.round(5) ) * default_blank_cost_modifier_multi) / default_blank_cost_modifier_div
+      total_blank_cost_for_price_modify = (blank.total_blank_cost_for_price * default_blank_cost_modifier_multi) / default_blank_cost_modifier_div
+      total_blank_cost_for_inventory_modify = (blank.total_blank_cost_for_inventory * default_blank_cost_modifier_multi) / default_blank_cost_modifier_div
 
       json.total_blank_cost_for_price_modify total_blank_cost_for_price_modify
       json.total_blank_cost_for_inventory_modify total_blank_cost_for_inventory_modify

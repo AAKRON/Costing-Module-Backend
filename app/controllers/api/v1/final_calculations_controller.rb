@@ -43,6 +43,7 @@ module Api
 
       def show
         @final_calculation = FinalCalculation.find(params[:id])
+        @final_calculation.location_id = @location ? @location.id : 0
         render_final_calculation_template(template_name: __method__, status: :ok)
       end
 

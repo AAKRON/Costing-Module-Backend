@@ -6,6 +6,7 @@ class FinalCalculation < ApplicationRecord
 
   belongs_to :blank
   belongs_to :raw_material
+  attr_accessor :location_id
 
   def raw_calculated
     #F3/H3

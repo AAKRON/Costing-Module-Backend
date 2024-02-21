@@ -36,6 +36,11 @@ module Api
             item_job.location_id = @location ? @location.id : 0
         end
 
+        # add location id to blanks_listing_item_with_cost array
+        @item.blanks_listing_item_with_cost.map do |blanks_listing_item_with_cost|
+            blanks_listing_item_with_cost.location_id = @location ? @location.id : 0
+        end
+
         render_items_template(template_name: __method__, status: :ok)
       end
 

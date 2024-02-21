@@ -5,6 +5,7 @@ class BlanksListingItemWithCost < ApplicationRecord
 
   belongs_to :blank, foreign_key: :blank_number
   before_save { |record| record.cell_key = item_number + blank_number }
+  attr_accessor :location_id
 
   def self.listing_xlsx(blanks)
     p = Axlsx::Package.new
