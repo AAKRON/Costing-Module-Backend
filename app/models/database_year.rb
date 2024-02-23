@@ -1,0 +1,2 @@
+class DatabaseYear < ApplicationRecord
+end

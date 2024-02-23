@@ -14,7 +14,7 @@ class Api::V1::BaseController < ApplicationController
     connection_config = Rails.application.config.database_configuration[Rails.env]
     database = ENV['PG_DB_DEV']
 
-    if request.headers['Database'] && request.headers['Database'] != 'null' && request.headers['Database'] != '2024'
+    if request.headers['Database'] && request.headers['Database'] != 'null' && request.headers['Database'] != get_current_year
         database = database + '_' + request.headers['Database']
     end
 
@@ -76,5 +76,10 @@ class Api::V1::BaseController < ApplicationController
 
   def set_user_access_level
     render json: { message: 'Permission Denied' }, status: :bad_request unless @current_user.role == 'admin'
+  end
+
+  def get_current_year
+    max_db_year = DatabaseYear.order('year DESC').first
+    return max_db_year.year
   end
 end
