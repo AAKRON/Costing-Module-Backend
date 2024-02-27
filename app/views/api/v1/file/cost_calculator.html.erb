@@ -159,8 +159,8 @@
                 <td colspan="6" style="text-align:left">
                   <%= blank[:name] %>
                 </td>
-                <td>$<%= blank[:cost] %></td>
-                <td style="text-align:right"><b>$<%= blank[:cost] %></b></td>
+                <td>$<%= blank[:cost].round(4) %></td>
+                <td style="text-align:right"><b>$<%= blank[:cost].round(4) %></b></td>
             </tr>
             <% end %>
 
@@ -186,11 +186,11 @@
                 <td colspan="3" style="text-align:left">
                   <%= job[:job_number] %> - <%= job[:description] %>
                 </td>
-                <td style="text-align:right">$<%= job[:wages_per_hour] %>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                <td style="text-align:right">$<%= job[:wages_per_hour].round(4) %>&nbsp;&nbsp;&nbsp;&nbsp;</td>
                 <td style="text-align:center"><%= job[:hour_per_piece] %>&nbsp;&nbsp;&nbsp;&nbsp;</td>
-                <td style="text-align:right">$<%= job[:direct_labor_cost] %></td>
-                <td style="text-align:right">$<%= job[:overhead_pricing_cost] %></td>
-                <td style="text-align:right"><b>$<%= job[:total_pricing_cost] %></b></td>
+                <td style="text-align:right">$<%= job[:direct_labor_cost].to_f.round(4) %></td>
+                <td style="text-align:right">$<%= job[:overhead_pricing_cost].round(4) %></td>
+                <td style="text-align:right"><b>$<%= job[:total_pricing_cost].round(4) %></b></td>
             </tr>
             <% end %>
 
@@ -214,7 +214,7 @@
                   <%= screen[:job_number] %> - <%= screen[:description] %>
                 </td>
                 <td style="text-align:center"><%= screen[:screen][:screen_size] %></td>
-                <td style="text-align:right"><b>$<%= screen[:screen][:cost] %></b></td>
+                <td style="text-align:right"><b>$<%= screen[:screen][:cost].round(4) %></b></td>
             </tr>
             <% end %>
 
@@ -234,8 +234,8 @@
                 <td colspan="6" style="text-align:left">
                   <%= @cost_data[:box][0][:name] %>
                 </td>
-                <td style="text-align:right">$<%= @cost_data[:box][0][:cost] %></td>
-                <td style="text-align:right"><b>$<%= @cost_data[:box][0][:cost] %></b></td>
+                <td style="text-align:right">$<%= @cost_data[:box][0][:cost].round(4) %></td>
+                <td style="text-align:right"><b>$<%= @cost_data[:box][0][:cost].round(4) %></b></td>
             </tr>
             <% end %>
 
@@ -244,14 +244,14 @@
               <td colspan="8" style="text-align:left">
                 <b>Ink Cost</b>
               </td>
-              <td style="text-align:right"><b>$<%= @cost_data[:ink_cost] %></b></td>
+              <td style="text-align:right"><b>$<%= @cost_data[:ink_cost].round(4) %></b></td>
             </tr>
             <% end %>
 
             <tr class="total">
                 <td colspan="7"></td>
                 <td style="text-align:right">Total:</td>
-                <td style="text-align:right"><b>$<%= @cost_data[:total_cost] %></b></td>
+                <td style="text-align:right"><b>$<%= @cost_data[:total_cost].to_f.round(4) %></b></td>
             </tr>
         </table>
     </div>
