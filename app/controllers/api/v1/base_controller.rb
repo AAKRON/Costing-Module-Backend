@@ -13,8 +13,8 @@ class Api::V1::BaseController < ApplicationController
   def set_current_database
     connection_config = Rails.application.config.database_configuration[Rails.env]
     database = ENV['PG_DB_DEV']
-
-    if request.headers['Database'] && request.headers['Database'] != 'null' && request.headers['Database'] != get_current_year
+    current_year = get_current_year
+    if request.headers['Database'] && request.headers['Database'] != 'null' && request.headers['Database'] != current_year
         database = database + '_' + request.headers['Database']
     end
 
@@ -22,7 +22,6 @@ class Api::V1::BaseController < ApplicationController
         connection_config['database'] = database
         ActiveRecord::Base.establish_connection(connection_config)
     end
-
     # logger.debug "Selected database #{database}"
     # logger.debug "current_database #{ActiveRecord::Base.connection.current_database}"
   end
@@ -79,7 +78,11 @@ class Api::V1::BaseController < ApplicationController
   end
 
   def get_current_year
-    max_db_year = DatabaseYear.order('year DESC').first
-    return max_db_year.year
+    @database_location_exists = ActiveRecord::Base.connection.table_exists? 'database_year'
+    if @database_location_exists
+        max_db_year = DatabaseYear.order('year DESC').first
+        return max_db_year.year
+    end
+    return Date.current.year.to_s
   end
 end
