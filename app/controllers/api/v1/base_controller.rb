@@ -28,11 +28,7 @@ class Api::V1::BaseController < ApplicationController
   end
 
   def check_database_location_exists
-    begin
-        @database_location_exists = ActiveRecord::Base.connection.table_exists? 'database_year'
-      rescue Exception
-        @database_location_exists = false
-    end
+    @database_location_exists = ActiveRecord::Base.connection.table_exists? 'database_year'
   end
 
   def set_location

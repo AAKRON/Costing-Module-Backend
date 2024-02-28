@@ -1,6 +1,6 @@
 module Api
     module V1
-        class DatabaseController < BaseController
+        class DatabaseController < ApplicationController
             def list_databases
                 connection_config = Rails.application.config.database_configuration[Rails.env]
                 database = ENV['PG_DB_DEV']

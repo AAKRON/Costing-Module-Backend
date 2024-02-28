@@ -5,7 +5,7 @@ module Api
         before_action :restrict_access
         before_action :set_user_access_level, only:[:create, :destroy, :update]
         before_action :set_ink, only: [:show, :update, :destroy]
-        after_action(only: [:index]) { set_pagination_header(Ink.count) }
+        after_action :set_pagination_header, only: [:index, :ink_list_only]
 
         def index
             id = (params.fetch(:id, '') == 'null' ) ? '' : params.fetch(:id, '')
@@ -77,6 +77,12 @@ module Api
 
         def ink_params
           params.permit(:name, :ink_cost)
+        end
+
+        def set_pagination_header
+            if ActiveRecord::Base.connection.table_exists? 'inks'
+                set_pagination_header(Ink.count)
+            end
         end
 
         def update_or_create_location_prices
