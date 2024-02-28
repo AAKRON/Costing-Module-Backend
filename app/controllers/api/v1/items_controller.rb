@@ -39,8 +39,6 @@ module Api
             @items = @items.search(box_cost, :box_cost) unless box_cost.empty?
             @items = @items.search(total_price_cost, :total_price_cost) unless total_price_cost.empty?
             @items = @items.search(total_inventory_cost, :total_inventory_cost) unless total_inventory_cost.empty?
-
-            @secondary_box_id_exists = ActiveRecord::Base.connection.column_exists?(:items, :secondary_box_id)
             if @secondary_box_id_exists
                 @items = @items.search(secondary_box_cost, :secondary_box_cost) unless secondary_box_cost.empty?
             end
