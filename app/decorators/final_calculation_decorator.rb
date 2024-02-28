@@ -50,9 +50,10 @@ class FinalCalculationDecorator < SimpleDelegator
     end
 
     def blank_final_calculations_view
-        # TODO
-        _location_id = @location ? @location.id : 0
-        return BlankFinalCalculationsView.get_blank_final_calculations(_location_id, @final_calculation.blank_id)
+        if @final_calculation.location_id.present? && @final_calculation.location_id != 0
+            return BlankFinalCalculationsView.get_blank_final_calculations(@final_calculation.location_id, @final_calculation.blank_id)
+        end
+        return BlankFinalCalculationsView.where(blank_number: @final_calculation.blank_id)
     end
 
     def blank_average_cost

@@ -17,7 +17,16 @@ module Api
         _order = "#{params[:_sort]} #{params[:_order]}"
         _location_id = @location ? @location.id : 0
 
-        @final_calculations = BlankFinalCalculationsView.filter_by_location(_location_id, _order, _start, _limit, color_description, blank_name, blank_number, raw_material)
+        if @database_location_exists
+            @final_calculations = BlankFinalCalculationsView.filter_by_location(_location_id, _order, _start, _limit, color_description, blank_name, blank_number, raw_material)
+        else
+            @final_calculations = BlankFinalCalculationsView.order("#{params[:_sort]} #{params[:_order]}").offset(_start).limit(_limit)
+            @final_calculations = @final_calculations.search(params[:q], :blank_number) unless params.fetch(:q, '').empty?
+            @final_calculations = @final_calculations.where("color_description ILIKE ?", "%#{params[:color_description]}%") unless params.fetch(:color_description, '').empty?
+            @final_calculations = @final_calculations.where("blank_name ILIKE ?", "%#{params[:blank_name]}%") unless params.fetch(:blank_name, '').empty?
+            @final_calculations = @final_calculations.where("raw_material ILIKE ?", "%#{params[:raw_material]}%") unless params.fetch(:raw_material, '').empty?
+        end
+
         render_final_calculation_template(template_name: :list, status: :ok)
       end
 
