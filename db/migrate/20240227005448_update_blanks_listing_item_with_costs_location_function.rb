@@ -20,14 +20,14 @@ class UpdateBlanksListingItemWithCostsLocationFunction < ActiveRecord::Migration
                 CASE
                     WHEN bcv.type_number = 1
                     THEN
-                        CAST(((bcv.total_blank_cost_for_price * COALESCE(blbi.mult, 1))/ COALESCE(blbi.div, 1)) AS DECIMAL(10,5))
+                        CAST(((bcv.total_blank_cost_for_price * COALESCE(blbi.mult, 1))/ (CASE WHEN COALESCE(blbi.div, 1) = 0 THEN 1 ELSE COALESCE(blbi.div, 1) END)) AS DECIMAL(10,5))
                     ELSE 0
                     END
                 AS total_blank_cost_for_price,
                 CASE
                     WHEN bcv.type_number = 1
                     THEN
-                        CAST(((bcv.total_blank_cost_for_inventory * COALESCE(blbi.mult, 1))/ COALESCE(blbi.div, 1)) AS DECIMAL(10,5))
+                        CAST(((bcv.total_blank_cost_for_inventory * COALESCE(blbi.mult, 1))/ (CASE WHEN COALESCE(blbi.div, 1) = 0 THEN 1 ELSE COALESCE(blbi.div, 1) END)) AS DECIMAL(10,5))
                     ELSE 0
                     END
                 AS total_blank_cost_for_inventory

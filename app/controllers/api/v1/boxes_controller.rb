@@ -21,7 +21,7 @@ module Api
         _location_id = @location ? @location.id : 0
 
         if @database_location_exists
-            @boxes = BoxesLocationPrice.filter_by_location(_location_id, _order, _start, _limit, id, cost_per_box, name)
+            @boxes = BoxesLocationPrice.filter_by_location(_location_id, "#{_sort} #{_order}", _start, _limit, id, cost_per_box, name)
         else
             @boxes = Box.paginate(params.slice(:_end, :_sort, :_order))
             @boxes = @boxes.search(id, :id) unless id.empty?
