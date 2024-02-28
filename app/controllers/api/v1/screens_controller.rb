@@ -16,7 +16,15 @@ module Api
         _limit = params[:_end].to_i - _start
         _order = "#{params[:_sort]} #{params[:_order]}"
         _location_id = @location ? @location.id : 0
-        @screens = ScreensLocationPrice.filter_by_location(_location_id, _order, _start, _limit, id, cost, screen_id)
+
+        if @database_location_exists
+            @screens = ScreensLocationPrice.filter_by_location(_location_id, _order, _start, _limit, id, cost, screen_id)
+        else
+            @screens = Screen.paginate(params.slice(:_end, :_sort, :_order))
+            @screens = @screens.search(screen_id, :id) unless screen_id.empty?
+            @screens = @screens.where("id = #{screen_id}") unless screen_id.empty?
+            @screens = @screens.search(params[:cost], :cost) unless params.fetch(:cost, '').empty?
+        end
 
         render template: 'api/v1/screens/index.json', status: :ok
       end

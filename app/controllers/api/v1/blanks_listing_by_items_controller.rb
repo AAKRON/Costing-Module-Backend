@@ -22,10 +22,6 @@ module Api
       end
 
       def create
-        # Create BlanksListingItemWithCost
-        BlanksListingItemWithCost.find_or_create_by(blanks_listing_item_with_cost_params)
-
-        # Create BlanksListingByItem
         @blanks_listing_by_item = BlanksListingByItem.new(blanks_listing_by_item_params)
 
         if @blanks_listing_by_item.save
@@ -52,7 +48,6 @@ module Api
         params[:blanks].map do |row|
             if row[:deleted]
                 BlanksListingByItem.where(item_number: params[:id], blank_number: row[:blank_number]).destroy_all
-                BlanksListingItemWithCost.where(item_number: params[:id], blank_number: row[:blank_number]).destroy_all
             end
         end if params.has_key?(:blanks)
 

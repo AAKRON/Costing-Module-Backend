@@ -4,7 +4,7 @@ class FinalCalculationDecorator < SimpleDelegator
     end
 
     def raw_material_cost
-        if @final_calculation.location_id.present?
+        if @final_calculation.location_id.present? && @final_calculation.location_id != 0
             raw_materials_location = RawMaterialsLocationPrice.where(raw_materials_id: @final_calculation.raw_material.id).where(locations_id: @final_calculation.location_id).first
             if raw_materials_location.present?
                 return raw_materials_location[:cost]
@@ -21,7 +21,7 @@ class FinalCalculationDecorator < SimpleDelegator
         if @final_calculation.colorant_one != ''
             color = Color.where(name: @final_calculation.colorant_one)[0]
             if color.present?
-                if @final_calculation.location_id.present?
+                if @final_calculation.location_id.present? && @final_calculation.location_id != 0
                     colors_location = ColorsLocationPrice.where(colors_id: color.id).where(locations_id: @final_calculation.location_id).first
                     if colors_location.present?
                         return colors_location[:cost_of_color]
@@ -37,7 +37,7 @@ class FinalCalculationDecorator < SimpleDelegator
         if @final_calculation.colorant_two != ''
             color = Color.where(name: @final_calculation.colorant_two)[0]
             if color.present?
-                if @final_calculation.location_id.present?
+                if @final_calculation.location_id.present? && @final_calculation.location_id != 0
                     colors_location = ColorsLocationPrice.where(colors_id: color.id).where(locations_id: @final_calculation.location_id).first
                     if colors_location.present?
                         return colors_location[:cost_of_color]
@@ -50,6 +50,7 @@ class FinalCalculationDecorator < SimpleDelegator
     end
 
     def blank_final_calculations_view
+        # TODO
         _location_id = @location ? @location.id : 0
         return BlankFinalCalculationsView.get_blank_final_calculations(_location_id, @final_calculation.blank_id)
     end

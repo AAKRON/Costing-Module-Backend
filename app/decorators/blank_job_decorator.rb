@@ -8,7 +8,7 @@ class BlankJobDecorator < SimpleDelegator
   end
 
   def wages_per_hour
-    if location_id.present?
+    if location_id.present? && location_id != 0
         jobs_location = JobLocationPrice.where(job_listings_id: job_listing.job_number).where(locations_id: location_id).first
         if jobs_location.present?
             return jobs_location[:wages_per_hour].to_f

@@ -6,7 +6,6 @@ module Api
         before_action :set_user_access_level, only:[:create, :destroy, :update]
         before_action :set_ink, only: [:show, :update, :destroy]
         after_action(only: [:index]) { set_pagination_header(Ink.count) }
-        after_action(only: [:ink_list_only]) { set_pagination_header(Ink.count) }
 
         def index
             id = (params.fetch(:id, '') == 'null' ) ? '' : params.fetch(:id, '')
@@ -54,8 +53,11 @@ module Api
         end
 
         def ink_list_only
-          @inks = Ink.all
-
+          if ActiveRecord::Base.connection.table_exists? 'inks'
+            @inks = Ink.all
+          else
+            @inks = []
+          end
           render json: @inks, status: :ok
         end
 

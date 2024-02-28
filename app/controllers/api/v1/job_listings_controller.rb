@@ -17,7 +17,17 @@ module Api
         _limit = params[:_end].to_i - _start
         _order = "#{params[:_sort]} #{params[:_order]}"
         _location_id = @location ? @location.id : 0
-        @job_listings = JobWithScreenListing.filter_by_location(_location_id, _order, _start, _limit, job_number, screen_id, params[:description], params[:wages_hr])
+
+        if @database_location_exists
+            @job_listings = JobWithScreenListing.filter_by_location(_location_id, _order, _start, _limit, job_number, screen_id, params[:description], params[:wages_hr])
+        else
+            @job_listings = JobWithScreenListing.order("#{params[:_sort]} #{params[:_order]}").offset(_start).limit(_limit)
+            @job_listings = @job_listings.search(job_number, :job_number) unless job_number.empty?
+            @job_listings = @job_listings.where("screen_id = #{screen_id}") unless screen_id.empty?
+            @job_listings = @job_listings.search(params[:description], :description) unless params.fetch(:description, '').empty?
+            @job_listings = @job_listings.search(params[:wages_hr], :wages_per_hour) unless params.fetch(:wages_hr, '').empty?
+        end
+
         render template: 'api/v1/job_listings/index.json', status: :ok
       end
 

@@ -5,6 +5,7 @@ include ActionController::MimeResponds
 class Api::V1::BaseController < ApplicationController
   before_action :destroy_session
   before_action :set_raven_context
+  before_action :check_database_location_exists
   before_action :set_current_database
   before_action :set_location
 
@@ -26,8 +27,12 @@ class Api::V1::BaseController < ApplicationController
     # logger.debug "current_database #{ActiveRecord::Base.connection.current_database}"
   end
 
+  def check_database_location_exists
+    @database_location_exists = ActiveRecord::Base.connection.table_exists? 'database_year'
+  end
+
   def set_location
-    if request.headers['Location'] && request.headers['Location'] != 'null' && request.headers['Location'] != 'New York'
+    if @database_location_exists && request.headers['Location'] && request.headers['Location'] != 'null' && request.headers['Location'] != 'New York'
         location = Location.where(name: request.headers['Location']).first
         if location.present?
             @location = location
@@ -78,7 +83,6 @@ class Api::V1::BaseController < ApplicationController
   end
 
   def get_current_year
-    @database_location_exists = ActiveRecord::Base.connection.table_exists? 'database_year'
     if @database_location_exists
         max_db_year = DatabaseYear.order('year DESC').first
         return max_db_year.year

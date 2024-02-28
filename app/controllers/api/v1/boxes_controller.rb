@@ -14,10 +14,20 @@ module Api
         name = params.fetch(:box_name, '')
 
         _start = params[:_start].to_i
+        _end = params[:_end].to_i
         _limit = params[:_end].to_i - _start
-        _order = "#{params[:_sort]} #{params[:_order]}"
+        _sort = params[:_sort]
+        _order = params[:_order]
         _location_id = @location ? @location.id : 0
-        @boxes = BoxesLocationPrice.filter_by_location(_location_id, _order, _start, _limit, id, cost_per_box, name)
+
+        if @database_location_exists
+            @boxes = BoxesLocationPrice.filter_by_location(_location_id, _order, _start, _limit, id, cost_per_box, name)
+        else
+            @boxes = Box.paginate(params.slice(:_end, :_sort, :_order))
+            @boxes = @boxes.search(id, :id) unless id.empty?
+            @boxes = @boxes.search(params[:box_name], :name) unless params.fetch(:box_name, '').empty?
+            @boxes = @boxes.search(cost_per_box, :cost_per_box) unless cost_per_box.empty?
+        end
 
         render template: 'api/v1/box/index.json', status: :ok
       end

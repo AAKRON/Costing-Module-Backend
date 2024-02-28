@@ -8,7 +8,14 @@ module Api
 
       def index
         _location_id = @location ? @location.id : 0
-        @app_constants = AppConstantsView.filter_by_location(_location_id, params)
+
+        if @database_location_exists
+            @app_constants = AppConstantsView.filter_by_location(_location_id, params)
+        else
+            @app_constants = AppConstant.paginate(params.slice(:_end, :_sort, :_order))
+            @app_constants = @app_constants.search(params[:q], :name) unless params.fetch(:q, '').empty?
+        end
+
         render json: @app_constants, status: 200
       end
 

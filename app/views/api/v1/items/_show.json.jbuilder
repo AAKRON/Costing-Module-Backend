@@ -48,7 +48,7 @@ json.jobs do
 end
 json.blanks do
   json.array! item.blanks_listing_item_with_cost do |blank|
-    blank = BlankCostView.get_blank_by_location(item.location_id, blank.blank_number)
+    blank = item.location_id != 0 ? BlankCostView.get_blank_by_location(item.location_id, blank.blank_number) : BlankCostView.find_by_blank_number(blank.blank_number)
     blank_cost_modifier = BlanksListingByItem.find_by_item_number_and_blank_number(item.item_number, blank.blank_number)
     unless blank.nil?
       json.blank_number blank.blank_number
@@ -92,12 +92,12 @@ end
 
 secondary_box_cost = 0
 if secondary_box_id_exists
-  secondary_box_cost = BoxesLocationPrice.get_box_cost(item.location_id, item.secondary_box.id)
+  secondary_box_cost = item.location_id != 0 ? BoxesLocationPrice.get_box_cost(item.location_id, item.secondary_box.id) : item.secondary_box.cost_per_box.to_f.round(5)
   json.secondary_box_cost secondary_box_cost
   json.secondary_box_name item.secondary_box.name
 end
 
-item_box_cost = BoxesLocationPrice.get_box_cost(item.location_id, item.box.id)
+item_box_cost = item.location_id != 0 ? BoxesLocationPrice.get_box_cost(item.location_id, item.box.id) : item.box_cost.round(5)
 json.item_box_cost item_box_cost
 json.job_price_cost job_price_cost.round(5)
 json.job_inventory_cost job_inventory_cost.round(5)

@@ -13,7 +13,13 @@ module Api
         _limit = params[:_end].to_i - _start
         _location_id = @location ? @location.id : 0
 
-        @blanks_listing_item_with_cost = ItemWithBlankPerCostView.filter_by_location(_location_id, _start, _limit, item_number)
+        if @database_location_exists
+            @blanks_listing_item_with_cost = ItemWithBlankPerCostView.filter_by_location(_location_id, _start, _limit, item_number)
+        else
+            @blanks_listing_item_with_cost = ItemWithBlankPerCostView.order("#{params[:_sort]} #{params[:_order]}").offset(_start).limit(_limit)
+            @blanks_listing_item_with_cost = @blanks_listing_item_with_cost.search(params[:q], :item_number) unless params.fetch(:q, '').empty?
+        end
+
         render json: @blanks_listing_item_with_cost, status: :ok
       end
 

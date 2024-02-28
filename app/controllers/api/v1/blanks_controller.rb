@@ -21,7 +21,18 @@ module Api
         _order = "#{params[:_sort]} #{params[:_order]}"
         _location_id = @location ? @location.id : 0
 
-        @blanks = BlankCostView.filter_by_location(_location_id, _order, _start, _limit, blank_number, blank_type_id, description, cost, total_blank_cost_for_price, total_blank_cost_for_inventory)
+        if @database_location_exists
+            @blanks = BlankCostView.filter_by_location(_location_id, _order, _start, _limit, blank_number, blank_type_id, description, cost, total_blank_cost_for_price, total_blank_cost_for_inventory)
+        else
+            @blanks = BlankCostView.order("#{params[:_sort]} #{params[:_order]}").offset(_start).limit(_limit)
+            @blanks = @blanks.search(blank_number, :blank_number) unless blank_number.empty?
+            @blanks = @blanks.where("blank_type_id = #{blank_type_id}") unless blank_type_id.empty?
+            @blanks = @blanks.search(params[:description], :description) unless params.fetch(:description, '').empty?
+            @blanks = @blanks.search(cost, :cost) unless cost.empty?
+            @blanks = @blanks.search(total_blank_cost_for_price, :total_blank_cost_for_price) unless total_blank_cost_for_price.empty?
+            @blanks = @blanks.search(total_blank_cost_for_inventory, :total_blank_cost_for_inventory) unless total_blank_cost_for_inventory.empty?
+        end
+
         render_blanks_template(template_name: :list, status: :ok)
       end
 

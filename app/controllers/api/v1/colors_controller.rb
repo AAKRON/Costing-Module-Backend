@@ -14,7 +14,17 @@ module Api
         _order = "#{params[:_sort]} #{params[:_order]}"
         _location_id = @location ? @location.id : 0
 
-        color = ColorsView.filter_by_location(_location_id, _order, _start, _limit, params)
+        if @database_location_exists
+            color = ColorsView.filter_by_location(_location_id, _order, _start, _limit, params)
+        else
+            cost_of_color = (params.fetch(:cost_of_color, '') == 'null' ) ? '' : params.fetch(:cost_of_color, '')
+
+            color = Color.all.paginate(params.slice(:_end, :_sort, :_order))
+            color = color.search(params[:name], :name) unless params.fetch(:name, '').empty?
+            color = color.search(params[:code], :code) unless params.fetch(:code, '').empty?
+            color = color.search(cost_of_color, :cost_of_color) unless cost_of_color.empty?
+        end
+
         render json: color, status: :ok
       end
 

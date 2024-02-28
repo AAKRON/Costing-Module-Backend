@@ -8,7 +8,7 @@ class ItemJobDecorator < SimpleDelegator
   end
 
   def wages_per_hour
-    if location_id.present?
+    if location_id.present? && location_id != 0
         jobs_location = JobLocationPrice.where(job_listings_id: job_listing.job_number).where(locations_id: location_id).first
         if jobs_location.present?
             return jobs_location[:wages_per_hour].to_f
@@ -38,7 +38,7 @@ class ItemJobDecorator < SimpleDelegator
   end
 
   def screen_location_cost
-    if location_id.present?
+    if location_id.present? && location_id != 0
         screens_location = ScreensLocationPrice.where(screens_id: job_listing.screen_id).where(locations_id: location_id).first
         if screens_location.present?
             return screens_location[:cost].to_f
