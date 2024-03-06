@@ -5,8 +5,8 @@ include ActionController::MimeResponds
 class Api::V1::BaseController < ApplicationController
   before_action :destroy_session
   before_action :set_raven_context
-  before_action :check_database_location_exists
   before_action :set_current_database
+  before_action :check_database_location_exists
   before_action :set_location
 
   private
@@ -83,7 +83,7 @@ class Api::V1::BaseController < ApplicationController
   end
 
   def get_current_year
-    if @database_location_exists
+    if ActiveRecord::Base.connection.table_exists? 'database_years'
         max_db_year = DatabaseYear.order('year DESC').first
         return max_db_year.year
     end
