@@ -655,8 +655,7 @@ module Api
       end
 
       def item_excel_report_download
-        @item = Item.find(params[:id])
-
+        set_item
         if @item.present?
             # Get the item template structure
             item_json = render_to_string(template: "api/v1/items/show.json", status: status)
@@ -671,8 +670,7 @@ module Api
       end
 
       def item_pdf_download
-        @item = Item.find(params[:id])
-
+        set_item
         if @item.present?
             # Get the item template structure
             item_json = render_to_string(template: "api/v1/items/show.json", status: status)
@@ -699,6 +697,22 @@ module Api
 
       def to_item_html
         render_to_string(template: 'api/v1/file/item.html.erb', :layout => false, :disposition => 'inline', locals: {item: @item})
+      end
+
+      def set_item
+        @item = Item.find(params[:id])
+
+        # add location id to jobs array
+        @item.item_jobs.map do |item_job|
+            item_job.location_id = @location ? @location.id : 0
+        end
+
+        # add location id to blanks_listing_item_with_cost array
+        @item.blanks_listing_item_with_cost.map do |blanks_listing_item_with_cost|
+            blanks_listing_item_with_cost.location_id = @location ? @location.id : 0
+        end
+
+        @item.location_id = @location ? @location.id : 0
       end
     end
   end

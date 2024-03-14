@@ -10,11 +10,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_02_27_014409) do
+ActiveRecord::Schema.define(version: 2024_03_14_210443) do
 
   # These are extensions that must be enabled in order to support this database
-  enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
+  enable_extension "timescaledb"
+  enable_extension "timescaledb_toolkit"
 
   create_table "app_constants", id: :serial, force: :cascade do |t|
     t.string "name"
@@ -503,22 +504,22 @@ ActiveRecord::Schema.define(version: 2024_02_27_014409) do
        JOIN units_of_measures t5 ON ((t1.units_of_measure_id = t5.id)));
   SQL
   create_view "blank_average_costs", sql_definition: <<-SQL
-      SELECT blank_id,
-      (avg((((COALESCE(raw_material_cost, (0)::double precision) / (COALESCE(
+      SELECT final_calculation_views.blank_id,
+      (avg((((COALESCE(final_calculation_views.raw_material_cost, (0)::double precision) / (COALESCE(
           CASE
-              WHEN (number_of_pieces_per_unit_one = 0) THEN 1
-              ELSE number_of_pieces_per_unit_one
-          END, 1))::double precision) + ((COALESCE(cost_of_color_one, (0)::double precision) * COALESCE(percentage_of_colorant_one, (0)::double precision)) / (COALESCE(
+              WHEN (final_calculation_views.number_of_pieces_per_unit_one = 0) THEN 1
+              ELSE final_calculation_views.number_of_pieces_per_unit_one
+          END, 1))::double precision) + ((COALESCE(final_calculation_views.cost_of_color_one, (0)::double precision) * COALESCE(final_calculation_views.percentage_of_colorant_one, (0)::double precision)) / (COALESCE(
           CASE
-              WHEN (number_of_pieces_per_unit_one = 0) THEN 1
-              ELSE number_of_pieces_per_unit_one
-          END, 1))::double precision)) + ((COALESCE(cost_of_color_two, (0)::double precision) * COALESCE(percentage_of_colorant_two, (0)::double precision)) / (COALESCE(
+              WHEN (final_calculation_views.number_of_pieces_per_unit_one = 0) THEN 1
+              ELSE final_calculation_views.number_of_pieces_per_unit_one
+          END, 1))::double precision)) + ((COALESCE(final_calculation_views.cost_of_color_two, (0)::double precision) * COALESCE(final_calculation_views.percentage_of_colorant_two, (0)::double precision)) / (COALESCE(
           CASE
-              WHEN (number_of_pieces_per_unit_two = 0) THEN 1
-              ELSE number_of_pieces_per_unit_two
+              WHEN (final_calculation_views.number_of_pieces_per_unit_two = 0) THEN 1
+              ELSE final_calculation_views.number_of_pieces_per_unit_two
           END, 1))::double precision))))::numeric(10,5) AS average_cost_of_blank
      FROM final_calculation_views
-    GROUP BY blank_id;
+    GROUP BY final_calculation_views.blank_id;
   SQL
   create_view "blank_final_calculations_views", sql_definition: <<-SQL
       SELECT fc.id,
@@ -643,16 +644,16 @@ ActiveRecord::Schema.define(version: 2024_02_27_014409) do
        LEFT JOIN item_types it ON ((it.type_number = i.item_type_id)));
   SQL
   create_view "colors_views", sql_definition: <<-SQL
-      SELECT id,
-      code,
-      name,
-      cost_of_color
+      SELECT colors.id,
+      colors.code,
+      colors.name,
+      colors.cost_of_color
      FROM colors;
   SQL
   create_view "app_constants_views", sql_definition: <<-SQL
-      SELECT id,
-      name,
-      value
+      SELECT app_constants.id,
+      app_constants.name,
+      app_constants.value
      FROM app_constants;
   SQL
 end

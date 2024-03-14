@@ -47,7 +47,7 @@ json.jobs do
   end
 end
 json.blanks do
-  json.array! item.blanks_listing_item_with_cost do |blank|
+  json.array! item.blanks_listing_by_item do |blank|
     blank = item.location_id != 0 ? BlankCostView.get_blank_by_location(item.location_id, blank.blank_number) : BlankCostView.find_by_blank_number(blank.blank_number)
     blank_cost_modifier = BlanksListingByItem.find_by_item_number_and_blank_number(item.item_number, blank.blank_number)
     unless blank.nil?

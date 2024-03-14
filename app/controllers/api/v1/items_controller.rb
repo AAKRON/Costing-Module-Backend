@@ -114,11 +114,11 @@ module Api
       private
 
       def item_params
-        params.require(:item).permit(:item_number, :description, :box_id, :secondary_box_id, :number_of_pcs_per_secondary_box, :item_type_id, :number_of_pcs_per_box, :ink_id)
+        params.require(:item).permit(:item_number, :description, :box_id, :secondary_box_id, :number_of_pcs_per_secondary_box, :item_type_id, :number_of_pcs_per_box, :ink_id, :ink_cost)
       end
 
       def item_update_params
-        params.require(:item).permit(:description, :box_id, :secondary_box_id, :number_of_pcs_per_secondary_box, :item_type_id, :number_of_pcs_per_box, :ink_id)
+        params.require(:item).permit(:description, :box_id, :secondary_box_id, :number_of_pcs_per_secondary_box, :item_type_id, :number_of_pcs_per_box, :ink_id, :ink_cost)
       end
 
       def set_item
