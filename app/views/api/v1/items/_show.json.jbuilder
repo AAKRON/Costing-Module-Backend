@@ -51,21 +51,24 @@ json.blanks do
     blank = item.location_id != 0 ? BlankCostView.get_blank_by_location(item.location_id, blank.blank_number) : BlankCostView.find_by_blank_number(blank.blank_number)
     blank_cost_modifier = BlanksListingByItem.find_by_item_number_and_blank_number(item.item_number, blank.blank_number)
     unless blank.nil?
+      total_blank_cost_for_price = blank.total_blank_cost_for_price + blank.cost
+      total_blank_cost_for_inventory = blank.total_blank_cost_for_inventory + blank.cost
+
       json.blank_number blank.blank_number
       json.description blank.description
       json.blank_type blank.blank_type
       json.type_number blank.type_number
       json.cost blank.cost
-      json.total_blank_cost_for_price blank.total_blank_cost_for_price
-      json.total_blank_cost_for_inventory blank.total_blank_cost_for_inventory
+      json.total_blank_cost_for_price total_blank_cost_for_price
+      json.total_blank_cost_for_inventory total_blank_cost_for_inventory
       unless blank_cost_modifier.nil?
         default_blank_cost_modifier_multi = blank_cost_modifier.mult
         default_blank_cost_modifier_div = blank_cost_modifier.div
         json.multiplication default_blank_cost_modifier_multi
         json.division default_blank_cost_modifier_div
       end
-      total_blank_cost_for_price_modify = (blank.total_blank_cost_for_price * default_blank_cost_modifier_multi) / default_blank_cost_modifier_div
-      total_blank_cost_for_inventory_modify = (blank.total_blank_cost_for_inventory * default_blank_cost_modifier_multi) / default_blank_cost_modifier_div
+      total_blank_cost_for_price_modify = (total_blank_cost_for_price * default_blank_cost_modifier_multi) / default_blank_cost_modifier_div
+      total_blank_cost_for_inventory_modify = (total_blank_cost_for_inventory * default_blank_cost_modifier_multi) / default_blank_cost_modifier_div
 
       json.total_blank_cost_for_price_modify total_blank_cost_for_price_modify
       json.total_blank_cost_for_inventory_modify total_blank_cost_for_inventory_modify
