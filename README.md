@@ -32,5 +32,5 @@ The API service for the costing module
 
 1. Build docker image with: `docker build -t aakron_api .` (Only one time)
 2. To run a container from our image: `docker-compose up`
-3. To run the container bash run: `docker-compose exec aakron_api bash`
+3. To run the container bash run: `docker exec -ti costing-module-api-heroku-20-app-1 sh`
 
