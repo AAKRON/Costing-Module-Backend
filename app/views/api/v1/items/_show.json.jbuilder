@@ -95,12 +95,12 @@ end
 
 secondary_box_cost = 0
 if secondary_box_id_exists
-  secondary_box_cost = item.location_id != 0 ? BoxesLocationPrice.get_box_cost(item.location_id, item.secondary_box.id) : item.secondary_box.cost_per_box.to_f.round(5)
+  secondary_box_cost = item.location_id != 0 ? BoxesLocationPrice.get_box_cost(item.location_id, item.secondary_box.id, item.number_of_pcs_per_secondary_box) : item.secondary_box.cost_per_box.to_f.round(5)
   json.secondary_box_cost secondary_box_cost
   json.secondary_box_name item.secondary_box.name
 end
 
-item_box_cost = item.location_id != 0 ? BoxesLocationPrice.get_box_cost(item.location_id, item.box.id) : item.box_cost.round(5)
+item_box_cost = item.location_id != 0 ? BoxesLocationPrice.get_box_cost(item.location_id, item.box.id, item.number_of_pcs_per_box) : item.box_cost.round(5)
 json.item_box_cost item_box_cost
 json.job_price_cost job_price_cost.round(5)
 json.job_inventory_cost job_inventory_cost.round(5)

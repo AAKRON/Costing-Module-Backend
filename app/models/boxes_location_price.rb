@@ -12,8 +12,11 @@ class BoxesLocationPrice < ApplicationRecord
         find_by_sql("SELECT * FROM get_boxes(#{location_id}) #{where_clauses} ORDER BY #{_order} LIMIT #{_limit} OFFSET #{_start};")
     }
 
-    scope :get_box_cost, ->(location_id, box_id) {
+    scope :get_box_cost, ->(location_id, box_id, number_of_pcs_per_box) {
         box = find_by_sql("SELECT * FROM get_boxes(#{location_id}) WHERE id=#{box_id}").first
-        return box.cost_per_box.to_f.round(5)
+        unless box.nil?
+            return ((box.cost_per_box.to_f) /  (number_of_pcs_per_box == 0 ? 1 : number_of_pcs_per_box)).round(5)
+        end
+        return 0
     }
 end
