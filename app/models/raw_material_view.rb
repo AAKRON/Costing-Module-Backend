@@ -14,11 +14,18 @@ class RawMaterialView < ApplicationRecord
     find_by_sql("SELECT * FROM get_raw_materials(#{location_id}) #{where_clauses} ORDER BY #{_order} LIMIT #{_limit} OFFSET #{_start};")
   }
 
-  def self.listing_csv
+  scope :filter_raw_materials_by_location, ->(location_id, ids) {
+    where_clauses = "WHERE TRUE "
+    where_clauses = "#{where_clauses} AND id IN (#{ids}%)" unless ids.blank?
+
+    find_by_sql("SELECT * FROM get_raw_materials(#{location_id}) #{where_clauses} ORDER BY id;")
+  }
+
+  def self.listing_csv(scope)
     CSV.generate(col_sep: ';') do |csv| # Aquí se especifica que el delimitador de campo es el punto y coma
 
       csv << ["ID", "NAME", "RAW MATERIAL TYPE", "VENDOR", "COST", "UNIT", "COLOR"]
-      all.each do |result|
+      scope.each do |result|
         csv << result.attributes.values_at(*["id", "name", "raw_material_type", "vendor","cost","unit","color"])
       end
     end

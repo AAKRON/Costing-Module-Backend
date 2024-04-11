@@ -7,11 +7,11 @@ class Color < ApplicationRecord
   include Paginatable
   include Searchable
 
-  def self.listing_csv
+  def self.listing_csv(scope)
     CSV.generate(col_sep: ';') do |csv| # Aquí se especifica que el delimitador de campo es el punto y coma
 
       csv << ["ID", "NAME", "CODE", "COST OF COLOR" ]
-      all.each do |result|
+      scope.each do |result|
         csv << result.attributes.values_at(*["id", "name", "code","cost_of_color"])
       end
     end

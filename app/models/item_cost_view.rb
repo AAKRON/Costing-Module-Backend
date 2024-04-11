@@ -21,19 +21,26 @@ class ItemCostView < ApplicationRecord
     find_by_sql("SELECT * FROM get_item_costs(#{location_id}) #{where_clauses} ORDER BY #{_order} LIMIT #{_limit} OFFSET #{_start};")
   }
 
-  def self.to_price_csv
+  scope :filter_items_id_by_location, ->(location_id, item_ids) {
+    where_clauses = "WHERE TRUE "
+    where_clauses = "#{where_clauses} AND id IN (#{item_ids}%)" unless item_ids.blank?
+
+    find_by_sql("SELECT * FROM get_item_costs(#{location_id}) #{where_clauses} ORDER BY item_number;")
+  }
+
+  def self.to_price_csv(scope = nil)
     CSV.generate(col_sep: ';') do |csv|
       csv << ["Item Number", "Description", "Item Type", "Cost For Price"]
-      all.each do |result|
+      scope.each do |result|
         csv << result.attributes.values_at(*["item_number", "description", "type_description", "total_price_cost"])
       end
     end
   end
 
-  def self.to_invetory_csv
+  def self.to_invetory_csv(scope = nil)
     CSV.generate(col_sep: ';') do |csv|
       csv << ["Item Number", "Description", "Item Type", "Cost For Invetory"]
-      all.each do |result|
+      scope.each do |result|
         csv << result.attributes.values_at(*["item_number", "description", "type_description", "total_inventory_cost"])
       end
     end

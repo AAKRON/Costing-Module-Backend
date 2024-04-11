@@ -45,46 +45,60 @@ module Api
       end
 
       def item_download
-
-        if (params.key?("items") && params[:items] !='')
-          items = params[:items].split(",")
-          @items = ItemCostView.where(item_number: items).order(:item_number)
+        if !@database_location_exists
+            if (params.key?("items") && params[:items] !='')
+                items = params[:items].split(",")
+                @items = ItemCostView.where(item_number: items).order(:item_number)
+            else
+                @items = ItemCostView.all.order(:item_number)
+            end
         else
-          @items = ItemCostView.all.order(:item_number)
+            items = (params.key?("items") && params[:items] !='') ? params[:items] : nil
+            _location_id = @location ? @location.id : 0
+            @items = ItemCostView.filter_items_id_by_location(_location_id, items)
         end
 
         respond_to do |format|
-            format.csv { send_data params[:cost_type] == 'item-price-cost' ? @items.to_price_csv : @items.to_invetory_csv }
+            format.csv { send_data params[:cost_type] == 'item-price-cost' ? ItemCostView.to_price_csv(@items) : ItemCostView.to_invetory_csv(@items)  }
         end
       end
 
       def blank_download
-
-        if (params.key?("blanks") && params[:blanks] !='')
-          blanks = params[:blanks].split(",")
-          # @blanks = BlankCostView.where("type_number = 1").where(blank_number: blanks).order(:blank_number)
-          @blanks = BlankCostView.where(blank_number: blanks).order(:blank_number)
+        if !@database_location_exists
+            if (params.key?("blanks") && params[:blanks] !='')
+              blanks = params[:blanks].split(",")
+              @blanks = BlankCostView.where(blank_number: blanks).order(:blank_number)
+            else
+              @blanks = BlankCostView.order(:blank_number)
+            end
         else
-          @blanks = BlankCostView.order(:blank_number)
+            blanks = (params.key?("blanks") && params[:blanks] !='') ? params[:blanks] : nil
+            _location_id = @location ? @location.id : 0
+            @blanks = BlankCostView.filter_by_blanks_numbers_location(_location_id, blanks)
         end
 
         respond_to do |format|
-            format.csv { send_data params[:cost_type] == 'blank-price-cost' ? @blanks.to_price_csv : @blanks.to_invetory_csv }
+            format.csv { send_data params[:cost_type] == 'blank-price-cost' ? BlankCostView.to_price_csv(@blanks)  : BlankCostView.to_invetory_csv(@blanks) }
         end
       end
 
 
       def raw_material_download
-
-        if (params.key?("blanks") && params[:blanks] !='')
-          raws = params[:blanks].split(",")          
-          @raws = RawMaterialView.where(id: raws).order(:id)
+        if !@database_location_exists
+            if (params.key?("blanks") && params[:blanks] !='')
+              raws = params[:blanks].split(",")
+              @raws = RawMaterialView.where(id: raws).order(:id)
+            else
+              @raws = RawMaterialView.order(:id)
+            end
         else
-          @raws = RawMaterialView.order(:id)
+            raws = (params.key?("blanks") && params[:blanks] !='') ? params[:blanks] : nil
+            _location_id = @location ? @location.id : 0
+            @raws = RawMaterialView.filter_raw_materials_by_location(_location_id, raws)
         end
 
         respond_to do |format|
-            format.csv { send_data @raws.listing_csv}
+            format.csv { send_data RawMaterialView.listing_csv(@raws)}
         end
       end
 
@@ -103,16 +117,21 @@ module Api
       end
 
       def color_download
-
-        if (params.key?("blanks") && params[:blanks] !='')
-          colors = params[:blanks].split(",")          
-          @colors = Color.where(id: colors).order(:id)
+        if !@database_location_exists
+            if (params.key?("blanks") && params[:blanks] !='')
+                colors = params[:blanks].split(",")
+                @colors = Color.where(id: colors).order(:id)
+            else
+                @colors = Color.order(:id)
+            end
         else
-          @colors = Color.order(:id)
+            colors = (params.key?("blanks") && params[:blanks] !='') ? params[:blanks] : nil
+            _location_id = @location ? @location.id : 0
+            @colors = ColorsView.filter_by_colors_location(_location_id, colors)
         end
 
         respond_to do |format|
-            format.csv { send_data @colors.listing_csv}
+            format.csv { send_data Color.listing_csv(@colors)}
         end
       end
 

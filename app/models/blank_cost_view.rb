@@ -14,6 +14,13 @@ class BlankCostView < ApplicationRecord
     find_by_sql("SELECT * FROM get_blanks(#{location_id}) #{where_clauses} ORDER BY #{_order} LIMIT #{_limit} OFFSET #{_start};")
   }
 
+  scope :filter_by_blanks_numbers_location, ->(location_id, blank_numbers) {
+    where_clauses = "WHERE TRUE "
+    where_clauses = "#{where_clauses} AND blank_number IN (#{blank_numbers}%)" unless blank_numbers.blank?
+
+    find_by_sql("SELECT * FROM get_blanks(#{location_id}) #{where_clauses} ORDER BY blank_number;")
+  }
+
   scope :get_blank_by_location, ->(location_id, blank_number) {
     return find_by_sql("SELECT * FROM get_blanks(#{location_id}) WHERE blank_number=#{blank_number}").first
   }
