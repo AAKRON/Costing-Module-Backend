@@ -676,19 +676,6 @@ module Api
       def item_excel_report_download
         set_item
         if @item.present?
-            # add location id to jobs array
-            @item.item_jobs.map do |item_job|
-                item_job.location_id = @location ? @location.id : 0
-            end
-
-            # add location id to blanks_listing_item_with_cost array
-            @item.blanks_listing_item_with_cost.map do |blanks_listing_item_with_cost|
-                blanks_listing_item_with_cost.location_id = @location ? @location.id : 0
-            end
-
-            # Add location  id
-            @item.location_id = @location ? @location.id : 0
-
             # Get the item template structure
             item_json = render_to_string(template: "api/v1/items/show.json", status: status)
             @item = JSON.parse(item_json)
@@ -704,19 +691,6 @@ module Api
       def item_pdf_download
         set_item
         if @item.present?
-             # add location id to jobs array
-             @item.item_jobs.map do |item_job|
-                item_job.location_id = @location ? @location.id : 0
-            end
-
-            # add location id to blanks_listing_item_with_cost array
-            @item.blanks_listing_item_with_cost.map do |blanks_listing_item_with_cost|
-                blanks_listing_item_with_cost.location_id = @location ? @location.id : 0
-            end
-
-            # Add location  id
-            @item.location_id = @location ? @location.id : 0
-
             # Get the item template structure
             item_json = render_to_string(template: "api/v1/items/show.json", status: status)
             @item = JSON.parse(item_json)
@@ -758,6 +732,8 @@ module Api
         end
 
         @item.location_id = @location ? @location.id : 0
+        @ink_column_exists = ActiveRecord::Base.connection.column_exists?(:items, :ink_id) && @item.ink_id.present?
+        @secondary_box_id_exists = ActiveRecord::Base.connection.column_exists?(:items, :secondary_box_id) && @item.secondary_box_id.present?
       end
     end
   end

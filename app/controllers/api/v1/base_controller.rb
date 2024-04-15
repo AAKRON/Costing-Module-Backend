@@ -32,10 +32,19 @@ class Api::V1::BaseController < ApplicationController
   end
 
   def set_location
-    if @database_location_exists && request.headers['Location'] && request.headers['Location'] != 'null' && request.headers['Location'] != 'USA'
-        location = Location.where(name: request.headers['Location']).first
-        if location.present?
-            @location = location
+    if @database_location_exists
+        if request.headers['Location'] && request.headers['Location'] != 'null' && request.headers['Location'] != 'USA'
+            location = Location.where(name: request.headers['Location']).first
+            if location.present?
+                @location = location
+            end
+        else
+            if params['location'] && params['location'] != 'USA'
+                location = Location.where(name: params['location']).first
+                if location.present?
+                    @location = location
+                end
+            end
         end
     end
   end
