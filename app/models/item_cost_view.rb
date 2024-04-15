@@ -23,7 +23,7 @@ class ItemCostView < ApplicationRecord
 
   scope :filter_items_id_by_location, ->(location_id, item_ids) {
     where_clauses = "WHERE TRUE "
-    where_clauses = "#{where_clauses} AND id IN (#{item_ids}%)" unless item_ids.blank?
+    where_clauses = "#{where_clauses} AND id IN (#{item_ids})" unless item_ids.blank?
 
     find_by_sql("SELECT * FROM get_item_costs(#{location_id}) #{where_clauses} ORDER BY item_number;")
   }
