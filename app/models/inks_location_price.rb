@@ -11,4 +11,12 @@ class InksLocationPrice < ApplicationRecord
 
         find_by_sql("SELECT * FROM get_inks(#{location_id}) #{where_clauses} ORDER BY #{_order} LIMIT #{_limit} OFFSET #{_start};")
     }
+
+    scope :get_ink_cost_by_location, ->(location_id, id) {
+        ink = find_by_sql("SELECT * FROM get_inks(#{location_id}) WHERE id=#{id}").first
+        unless ink.nil?
+            return ink.ink_cost.round(5)
+        end
+        return 0
+    }
 end

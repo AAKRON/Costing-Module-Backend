@@ -5,7 +5,7 @@ job_inventory_cost = 0.0
 blank_price_cost = 0.0
 blank_inventory_cost = 0.0
 job_screen_cost = 0.0
-ink_cost = ink_column_exists ? item.ink.ink_cost.round(5) : item.ink_cost.round(5)
+ink_cost = ink_column_exists ? InksLocationPrice.get_ink_cost_by_location(item.location_id, item.ink_id) : item.ink_cost.round(5)
 ink_id = ink_column_exists ? item.ink_id : nil
 
 default_blank_cost_modifier_multi = 1
