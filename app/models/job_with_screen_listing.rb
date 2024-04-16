@@ -10,17 +10,9 @@ class JobWithScreenListing < ApplicationRecord
     where_clauses = "#{where_clauses} AND wages_per_hour::text LIKE '#{wages_hr}%'" unless wages_hr.blank?
 
     find_by_sql("SELECT * FROM get_jobs(#{location_id}) #{where_clauses} ORDER BY #{_order} LIMIT #{_limit} OFFSET #{_start};")
+  }
 
-    # find_by_sql([
-    #     "SELECT *
-    #     FROM get_jobs(#{location_id})
-    #     WHERE CAST(job_number AS TEXT) LIKE :job_number
-    #     ORDER BY #{_order}
-    #     LIMIT #{_limit}
-    #     OFFSET #{_start};",
-    #     {
-    #         job_number: "%#{job_number}", screen_id: "%#{screen_id}%", description: "%#{description}%", wages_hr: "%#{wages_hr}%"
-    #     }
-    # ])
+  scope :filter_jobs_id_by_location, ->(location_id) {
+    find_by_sql("SELECT * FROM get_jobs(#{location_id}) ORDER BY id;")
   }
 end

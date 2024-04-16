@@ -10,4 +10,8 @@ class ScreensLocationPrice < ApplicationRecord
 
         find_by_sql("SELECT * FROM get_screens(#{location_id}) #{where_clauses};")
     }
+
+    scope :filter_screens_id_by_location, ->(location_id) {
+        find_by_sql("SELECT * FROM get_screens(#{location_id}) ORDER BY id;")
+    }
 end

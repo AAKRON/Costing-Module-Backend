@@ -586,14 +586,26 @@ module Api
 
 
       def job_listing_download  
+        if !@database_location_exists
         @jobslisting = JobListing.all.order(:id)      
+        else
+            location_id = @location ? @location.id : 0
+            @jobslisting = JobWithScreenListing.filter_jobs_id_by_location(location_id)
+        end
+
         respond_to do |format|
           format.xlsx { send_data JobListing.listing_xlsx(@jobslisting), filename: "1 - JOB LIST ACTUAL COSTING MODULE.xlsx", type: Mime::Type.lookup_by_extension(:xlsx) }
         end
       end   
 
       def raw_materials
+        if !@database_location_exists
         @raws = RawMaterial.all.order(:id)      
+        else
+            location_id = @location ? @location.id : 0
+            @raws = RawMaterialView.filter_raw_materials_by_location(location_id, nil)
+        end
+
         respond_to do |format|
           format.xlsx { send_data RawMaterial.listing_xlsx(@raws), filename: "2 - NEW RAW CAL.xlsx", type: Mime::Type.lookup_by_extension(:xlsx) }
         end
@@ -615,7 +627,13 @@ module Api
       end   
 
       def box_download       
+        if !@database_location_exists
         @boxes = Box.all.order(:id)      
+        else
+            location_id = @location ? @location.id : 0
+            @boxes = BoxesLocationPrice.filter_boxes_id_by_location(location_id)
+        end
+
         respond_to do |format|
           format.xlsx { send_data Box.listing_xlsx(@boxes), filename: "5 - BOX LIST FOR COSTING MODULE.xlsx", type: Mime::Type.lookup_by_extension(:xlsx) }
         end
@@ -629,7 +647,13 @@ module Api
       end  
 
       def screen_cliche_sizes_for_costing_module_download
+        if !@database_location_exists
         @screens = Screen.all.order(:id)      
+        else
+            location_id = @location ? @location.id : 0
+            @screens = ScreensLocationPrice.filter_screens_id_by_location(location_id)
+        end
+
         respond_to do |format|
           format.xlsx { send_data Screen.listing_xlsx(@screens), filename: "7 - SCREEN-CLICHE SIZES FOR COSTING MODULE.xlsx", type: Mime::Type.lookup_by_extension(:xlsx) }
         end
