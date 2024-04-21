@@ -25,21 +25,21 @@ class BlankCostView < ApplicationRecord
     return find_by_sql("SELECT * FROM get_blanks(#{location_id}) WHERE blank_number=#{blank_number}").first
   }
 
-  def self.to_price_csv
+  def self.to_price_csv(scope = nil)
     CSV.generate(col_sep: ';') do |csv| # Aquí se especifica que el delimitador de campo es el punto y coma
 
       csv << ["Blank Number", "Description", "Blank Type", "Cost For Price"]
-      all.each do |result|
+      scope.each do |result|
         csv << result.attributes.values_at(*["blank_number", "description", "blank_type", "total_blank_cost_for_price"])
       end
     end
   end
 
-  def self.to_invetory_csv
+  def self.to_invetory_csv(scope = nil)
     CSV.generate(col_sep: ';') do |csv| # Aquí se especifica que el delimitador de campo es el punto y coma
 
       csv << ["Blank Number", "Description", "Blank Type", "Cost For Invetory"]
-      all.each do |result|
+      scope.each do |result|
         csv << result.attributes.values_at(*["blank_number", "description", "blank_type", "total_blank_cost_for_inventory"])
       end
     end

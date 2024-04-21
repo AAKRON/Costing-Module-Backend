@@ -587,7 +587,7 @@ module Api
 
       def job_listing_download  
         if !@database_location_exists
-        @jobslisting = JobListing.all.order(:id)      
+            @jobslisting = JobListing.all.order(:id)
         else
             location_id = @location ? @location.id : 0
             @jobslisting = JobWithScreenListing.filter_jobs_id_by_location(location_id)
@@ -600,7 +600,7 @@ module Api
 
       def raw_materials
         if !@database_location_exists
-        @raws = RawMaterial.all.order(:id)      
+            @raws = RawMaterial.all.order(:id)
         else
             location_id = @location ? @location.id : 0
             @raws = RawMaterialView.filter_raw_materials_by_location(location_id, nil)

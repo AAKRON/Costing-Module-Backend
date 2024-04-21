@@ -16,7 +16,7 @@ class RawMaterialView < ApplicationRecord
 
   scope :filter_raw_materials_by_location, ->(location_id, ids) {
     where_clauses = "WHERE TRUE "
-    where_clauses = "#{where_clauses} AND id IN (#{ids}%)" unless ids.blank?
+    where_clauses = "#{where_clauses} AND id IN (#{ids})" unless ids.blank?
 
     find_by_sql("SELECT * FROM get_raw_materials(#{location_id}) #{where_clauses} ORDER BY id;")
   }
