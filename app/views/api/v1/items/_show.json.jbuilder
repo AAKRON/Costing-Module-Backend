@@ -88,7 +88,7 @@ json.screen do
       json.description job.description
       json.screen_name job_listings.screen.screen_size
       json.screen_cost job.screen_location_cost.round(5)
-      job_screen_cost = job_screen_cost + job_listings.screen.cost.to_f
+      job_screen_cost = job_screen_cost + job.screen_location_cost.to_f
     end
   end
 end
