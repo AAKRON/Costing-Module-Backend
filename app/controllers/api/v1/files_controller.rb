@@ -613,7 +613,13 @@ module Api
       end
 
       def blanks_listing_item_with_cost_download  
-        @blankslisting = BlanksListingItemWithCost.all.order(:id)      
+        if !@database_location_exists
+            @blankslisting = BlanksListingItemWithCost.all.order(:id)
+        else
+            location_id = @location ? @location.id : 0
+            @blankslisting = BlanksListingItemWithCost.filter_by_blanks_numbers_location(location_id, nil)
+        end
+
         respond_to do |format|
           format.xlsx { send_data BlanksListingItemWithCost.listing_xlsx(@blankslisting), filename: "3 - BLANKS LISTING ITEM WITH COST.xlsx", type: Mime::Type.lookup_by_extension(:xlsx) }
         end
@@ -626,9 +632,9 @@ module Api
         end
       end   
 
-      def box_download       
+      def box_download
         if !@database_location_exists
-        @boxes = Box.all.order(:id)      
+            @boxes = Box.all.order(:id)
         else
             location_id = @location ? @location.id : 0
             @boxes = BoxesLocationPrice.filter_boxes_id_by_location(location_id)
@@ -640,7 +646,12 @@ module Api
       end      
 
       def item_list_for_costing_module_download
-        @itemcostingmodule = Item.all.order(:id)      
+        if !@database_location_exists
+            @itemcostingmodule = Item.all.order(:id)
+        else
+            location_id = @location ? @location.id : 0
+            @itemcostingmodule = ItemCostView.filter_items_id_by_location(location_id, nil)
+        end
         respond_to do |format|
           format.xlsx { send_data ItemListForCostingModuleJob.listing_xlsx(@itemcostingmodule), filename: "6 - ITEM LIST FOR COSTING MODULE.xlsx", type: Mime::Type.lookup_by_extension(:xlsx) }
         end
@@ -648,7 +659,7 @@ module Api
 
       def screen_cliche_sizes_for_costing_module_download
         if !@database_location_exists
-        @screens = Screen.all.order(:id)      
+            @screens = Screen.all.order(:id)
         else
             location_id = @location ? @location.id : 0
             @screens = ScreensLocationPrice.filter_screens_id_by_location(location_id)

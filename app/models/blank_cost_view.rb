@@ -16,7 +16,7 @@ class BlankCostView < ApplicationRecord
 
   scope :filter_by_blanks_numbers_location, ->(location_id, blank_numbers) {
     where_clauses = "WHERE TRUE "
-    where_clauses = "#{where_clauses} AND blank_number IN (#{blank_numbers}%)" unless blank_numbers.blank?
+    where_clauses = "#{where_clauses} AND blank_number IN (#{blank_numbers})" unless blank_numbers.blank?
 
     find_by_sql("SELECT * FROM get_blanks(#{location_id}) #{where_clauses} ORDER BY blank_number;")
   }

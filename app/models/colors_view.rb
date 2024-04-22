@@ -15,7 +15,7 @@ class ColorsView < ApplicationRecord
 
     scope :filter_by_colors_location, ->(location_id, ids) {
         where_clauses = "WHERE TRUE "
-        where_clauses = "#{where_clauses} AND id IN (#{ids}%)" unless ids.blank?
+        where_clauses = "#{where_clauses} AND id IN (#{ids})" unless ids.blank?
 
         find_by_sql("SELECT * FROM get_colors(#{location_id}) #{where_clauses} ORDER BY id;")
     }

@@ -7,6 +7,13 @@ class BlanksListingItemWithCost < ApplicationRecord
   before_save { |record| record.cell_key = item_number + blank_number }
   attr_accessor :location_id
 
+  scope :filter_by_blanks_numbers_location, ->(location_id, blank_numbers) {
+    where_clauses = "WHERE TRUE "
+    where_clauses = "#{where_clauses} AND blank_number IN (#{blank_numbers})" unless blank_numbers.blank?
+
+    find_by_sql("SELECT * FROM get_blanks_listing_item_with_costs(#{location_id}) #{where_clauses} ORDER BY blank_number;")
+  }
+
   def self.listing_xlsx(blanks)
     p = Axlsx::Package.new
     wb = p.workbook
@@ -25,7 +32,8 @@ class BlanksListingItemWithCost < ApplicationRecord
           item_description = ''
         end
 
-        sheet.add_row [result.id, item_description, result.blank_number, result.cost_per_blank]
+        cost_per_blank = result.try(:cost_per_blank) ? result.cost_per_blank : result.cost
+        sheet.add_row [result.id, item_description, result.blank_number, cost_per_blank]
       end
     end
   
