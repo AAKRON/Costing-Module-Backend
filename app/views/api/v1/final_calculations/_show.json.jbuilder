@@ -40,8 +40,8 @@ json.blank_final_calculations_view final_calculation_calculated.blank_final_calc
 
 json.blank_average_cost final_calculation_calculated.blank_average_cost
 
-number_of_pieces_per_unit_one = final_calculation.number_of_pieces_per_unit_one.round(2)
+number_of_pieces_per_unit_one = format("%.2f", final_calculation.number_of_pieces_per_unit_one)
 json.number_of_pieces_per_unit_one number_of_pieces_per_unit_one
 
-number_of_pieces_per_unit_two = final_calculation.number_of_pieces_per_unit_two.round(2)
+number_of_pieces_per_unit_two = format("%.2f", final_calculation.number_of_pieces_per_unit_two)
 json.number_of_pieces_per_unit_two number_of_pieces_per_unit_two
