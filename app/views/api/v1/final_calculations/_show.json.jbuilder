@@ -39,3 +39,9 @@ json.total_cost (final_calculation_calculated.raw_calculated + cost_of_colorant_
 json.blank_final_calculations_view final_calculation_calculated.blank_final_calculations_view
 
 json.blank_average_cost final_calculation_calculated.blank_average_cost
+
+number_of_pieces_per_unit_one = final_calculation.number_of_pieces_per_unit_one.round(2)
+json.number_of_pieces_per_unit_one number_of_pieces_per_unit_one
+
+number_of_pieces_per_unit_two = final_calculation.number_of_pieces_per_unit_two.round(2)
+json.number_of_pieces_per_unit_two number_of_pieces_per_unit_two
