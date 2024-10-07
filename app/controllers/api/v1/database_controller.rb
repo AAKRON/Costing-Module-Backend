@@ -31,10 +31,10 @@ module Api
                     database = database + '_' + request.headers['Database']
                 end
 
-                if ActiveRecord::Base.connection.current_database != database
+                #if ActiveRecord::Base.connection.current_database != database
                     connection_config['database'] = database
                     ActiveRecord::Base.establish_connection(connection_config)
-                end
+                #end
             end
 
             def get_current_year
