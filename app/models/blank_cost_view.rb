@@ -26,7 +26,7 @@ class BlankCostView < ApplicationRecord
   }
 
   def self.to_price_csv(scope = nil)
-    CSV.generate(col_sep: ';') do |csv| # Aquí se especifica que el delimitador de campo es el punto y coma
+    CSV.generate(col_sep: ',') do |csv| # Aquí se especifica que el delimitador de campo es el punto y coma
 
       csv << ["Blank Number", "Description", "Blank Type", "Cost For Price"]
       scope.each do |result|
@@ -36,7 +36,7 @@ class BlankCostView < ApplicationRecord
   end
 
   def self.to_invetory_csv(scope = nil)
-    CSV.generate(col_sep: ';') do |csv| # Aquí se especifica que el delimitador de campo es el punto y coma
+    CSV.generate(col_sep: ',') do |csv| # Aquí se especifica que el delimitador de campo es el punto y coma
 
       csv << ["Blank Number", "Description", "Blank Type", "Cost For Invetory"]
       scope.each do |result|
