@@ -22,7 +22,7 @@ class RawMaterialView < ApplicationRecord
   }
 
   def self.listing_csv(scope)
-    CSV.generate(col_sep: ';') do |csv| # Aquí se especifica que el delimitador de campo es el punto y coma
+    CSV.generate(col_sep: ',') do |csv| # Aquí se especifica que el delimitador de campo es el punto y coma
 
       csv << ["ID", "NAME", "RAW MATERIAL TYPE", "VENDOR", "COST", "UNIT", "COLOR"]
       scope.each do |result|

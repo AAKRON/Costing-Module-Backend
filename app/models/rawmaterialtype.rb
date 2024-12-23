@@ -7,7 +7,7 @@ class Rawmaterialtype < ApplicationRecord
   include Searchable
 
   def self.listing_csv
-    CSV.generate(col_sep: ';') do |csv| # Aquí se especifica que el delimitador de campo es el punto y coma
+    CSV.generate(col_sep: ',') do |csv| # Aquí se especifica que el delimitador de campo es el punto y coma
 
       csv << ["ID", "NAME"]
       all.each do |result|

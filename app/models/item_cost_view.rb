@@ -29,7 +29,7 @@ class ItemCostView < ApplicationRecord
   }
 
   def self.to_price_csv(scope = nil)
-    CSV.generate(col_sep: ';') do |csv|
+    CSV.generate(col_sep: ',') do |csv|
       csv << ["Item Number", "Description", "Item Type", "Cost For Price"]
       scope.each do |result|
         csv << result.attributes.values_at(*["item_number", "description", "type_description", "total_price_cost"])
@@ -38,7 +38,7 @@ class ItemCostView < ApplicationRecord
   end
 
   def self.to_invetory_csv(scope = nil)
-    CSV.generate(col_sep: ';') do |csv|
+    CSV.generate(col_sep: ',') do |csv|
       csv << ["Item Number", "Description", "Item Type", "Cost For Invetory"]
       scope.each do |result|
         csv << result.attributes.values_at(*["item_number", "description", "type_description", "total_inventory_cost"])
