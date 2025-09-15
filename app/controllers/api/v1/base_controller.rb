@@ -93,8 +93,9 @@ class Api::V1::BaseController < ApplicationController
 
   def get_current_year
     if ActiveRecord::Base.connection.table_exists? 'database_years'
-        max_db_year = DatabaseYear.order('year DESC').first
-        return max_db_year.year
+        #max_db_year = DatabaseYear.order('year DESC').first
+        #return max_db_year.year
+        DatabaseYear.maximum(:year) || Date.current.year.to_s
     end
     return Date.current.year.to_s
   end
