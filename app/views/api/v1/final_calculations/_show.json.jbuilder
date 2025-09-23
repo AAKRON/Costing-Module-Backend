@@ -14,7 +14,7 @@ json.colorant_one final_calculation.colorant_one
 json.number_of_pieces_per_unit_one final_calculation.number_of_pieces_per_unit_one
 json.percentage_of_colorant_one final_calculation.percentage_of_colorant_one
 json.colorant_two final_calculation.colorant_two
-json.number_of_pieces_per_unit_two final_calculation.number_of_pieces_per_unit_two || final_calculation.number_of_pieces_per_unit_one
+json.number_of_pieces_per_unit_two final_calculation.number_of_pieces_per_unit_two || 1
 json.percentage_of_colorant_two final_calculation.percentage_of_colorant_two || 0
 json.raw_material_name final_calculation.raw_material.name
 json.raw_material_cost final_calculation_calculated.raw_material_cost
@@ -43,5 +43,5 @@ json.blank_average_cost final_calculation_calculated.blank_average_cost
 number_of_pieces_per_unit_one = format("%.2f", final_calculation.number_of_pieces_per_unit_one)
 json.number_of_pieces_per_unit_one number_of_pieces_per_unit_one
 
-number_of_pieces_per_unit_two = format("%.2f", final_calculation.number_of_pieces_per_unit_two)
+number_of_pieces_per_unit_two = format("%.2f", final_calculation.number_of_pieces_per_unit_two || 1)
 json.number_of_pieces_per_unit_two number_of_pieces_per_unit_two
