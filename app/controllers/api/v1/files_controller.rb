@@ -57,6 +57,7 @@ module Api
             end
         else
             puts "Here 1 am"
+            ActiveRecord::Base.connection.table_exists?(:ItemCostView)
             items = (params.key?("items") && params[:items] !='') ? params[:items] : nil
             _location_id = @location ? @location.id : 0
             @items = ItemCostView.filter_items_id_by_location(_location_id, items)
