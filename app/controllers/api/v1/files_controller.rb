@@ -45,7 +45,7 @@ module Api
       end
 
       def item_download
-        if !@database_location_exists
+        if @database_location_exists
             if (params.key?("items") && params[:items] !='')
                 items = params[:items].split(",")
                 @items = ItemCostView.where(item_number: items).order(:item_number)
