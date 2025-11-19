@@ -57,6 +57,8 @@ module Api
             end
         else
             puts "Here 1 am"
+            #logger.debug "Selected database #{database}"
+            logger.debug "current_database #{ActiveRecord::Base.connection.current_database}"
             ActiveRecord::Base.connection.table_exists?(:ItemCostView)
             items = (params.key?("items") && params[:items] !='') ? params[:items] : nil
             _location_id = @location ? @location.id : 0
