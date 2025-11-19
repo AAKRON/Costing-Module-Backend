@@ -49,10 +49,13 @@ module Api
             if (params.key?("items") && params[:items] !='')
                 items = params[:items].split(",")
                 @items = ItemCostView.where(item_number: items).order(:item_number)
+                puts "Here 1 am if"
             else
                 @items = ItemCostView.all.order(:item_number)
+                puts "Here 1 am else"
             end
         else
+            puts "Here 1 am"
             items = (params.key?("items") && params[:items] !='') ? params[:items] : nil
             _location_id = @location ? @location.id : 0
             @items = ItemCostView.filter_items_id_by_location(_location_id, items)
