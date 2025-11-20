@@ -54,7 +54,7 @@ module Api
         items = params.key?("items") && params[:items].present? ? params[:items].split(",") : nil
         current_year = get_current_year
         req_year = request.headers['Database']
-        puts "Req DB : #{req_year}"
+        puts "Req DB : #{ActiveRecord::Base.connection.current_database}"
         puts "Current DB : #{current_year}"
         puts "Current DB USED: #{ActiveRecord::Base.connection.current_database}"
         if !@database_location_exists
