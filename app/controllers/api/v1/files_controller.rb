@@ -4,6 +4,11 @@ require 'roo'
 module Api
   module V1
     class FilesController < BaseController
+      
+      # Make sure DB is switched BEFORE anything else happens
+	  before_action :set_current_database, prepend: true
+      before_action :prepare_location_and_year
+  
       BACKGROUND_JOB_CLASS_FOR = {
         jobs_and_blanks: ItemsAndBlanksListingJob,
         raw_materials: RawMaterialsJob,
@@ -15,7 +20,24 @@ module Api
         blanks_report: BlanksReportJob,
         item_listing_with_item_types: ItemsListingWithItemTypeJob
       }
+      
+      private
 
+	  # This ensures @database_location_exists and @location always exist
+	  def prepare_location_and_year
+		# Detect if database_years table exists in CURRENT switched DB
+		@database_location_exists = ActiveRecord::Base.connection.table_exists?('database_years')
+
+		# Resolve location by header or params
+		if @database_location_exists
+		  if request.headers['Location'].present? && request.headers['Location'] != 'null' && request.headers['Location'] != 'USA'
+			@location = Location.find_by(name: request.headers['Location'])
+		  elsif params['location'].present? && params['location'] != 'USA'
+			@location = Location.find_by(name: params['location'])
+		  end
+		end
+	  end
+  
       def items_and_blanks_listings
         file = params[:file]
         file_params = {
