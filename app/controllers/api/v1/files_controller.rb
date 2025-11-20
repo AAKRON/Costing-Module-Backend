@@ -52,9 +52,7 @@ module Api
 
       def item_download
         items = params.key?("items") && params[:items].present? ? params[:items].split(",") : nil
-        current_year = get_current_year
-        logger.info "Current DB year: #{current_year}"
-        puts "Current DB USED: #{ActiveRecord::Base.connection.current_database}"
+        #puts "Current DB USED: #{ActiveRecord::Base.connection.current_database}"
         if !@database_location_exists
           @items = items.present? ? ItemCostView.where(item_number: items).order(:item_number) : ItemCostView.all.order(:item_number)
         else
