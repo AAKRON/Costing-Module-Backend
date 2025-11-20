@@ -663,10 +663,10 @@ module Api
       
       # This ensures @database_location_exists and @location are set after DB switch
       def prepare_location_and_year
-        current_year = get_current_year
-        req_year = request.headers['Database']
-        puts "Req DB : #{ActiveRecord::Base.connection.current_database}"
-        puts "Current DB : #{current_year}"
+        #current_year = get_current_year
+        #req_year = request.headers['Database']
+        #puts "Req DB : #{ActiveRecord::Base.connection.current_database}"
+        #puts "Current DB : #{current_year}"
         
         connection_config = Rails.application.config.database_configuration[Rails.env]
         #database = ENV['PG_DB_PROD']
