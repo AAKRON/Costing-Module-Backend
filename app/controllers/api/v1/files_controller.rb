@@ -654,11 +654,20 @@ module Api
         @secondary_box_id_exists = ActiveRecord::Base.connection.column_exists?(:items, :secondary_box_id) && @item.secondary_box_id.present?
       end
 
+      def get_current_year_db
+        if ActiveRecord::Base.connection.table_exists? 'database_years'
+            max_db_year = DatabaseYear.order('year DESC').first
+            return max_db_year.year
+            #DatabaseYear.maximum(:year) || Date.current.year.to_s
+        end
+        return Date.current.year.to_s
+      end
+      
       # This ensures @database_location_exists and @location are set after DB switch
       def prepare_location_and_year
         connection_config = Rails.application.config.database_configuration[Rails.env]
         #database = ENV['PG_DB_PROD']
-        current_year = 2026
+        current_year = get_current_year_db
         db_name = "costing_database_#{current_year}"
         connection_config['database'] = db_name
         ActiveRecord::Base.establish_connection(connection_config)
