@@ -656,6 +656,15 @@ module Api
 
       # This ensures @database_location_exists and @location are set after DB switch
       def prepare_location_and_year
+        connection_config = Rails.application.config.database_configuration[Rails.env]
+        #database = ENV['PG_DB_PROD']
+        current_year = 2026
+        db_name = "costing_database_#{current_year}"
+        connection_config['database'] = db_name
+        ActiveRecord::Base.establish_connection(connection_config)
+        # logger.debug "Selected database #{database}"
+        # logger.debug "current_database #{ActiveRecord::Base.connection.current_database}"
+            
         @database_location_exists = ActiveRecord::Base.connection.table_exists?('database_years')
 
         if @database_location_exists
