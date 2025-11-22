@@ -28,6 +28,7 @@ Rails.application.routes.draw do
       resources :item_types
       resources :app_constants
       get '/databases', to: 'database#list_databases'
+      get "/get-total-jobs/:item_number", to: "items#get_total_jobs"
       post '/database-backup', to: 'database#backup'
       post '/items/:id/update-type', to: 'items#update_type'
       get '/item-list-only', to: 'items#item_list_only'
