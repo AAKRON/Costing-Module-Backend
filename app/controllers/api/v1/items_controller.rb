@@ -7,6 +7,7 @@ module Api
       before_action :set_item, only: [:show, :update, :update_type]
       after_action(only: [:index]) { set_pagination_header(ItemCostView.count) }
       after_action(only: [:item_list_only]) { set_pagination_header(Item.count) }
+      skip_before_action :restrict_access, only: [:get_total_jobs, :public_show]
 
       def index
         item_number = (params.fetch(:item_id, '') == 'null' ) ? '' : params.fetch(:item_id, '')
@@ -81,6 +82,21 @@ module Api
         end
       end
 
+      # GET /api/v1/get-total-jobs/:item_number
+  	  def get_total_jobs
+  		  unless params[:item_number].present?
+  			return render json: { error: "item_number is required" }, status: :bad_request
+  		  end
+  
+  		  @item = ItemCostView.find_by(item_number: params[:item_number])
+  
+  		  unless @item
+  			return render json: { error: "Item not found" }, status: :not_found
+  		  end
+  
+  		  render_items_template(template_name: :by_item_number, status: :ok)
+  	  end
+      
       def destroy
         Item.find(params[:id]).destroy
       end
