@@ -3,8 +3,8 @@ max_threads = Integer(ENV['PUMA_MAX_THREADS'] || 3)
 
 threads     min_threads, max_threads
 # Railway sets PORT automatically, fallback to 3000
-port        ENV.fetch('PORT', 3000)
-bind        "tcp://0.0.0.0:#{ENV.fetch('PORT', 3000)}"
+port_num = ENV.fetch('PORT', 3000).to_i
+port port_num
 environment ENV['RACK_ENV']
 activate_control_app
 state_path 'tmp/puma.state'
