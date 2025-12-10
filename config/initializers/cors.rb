@@ -7,7 +7,8 @@
 
  Rails.application.config.middleware.insert_before 0, Rack::Cors do
    allow do
-     origins '*'
+     # TODO: Replace with actual frontend domains for UAT
+     origins 'https://uat.aakronline.com', 'http://localhost:3000', 'https://staging.aakronline.com'
 
      resource '*',
        headers: :any,

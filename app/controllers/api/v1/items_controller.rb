@@ -67,7 +67,7 @@ module Api
       end
 
       def update_type
-        if params[:apikey] != "Aakron2023$"
+        if params[:apikey] != ENV["ITEM_TYPE_UPDATE_APIKEY"]
           render json: { message: 'Not Authorized' }, status: 401
         else
           if @item.present?
