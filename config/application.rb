@@ -27,5 +27,8 @@ module CostingModuleApi
     config.api_only = true
     config.autoload_paths += %W(#{config.root}/lib)
     config.active_job.queue_adapter = :sidekiq
+    
+    # Security middleware
+    config.middleware.use Rack::Attack
   end
 end

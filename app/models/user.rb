@@ -5,15 +5,12 @@ class User < ApplicationRecord
 
   has_secure_password
   enum role: [:user, :admin]
+  
+  validates :password, presence: true, length: { minimum: 8 }, if: :password_digest_changed?
 
   before_validation(on: :create) do
-    add_password
     generate_token
     set_default_role
-  end
-
-  def add_password
-    self.password ||= 'password'
   end
 
   def generate_token

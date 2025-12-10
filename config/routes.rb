@@ -1,6 +1,7 @@
 require 'sidekiq/web'
 
 Rails.application.routes.draw do
+  get '/health', to: 'health#show'
   mount Sidekiq::Web => '/sidekiq'
   namespace :api do
     namespace :v1, defaults: { format: :json } do

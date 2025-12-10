@@ -27,23 +27,24 @@ class Api::V1::BaseController < ApplicationController
   end
 
   def restrict_access
-    (unauthorized! && return) unless get_key_by_token
+    (unauthorized! && return) unless authenticate_jwt_token
   end
 
-  def get_key_by_token
-    restrict_access_by_header || restrict_access_by_params
-  end
-
-  def restrict_access_by_header
+  def authenticate_jwt_token
     return true if @current_user
-    authenticate_with_http_token do |token|
-      @current_user = User.find_by_token(token)
-    end
-  end
-
-  def restrict_access_by_params
-    return true if @current_user
-    @current_user = User.find_by_token(params[:user_token])
+    
+    auth_header = request.headers['Authorization']
+    return false unless auth_header && auth_header.start_with?('Bearer ')
+    
+    token = auth_header.split(' ').last
+    payload = JwtService.decode(token)
+    return false unless payload
+    
+    @current_user = User.find_by(id: payload[:sub])
+    !!@current_user
+  rescue StandardError => e
+    Rails.logger.warn "JWT authentication error: #{e.message}"
+    false
   end
 
   def unauthorized!
