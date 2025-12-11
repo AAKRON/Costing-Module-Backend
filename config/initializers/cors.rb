@@ -9,6 +9,7 @@
    allow do
      # Railway UAT deployment URLs
      origins 'https://costing-module-frontend-uat-production.up.railway.app',
+             'https://costing-module-frontend-uat-production-3820.up.railway.app',
              'https://web-production-bf5b5.up.railway.app', 
              'https://uat.aakronline.com',
              'http://localhost:3000', 
