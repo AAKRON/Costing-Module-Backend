@@ -6,14 +6,18 @@ echo "🚀 Starting Costing Module Backend..."
 # Set environment for Rails
 export RAILS_ENV=production
 export RACK_ENV=production
-export BUNDLE_WITHOUT="development:test"
 
 # Skip automatic migrations to avoid bundler issues
 echo "⚡ Skipping migrations - use /setup/schema_load endpoint instead"
 
-# Try multiple startup approaches
-echo "🌐 Starting Rails server..."
+# Start without bundler - use rackup instead
+echo "🌐 Starting with rackup (no bundler)..."
 
-# Option 1: Try ruby directly 
 cd /app
-exec ruby -r bundler/setup -S puma -C config/puma.rb
+
+# Add gem paths directly to Ruby load path
+export GEM_PATH="/usr/local/bundle"
+export GEM_HOME="/usr/local/bundle"
+
+# Start with rackup (bypasses bundler completely)
+exec /usr/local/bundle/bin/rackup -p ${PORT:-3000} -o 0.0.0.0

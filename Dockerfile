@@ -10,10 +10,9 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy gemfiles and install gems
-COPY Gemfile ./
+# Copy production gemfile only
+COPY Gemfile.production ./Gemfile
 RUN gem install bundler:2.4.22 \
-    && bundle config set --local without 'development test' \
     && bundle install --jobs $(nproc) --retry 3 \
     && bundle clean --force
 
