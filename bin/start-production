@@ -10,14 +10,8 @@ export RACK_ENV=production
 # Skip automatic migrations to avoid bundler issues
 echo "⚡ Skipping migrations - use /setup/schema_load endpoint instead"
 
-# Start without bundler - use rackup instead
-echo "🌐 Starting with rackup (no bundler)..."
+# Now we have clean production Gemfile - bundle exec should work
+echo "🌐 Starting Puma with clean production gems..."
 
 cd /app
-
-# Add gem paths directly to Ruby load path
-export GEM_PATH="/usr/local/bundle"
-export GEM_HOME="/usr/local/bundle"
-
-# Start with rackup (bypasses bundler completely)
-exec /usr/local/bundle/bin/rackup -p ${PORT:-3000} -o 0.0.0.0
+exec bundle exec puma -C config/puma.rb
