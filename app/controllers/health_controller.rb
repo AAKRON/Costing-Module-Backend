@@ -4,7 +4,8 @@ class HealthController < ApplicationController
     render json: { 
       status: 'ok', 
       timestamp: Time.current,
-      version: Rails.application.config.version || '1.0.0'
+      version: '1.0.0',
+      rails_version: Rails.version
     }
   end
 end
