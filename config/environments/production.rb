@@ -79,4 +79,7 @@ Rails.application.configure do
   # Allow hosts for Railway deployment
   config.hosts << "web-production-bf5b5.up.railway.app"
   config.hosts << ENV['BACKEND_HOST'] if ENV['BACKEND_HOST'].present?
+  
+  # Railway health check host
+  config.hosts << "healthcheck.railway.app"
 end
