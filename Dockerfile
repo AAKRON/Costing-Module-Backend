@@ -15,9 +15,6 @@ COPY Gemfile ./
 RUN gem install bundler:2.4.22 \
     && bundle config set --local without 'development test' \
     && bundle install --jobs $(nproc) --retry 3 \
-    && bundle lock --remove-platform x86-mingw32 \
-    && bundle lock --remove-platform x64-mingw32 \
-    && bundle lock --remove-platform java \
     && bundle clean --force
 
 # Production stage
