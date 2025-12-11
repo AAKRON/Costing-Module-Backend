@@ -1,5 +1,5 @@
-# Multi-stage build for security and size optimization
-FROM ruby:2.7.7-slim AS builder
+# Multi-stage build for security and size optimization  
+FROM ruby:3.1.4-slim AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
@@ -12,13 +12,13 @@ WORKDIR /app
 
 # Copy gemfiles and install gems
 COPY Gemfile ./
-RUN gem install bundler:2.1.4 \
+RUN gem install bundler:2.4.22 \
     && bundle config set --local without 'development test' \
     && bundle install --jobs $(nproc) --retry 3 \
     && bundle clean --force
 
 # Production stage
-FROM ruby:2.7.7-slim
+FROM ruby:3.1.4-slim
 
 # Install runtime dependencies only
 RUN apt-get update && apt-get install -y \
