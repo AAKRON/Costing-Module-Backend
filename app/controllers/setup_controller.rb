@@ -3,6 +3,25 @@ class SetupController < ApplicationController
   # Skip authentication for setup endpoint
   skip_before_action :restrict_access, if: -> { Rails.env.production? }
   
+  def schema_load
+    begin
+      # Load schema from schema.rb (faster and more reliable than migrations)
+      load(Rails.root.join('db/schema.rb'))
+      
+      render json: { 
+        status: 'success', 
+        message: 'Database schema loaded successfully from schema.rb',
+        timestamp: Time.current 
+      }
+    rescue => e
+      render json: { 
+        status: 'error', 
+        message: e.message,
+        timestamp: Time.current 
+      }, status: 500
+    end
+  end
+  
   def migrate
     begin
       # Run database migrations
