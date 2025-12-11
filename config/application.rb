@@ -6,6 +6,7 @@ require 'ostruct'
 require 'bigdecimal'
 require 'mutex_m'
 require 'drb'
+require 'matrix'
 
 require "rails"
 # Pick the frameworks you want:
