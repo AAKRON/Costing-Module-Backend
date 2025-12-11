@@ -51,5 +51,8 @@ SecureHeaders::Configuration.default do |config|
   }
 
   # Disable CSP in development for easier debugging
-  config.csp_report_only = Rails.env.development?
+  if Rails.env.development?
+    config.csp_report_only = config.csp.dup
+    config.csp = SecureHeaders::OPT_OUT
+  end
 end
