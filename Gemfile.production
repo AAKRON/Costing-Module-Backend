@@ -7,6 +7,13 @@ gem 'pg'
 gem 'puma', '~> 5.6.8'
 gem 'bcrypt'
 
+# Ruby standard library dependencies Rails expects
+gem 'logger'
+gem 'ostruct'
+gem 'bigdecimal'
+gem 'mutex_m'
+gem 'drb'
+
 # Security & Authentication  
 gem 'jwt'
 gem 'rack', '~> 2.2.7'
@@ -19,6 +26,12 @@ gem 'jbuilder'
 gem 'kaminari'
 gem 'redis'
 gem 'sidekiq'
+
+# Additional Rails dependencies
+gem 'bootsnap', require: false
+gem 'listen'
+gem 'sprockets-rails'
+gem 'image_processing'
 
 # File processing
 gem 'rubyXL'
