@@ -76,6 +76,7 @@ Rails.application.configure do
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
 
-  # Allow hosts
-  config.hosts << ENV['BACKEND_HOST']
+  # Allow hosts for Railway deployment
+  config.hosts << "web-production-bf5b5.up.railway.app"
+  config.hosts << ENV['BACKEND_HOST'] if ENV['BACKEND_HOST'].present?
 end
