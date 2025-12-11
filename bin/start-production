@@ -11,6 +11,9 @@ export BUNDLE_WITHOUT="development:test"
 # Skip automatic migrations to avoid bundler issues
 echo "⚡ Skipping migrations - use /setup/schema_load endpoint instead"
 
-# Start the application directly (bypass bundle exec)
-echo "🌐 Starting Puma server directly..."
-exec /usr/local/bundle/bin/puma -C config/puma.rb
+# Try multiple startup approaches
+echo "🌐 Starting Rails server..."
+
+# Option 1: Try ruby directly 
+cd /app
+exec ruby -r bundler/setup -S puma -C config/puma.rb

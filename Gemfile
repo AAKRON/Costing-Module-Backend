@@ -33,7 +33,7 @@ gem 'roo'
 
 
 group :development, :test do
-  gem 'byebug', platform: :mri
+  gem 'byebug'
   gem 'bundler-audit', require: false
   gem 'capybara'
   gem 'factory_bot_rails'
