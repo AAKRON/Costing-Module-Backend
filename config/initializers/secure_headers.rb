@@ -46,8 +46,8 @@ SecureHeaders::Configuration.default do |config|
     # Require HTTPS for all connections
     upgrade_insecure_requests: Rails.env.production?,
     
-    # Block mixed content in production
-    block_all_mixed_content: Rails.env.production?
+    # block_all_mixed_content deprecated in secure_headers 7.x
+    # Mixed content is handled by upgrade_insecure_requests instead
   }
 
   # Disable CSP in development for easier debugging

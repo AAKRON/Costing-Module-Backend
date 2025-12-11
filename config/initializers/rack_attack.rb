@@ -55,7 +55,7 @@ class Rack::Attack
   end
 
   # Custom response for blocklisted requests
-  self.blocklisted_response = lambda do |env|
+  self.blocklisted_responder = lambda do |req|
     [
       403,
       { 'Content-Type' => 'application/json' },
