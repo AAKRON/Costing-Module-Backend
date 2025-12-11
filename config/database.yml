@@ -25,5 +25,8 @@ test:
   database: <%= ENV['PG_DB_TEST'] %>
 
 production:
-  <<: *default
-  database: <%= ENV['PG_DB_PROD'] %>
+  # Use POSTGRES_URL for Railway deployment
+  url: <%= ENV['POSTGRES_URL'] || ENV['DATABASE_URL'] %>
+  adapter: postgresql
+  pool: 100
+  timeout: 50000
