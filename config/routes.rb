@@ -6,6 +6,10 @@ Rails.application.routes.draw do
   get '/setup/schema_load', to: 'setup#schema_load'
   get '/setup/migrate', to: 'setup#migrate'
   get '/setup/seed', to: 'setup#seed'
+  get '/setup/debug_database', to: 'setup#debug_database'
+  
+  # Data migration endpoint
+  post '/data_migration/copy_from_production', to: 'data_migration#copy_from_production'
   mount Sidekiq::Web => '/sidekiq'
   namespace :api do
     namespace :v1, defaults: { format: :json } do
