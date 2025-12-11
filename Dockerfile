@@ -13,9 +13,7 @@ WORKDIR /app
 # Copy gemfiles and install gems
 COPY Gemfile Gemfile.lock ./
 RUN gem install bundler:2.1.4 \
-    && bundle config set --local deployment 'true' \
     && bundle config set --local without 'development test' \
-    && bundle config set --local frozen 'true' \
     && bundle install --jobs $(nproc) --retry 3 \
     && bundle clean --force
 
