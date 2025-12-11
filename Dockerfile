@@ -36,7 +36,10 @@ WORKDIR /app
 # Copy bundled gems from builder stage
 COPY --from=builder /usr/local/bundle /usr/local/bundle
 
-# Copy application code
+# Copy the production Gemfile from builder stage
+COPY --from=builder /app/Gemfile ./Gemfile
+
+# Copy application code (ignores original Gemfile via .dockerignore)
 COPY . .
 
 # Set proper ownership and permissions
