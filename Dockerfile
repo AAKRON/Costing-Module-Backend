@@ -54,6 +54,7 @@ ENV RACK_ENV=production
 ENV RAILS_LOG_TO_STDOUT=true
 ENV RAILS_SERVE_STATIC_FILES=true
 ENV BUNDLE_WITHOUT=development:test
+ENV PATH="/usr/local/bundle/bin:${PATH}"
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
