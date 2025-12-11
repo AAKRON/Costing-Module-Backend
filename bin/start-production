@@ -3,12 +3,14 @@ set -e
 
 echo "🚀 Starting Costing Module Backend..."
 
-# Set bundler to use production configuration
+# Set environment for Rails
+export RAILS_ENV=production
+export RACK_ENV=production
 export BUNDLE_WITHOUT="development:test"
 
 # Skip automatic migrations to avoid bundler issues
 echo "⚡ Skipping migrations - use /setup/schema_load endpoint instead"
 
-# Start the application
-echo "🌐 Starting Puma server..."
-exec bundle exec puma -C config/puma.rb
+# Start the application directly (bypass bundle exec)
+echo "🌐 Starting Puma server directly..."
+exec /usr/local/bundle/bin/puma -C config/puma.rb
