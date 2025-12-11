@@ -23,9 +23,15 @@ class SetupController < ApplicationController
   
   def migrate
     begin
-      # Run database migrations
+      # Run database migrations (Rails 6.1+ syntax)
       ActiveRecord::Migration.verbose = true
-      ActiveRecord::MigrationContext.new(Rails.root.join('db/migrate')).migrate
+      
+      # Rails 6.1+ requires schema_migration connection as second parameter
+      migration_context = ActiveRecord::MigrationContext.new(
+        Rails.root.join('db/migrate'), 
+        ActiveRecord::SchemaMigration
+      )
+      migration_context.migrate
       
       render json: { 
         status: 'success', 
