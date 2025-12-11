@@ -2,6 +2,9 @@ require 'sidekiq/web'
 
 Rails.application.routes.draw do
   get '/health', to: 'health#show'
+  # Setup endpoints for Railway deployment
+  get '/setup/migrate', to: 'setup#migrate'
+  get '/setup/seed', to: 'setup#seed'
   mount Sidekiq::Web => '/sidekiq'
   namespace :api do
     namespace :v1, defaults: { format: :json } do
