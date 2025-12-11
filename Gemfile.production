@@ -1,0 +1,38 @@
+source 'https://rubygems.org'
+ruby '3.1.4'
+
+# Core Rails stack
+gem 'rails', '~> 6.1.7'
+gem 'pg'
+gem 'puma', '~> 5.6.8'
+gem 'bcrypt'
+
+# Security & Authentication  
+gem 'jwt'
+gem 'rack', '~> 2.2.7'
+gem 'rack-attack'
+gem 'secure_headers'
+gem 'rack-cors', require: 'rack/cors'
+
+# Core functionality
+gem 'jbuilder'
+gem 'kaminari'
+gem 'redis'
+gem 'sidekiq'
+
+# File processing
+gem 'rubyXL'
+gem 'smarter_csv' 
+gem 'caxlsx'
+gem 'caxlsx_rails'
+gem 'roo'
+gem 'pdfkit'
+gem 'wkhtmltopdf-binary'
+
+# Database & utilities
+gem 'scenic'
+gem 'upsert'
+
+# Monitoring (optional)
+gem 'newrelic_rpm'
+gem 'sentry-raven'
