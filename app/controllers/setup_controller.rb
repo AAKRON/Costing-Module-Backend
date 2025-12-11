@@ -65,4 +65,35 @@ class SetupController < ApplicationController
       }, status: 500
     end
   end
+  
+  def debug_database
+    begin
+      current_db = ActiveRecord::Base.connection.current_database
+      tables = ActiveRecord::Base.connection.tables
+      
+      table_info = {}
+      tables.each do |table|
+        begin
+          count = ActiveRecord::Base.connection.select_value("SELECT COUNT(*) FROM #{table}")
+          table_info[table] = count
+        rescue => e
+          table_info[table] = "error: #{e.message}"
+        end
+      end
+      
+      render json: {
+        status: 'success',
+        current_database: current_db,
+        tables_with_counts: table_info,
+        total_tables: tables.count,
+        timestamp: Time.current
+      }
+    rescue => e
+      render json: {
+        status: 'error',
+        message: e.message,
+        timestamp: Time.current
+      }, status: 500
+    end
+  end
 end
