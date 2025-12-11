@@ -3,6 +3,9 @@ set -e
 
 echo "🚀 Starting Costing Module Backend..."
 
+# Set bundler to use production configuration
+export BUNDLE_WITHOUT="development:test"
+
 # Check if database exists and run migrations
 echo "📊 Setting up database..."
 bundle exec rails db:create 2>/dev/null || echo "Database already exists"
