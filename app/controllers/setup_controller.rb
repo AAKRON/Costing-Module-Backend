@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 class SetupController < ApplicationController
-  # Skip authentication for setup endpoint
-  skip_before_action :restrict_access, if: -> { Rails.env.production? }
+  # No authentication required for setup endpoints
   
   def schema_load
     begin
