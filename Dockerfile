@@ -10,9 +10,11 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy production gemfile only
+# Copy ONLY production gemfile, ignore original Gemfile completely
 COPY Gemfile.production ./Gemfile
-RUN gem install bundler:2.4.22 \
+# Ensure no original Gemfile can interfere
+RUN rm -f Gemfile.lock \
+    && gem install bundler:2.4.22 \
     && bundle install --jobs $(nproc) --retry 3 \
     && bundle clean --force
 

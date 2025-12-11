@@ -1,0 +1,22 @@
+# Ignore original development Gemfile and lock
+Gemfile
+Gemfile.lock
+
+# Development dependencies  
+.git
+.gitignore
+README.md
+TESTING_GUIDE.md
+.env.test
+.env.development
+node_modules
+tmp
+log
+coverage
+spec
+test
+
+# Development tools
+.rspec
+.rubocop.yml
+.bundle
