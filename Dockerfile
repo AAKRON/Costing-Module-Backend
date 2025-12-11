@@ -34,7 +34,6 @@ WORKDIR /app
 
 # Copy bundled gems from builder stage
 COPY --from=builder /usr/local/bundle /usr/local/bundle
-COPY --from=builder /app/vendor /app/vendor
 
 # Copy application code
 COPY . .
