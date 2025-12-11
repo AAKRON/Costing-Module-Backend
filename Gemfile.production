@@ -13,6 +13,7 @@ gem 'ostruct'
 gem 'bigdecimal'
 gem 'mutex_m'
 gem 'drb'
+gem 'matrix'
 
 # Security & Authentication  
 gem 'jwt'
