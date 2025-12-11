@@ -1,5 +1,12 @@
 require_relative 'boot'
 
+# Ruby 3.1.4 compatibility - load stdlib gems before Rails
+require 'logger'
+require 'ostruct'
+require 'bigdecimal'
+require 'mutex_m'
+require 'drb'
+
 require "rails"
 # Pick the frameworks you want:
 require "active_model/railtie"
