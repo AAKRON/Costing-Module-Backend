@@ -6,12 +6,8 @@ echo "🚀 Starting Costing Module Backend..."
 # Set bundler to use production configuration
 export BUNDLE_WITHOUT="development:test"
 
-# Check if database exists and run migrations
-echo "📊 Setting up database..."
-bundle exec rails db:create 2>/dev/null || echo "Database already exists"
-bundle exec rails db:migrate
-
-echo "✅ Database migrations complete"
+# Skip automatic migrations to avoid bundler issues
+echo "⚡ Skipping migrations - use /setup/schema_load endpoint instead"
 
 # Start the application
 echo "🌐 Starting Puma server..."
