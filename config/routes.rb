@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   get '/setup/migrate', to: 'setup#migrate'
   get '/setup/seed', to: 'setup#seed'
   get '/setup/debug_database', to: 'setup#debug_database'
+  post '/setup/create_test_user', to: 'setup#create_test_user'
   
   # Data migration endpoint
   post '/data_migration/copy_from_production', to: 'data_migration#copy_from_production'
