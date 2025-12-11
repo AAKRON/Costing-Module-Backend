@@ -63,4 +63,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 
 EXPOSE 3000
 
-CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
+# Make startup script executable
+RUN chmod +x bin/start-production
+
+CMD ["bin/start-production"]
