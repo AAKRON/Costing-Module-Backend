@@ -19,8 +19,8 @@
 #]
 #Screen.create(screen_sizes)
 
-# Create test user
-User.create(username: 'test', role:'admin')
+# Create test user with password
+User.create!(username: 'testuser', password: 'TestPass123', password_confirmation: 'TestPass123', role: 'admin')
 
 # Create Screens
 Screen.create(screen_size: 'small', cost: 10)
