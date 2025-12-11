@@ -14,7 +14,6 @@ WORKDIR /app
 COPY Gemfile Gemfile.lock ./
 RUN gem install bundler:2.1.4 \
     && bundle config set --local without 'development test' \
-    && bundle update rack rails puma jwt rack-attack secure_headers \
     && bundle install --jobs $(nproc) --retry 3 \
     && bundle clean --force
 
