@@ -14,7 +14,7 @@ class Api::V1::BaseController < ApplicationController
     database = ENV['PG_DB_DEV']
 
     if request.headers['Database'] && request.headers['Database'] != 'null' && request.headers['Database'] != Time.now.year.to_s
-        database ='costing_module_db_' + request.headers['Database']
+        database = 'costing_database_' + request.headers['Database']
     end
 
     if ActiveRecord::Base.connection.current_database != database
@@ -22,8 +22,8 @@ class Api::V1::BaseController < ApplicationController
         ActiveRecord::Base.establish_connection(connection_config)
     end
 
-    # logger.debug "Selected database #{database}"
-    # logger.debug "current_database #{ActiveRecord::Base.connection.current_database}"
+    Rails.logger.debug "Selected database #{database}"
+    Rails.logger.debug "current_database #{ActiveRecord::Base.connection.current_database}"
   end
 
   def restrict_access
