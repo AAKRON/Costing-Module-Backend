@@ -8,7 +8,12 @@ class HealthController < ApplicationController
     
     # Handle login via query parameters
     if params[:action_type] == 'login'
-      return test_login
+      return render json: {
+        status: 'debug',
+        message: 'Login logic triggered',
+        params: params.to_h,
+        database_before: ActiveRecord::Base.connection.current_database
+      }
     end
     
     current_db = ActiveRecord::Base.connection.current_database rescue 'unknown'
@@ -155,6 +160,10 @@ class HealthController < ApplicationController
   
   def test_login
     begin
+      # Debug: Confirm we're in the login method
+      Rails.logger.info "=== LOGIN DEBUG: test_login method called ==="
+      Rails.logger.info "Params: #{params.inspect}"
+      
       # Set database context
       year = params[:year] || '2025'
       connection_config = Rails.application.config.database_configuration[Rails.env]
