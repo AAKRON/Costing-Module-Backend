@@ -1,6 +1,9 @@
 require 'sidekiq/web'
 
 Rails.application.routes.draw do
+  # Simple authentication from scratch
+  post '/simple_login_2025', to: 'simple_auth#login_2025'
+  
   get '/health', to: 'health#show'
   post '/health/create_user', to: 'health#create_user'
   post '/health/reset_password', to: 'health#reset_password'
