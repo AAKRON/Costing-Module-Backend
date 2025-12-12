@@ -121,8 +121,4 @@ module Api
       end
     end
   end
-end year #{year}"
-      end
-    end
-  end
 end
