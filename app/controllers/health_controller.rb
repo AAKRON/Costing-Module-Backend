@@ -8,12 +8,22 @@ class HealthController < ApplicationController
     
     # Handle login via query parameters
     if params[:action_type] == 'login'
-      return render json: {
-        status: 'debug',
-        message: 'Login logic triggered',
-        params: params.to_h,
-        database_before: ActiveRecord::Base.connection.current_database
-      }
+      begin
+        db_name = ActiveRecord::Base.connection.current_database rescue 'error_getting_db'
+        return render json: {
+          status: 'debug',
+          message: 'Login logic triggered',
+          params: params.to_h,
+          database_before: db_name
+        }
+      rescue => e
+        return render json: {
+          status: 'error',
+          message: 'Debug failed',
+          error: e.message,
+          backtrace: e.backtrace.first(3)
+        }, status: 500
+      end
     end
     
     current_db = ActiveRecord::Base.connection.current_database rescue 'unknown'
