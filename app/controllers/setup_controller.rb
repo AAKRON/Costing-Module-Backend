@@ -127,6 +127,51 @@ class SetupController < ApplicationController
     end
   end
   
+  def reset_user_password
+    begin
+      username = params[:username] || 'Matthew'
+      new_password = params[:password] || 'UATPassword123!'
+      
+      user = User.find_by(username: username)
+      if user
+        user.password = new_password
+        user.password_confirmation = new_password
+        
+        if user.save
+          render json: {
+            status: 'success',
+            message: 'Password reset successfully',
+            username: user.username,
+            test_credentials: {
+              username: user.username,
+              password: new_password
+            },
+            timestamp: Time.current
+          }
+        else
+          render json: {
+            status: 'error',
+            message: 'Failed to reset password',
+            errors: user.errors.full_messages,
+            timestamp: Time.current
+          }, status: 422
+        end
+      else
+        render json: {
+          status: 'error',
+          message: "User '#{username}' not found",
+          timestamp: Time.current
+        }, status: 404
+      end
+    rescue => e
+      render json: {
+        status: 'error',
+        message: e.message,
+        timestamp: Time.current
+      }, status: 500
+    end
+  end
+  
   def debug_database
     begin
       current_db = ActiveRecord::Base.connection.current_database

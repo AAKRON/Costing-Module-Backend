@@ -2,12 +2,14 @@ require 'sidekiq/web'
 
 Rails.application.routes.draw do
   get '/health', to: 'health#show'
+  post '/health/create_user', to: 'health#create_user'
   # Setup endpoints for Railway deployment
   get '/setup/schema_load', to: 'setup#schema_load'
   get '/setup/migrate', to: 'setup#migrate'
   get '/setup/seed', to: 'setup#seed'
   get '/setup/debug_database', to: 'setup#debug_database'
   post '/setup/create_test_user', to: 'setup#create_test_user'
+  post '/setup/reset_user_password', to: 'setup#reset_user_password'
   
   # Data migration endpoint
   post '/data_migration/copy_from_production', to: 'data_migration#copy_from_production'

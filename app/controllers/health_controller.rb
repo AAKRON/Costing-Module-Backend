@@ -11,6 +11,7 @@ class HealthController < ApplicationController
       current_database: current_db,
       database_url: ENV['DATABASE_URL'].present? ? 'configured' : 'not set',
       postgres_url: ENV['POSTGRES_URL'].present? ? 'configured' : 'not set',
+      user_count: (User.count rescue 'error'),
       available_routes: [
         '/health',
         '/setup/schema_load', 
@@ -18,5 +19,28 @@ class HealthController < ApplicationController
         '/setup/seed'
       ]
     }
+  end
+  
+  # Emergency user creation endpoint
+  def create_user
+    return render json: { error: 'Not allowed in production' }, status: 403 if Rails.env.production?
+    
+    begin
+      user = User.create!(
+        username: 'testuser', 
+        password: 'TestPass123', 
+        password_confirmation: 'TestPass123', 
+        role: 'admin'
+      )
+      
+      render json: {
+        status: 'success',
+        message: 'Test user created successfully',
+        user: { username: user.username, role: user.role },
+        login: { username: 'testuser', password: 'TestPass123' }
+      }
+    rescue => e
+      render json: { status: 'error', message: e.message }, status: 500
+    end
   end
 end
