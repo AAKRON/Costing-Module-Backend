@@ -194,9 +194,13 @@ class HealthController < ApplicationController
           message: 'Invalid username or password',
           debug: {
             user_found: user.present?,
+            password_check: user&.authenticate(password),
             username: username,
+            password_provided: password,
             year: year,
-            database: ActiveRecord::Base.connection.current_database
+            database: ActiveRecord::Base.connection.current_database,
+            user_digest_start: user&.password_digest&.first(30),
+            action_type: params[:action_type]
           }
         }, status: 401
       end
