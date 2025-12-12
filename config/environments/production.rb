@@ -27,9 +27,12 @@ Rails.application.configure do
   # config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect' # for NGINX
 
   # Mount Action Cable outside main process or domain
-  # config.action_cable.mount_path = nil
-  # config.action_cable.url = 'wss://example.com/cable'
-  # config.action_cable.allowed_request_origins = [ 'http://example.com', /http:\/\/example.*/ ]
+  config.action_cable.mount_path = '/cable'
+  config.action_cable.url = 'wss://web-production-4c6f.up.railway.app/cable'
+  config.action_cable.allowed_request_origins = [ 
+    'https://costing-module-frontend-uat-production-3820.up.railway.app',
+    /https:\/\/costing-module-frontend-uat-production.*\.up\.railway\.app/
+  ]
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   # config.force_ssl = true
