@@ -16,6 +16,12 @@ Rails.application.routes.draw do
   post '/data_migration/copy_from_production', to: 'data_migration#copy_from_production'
   mount Sidekiq::Web => '/sidekiq'
   namespace :api do
+    # New V2 API with clean authentication
+    namespace :v2, defaults: { format: :json } do
+      post '/auth/login', to: 'auth#login'
+      post '/auth/switch_year', to: 'auth#switch_year'
+    end
+    
     namespace :v1, defaults: { format: :json } do
       resources :raw_materials
       resources :rawmaterialtypes
