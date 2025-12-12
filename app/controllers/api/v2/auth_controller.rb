@@ -15,6 +15,10 @@ module Api
           # Find and authenticate user
           user = User.find_by(username: username)
           
+          # Debug info
+          user_found = user.present?
+          password_valid = user&.authenticate(password)
+          
           if user && user.authenticate(password)
             # Create JWT token
             payload = {
@@ -100,6 +104,10 @@ module Api
       
       private
       
+      def login_endpoint?
+        action_name == 'login'
+      end
+      
       def set_database_for_year(year)
         connection_config = Rails.application.config.database_configuration[Rails.env]
         database = "costing_database_#{year}"
@@ -110,6 +118,10 @@ module Api
         end
         
         Rails.logger.info "Connected to database: #{ActiveRecord::Base.connection.current_database} for year #{year}"
+      end
+    end
+  end
+end year #{year}"
       end
     end
   end
