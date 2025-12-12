@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 class HealthController < ApplicationController
   def show
+    # Handle password reset via query parameters
+    if params[:action_type] == 'reset_password'
+      return reset_matthew_password
+    end
+    
     current_db = ActiveRecord::Base.connection.current_database rescue 'unknown'
     
     render json: { 
@@ -14,11 +19,61 @@ class HealthController < ApplicationController
       user_count: (User.count rescue 'error'),
       available_routes: [
         '/health',
+        '/health?action_type=reset_password (with Database header)',
         '/setup/schema_load', 
         '/setup/migrate',
         '/setup/seed'
       ]
     }
+  end
+  
+  private
+  
+  def reset_matthew_password
+    begin
+      # Set current database context if Database header provided
+      if request.headers['Database'] && request.headers['Database'] != 'null'
+        connection_config = Rails.application.config.database_configuration[Rails.env]
+        database = 'costing_database_' + request.headers['Database']
+        connection_config['database'] = database
+        ActiveRecord::Base.establish_connection(connection_config)
+      end
+      
+      username = params[:username] || 'Matthew'
+      new_password = params[:password] || 'UATPassword123!'
+      
+      user = User.find_by(username: username)
+      if user
+        user.password = new_password
+        user.password_confirmation = new_password
+        
+        if user.save
+          render json: {
+            status: 'success',
+            message: 'Password reset successfully',
+            username: user.username,
+            database: ActiveRecord::Base.connection.current_database,
+            test_credentials: {
+              username: user.username,
+              password: new_password
+            }
+          }
+        else
+          render json: {
+            status: 'error',
+            message: 'Failed to reset password',
+            errors: user.errors.full_messages
+          }, status: 422
+        end
+      else
+        render json: {
+          status: 'error',
+          message: "User '#{username}' not found in database '#{ActiveRecord::Base.connection.current_database}'"
+        }, status: 404
+      end
+    rescue => e
+      render json: { status: 'error', message: e.message }, status: 500
+    end
   end
   
   # Emergency user creation endpoint
