@@ -39,10 +39,16 @@ class SimpleAuthController < ActionController::API
     end
     
   rescue => e
+    db_name = begin
+      ActiveRecord::Base.connection.current_database
+    rescue
+      'unknown'
+    end
+    
     render json: {
       success: false,
       error: e.message,
-      database: ActiveRecord::Base.connection.current_database rescue 'unknown'
+      database: db_name
     }, status: 500
   end
 end
