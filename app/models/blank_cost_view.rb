@@ -30,17 +30,35 @@ class BlankCostView < ApplicationRecord
 
       csv << ["Blank Number", "Description", "Blank Type", "Cost For Price"]
       scope.each do |result|
-        csv << result.attributes.values_at(*["blank_number", "description", "blank_type", "total_blank_cost_for_price"])
+        #csv << result.attributes.values_at(*["blank_number", "description", "blank_type", "total_blank_cost_for_price"])
+        value = result.total_blank_cost_for_price
+        rounded_value = value.present? ? BigDecimal(value.to_s).round(4) : nil
+        csv << [
+          result.blank_number,
+          result.description,
+          result.blank_type,
+          rounded_value
+        ]
       end
     end
   end
+
+  
 
   def self.to_invetory_csv(scope = nil)
     CSV.generate(col_sep: ',') do |csv| # Aquí se especifica que el delimitador de campo es el punto y coma
 
       csv << ["Blank Number", "Description", "Blank Type", "Cost For Invetory"]
       scope.each do |result|
-        csv << result.attributes.values_at(*["blank_number", "description", "blank_type", "total_blank_cost_for_inventory"])
+        #csv << result.attributes.values_at(*["blank_number", "description", "blank_type", "total_blank_cost_for_inventory"])
+        value = result.total_blank_cost_for_inventory
+        rounded_value = value.present? ? BigDecimal(value.to_s).round(4) : nil
+        csv << [
+          result.blank_number,
+          result.description,
+          result.blank_type,
+          rounded_value
+        ]
       end
     end
   end
