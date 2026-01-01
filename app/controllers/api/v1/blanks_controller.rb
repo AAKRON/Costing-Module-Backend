@@ -58,6 +58,7 @@ module Api
       def update
         @blank = Blank.find(params[:id])
         _blank_params = update_or_create_location_prices # location prices
+        _blank_params[:cost] = BigDecimal(params[:cost].to_s) if params[:cost].present?
         if @blank.update(_blank_params)
           update_blank_type(params[:blank_type_id])
           set_blank # update location prices
@@ -86,7 +87,10 @@ module Api
       private
 
       def blank_params
-        params.require(:blank).permit(:id, :blank_number, :description, :cost, :blank_type_id)
+        #params.require(:blank).permit(:id, :blank_number, :description, :cost, :blank_type_id)
+        p = params.require(:blank).permit(:id, :blank_number, :description, :cost, :blank_type_id)
+        p[:cost] = BigDecimal(p[:cost].to_s) if p[:cost].present?
+        p
       end
 
       def set_blank
