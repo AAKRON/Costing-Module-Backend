@@ -32,7 +32,15 @@ class ItemCostView < ApplicationRecord
     CSV.generate(col_sep: ',') do |csv|
       csv << ["Item Number", "Description", "Item Type", "Cost For Price"]
       scope.each do |result|
-        csv << result.attributes.values_at(*["item_number", "description", "type_description", "total_price_cost"])
+        #csv << result.attributes.values_at(*["item_number", "description", "type_description", "total_price_cost"])
+        value = result.total_price_cost
+        rounded_value = value.present? ? BigDecimal(value.to_s).round(4) : nil
+        csv << [
+          result.item_number,
+          result.description,
+          result.type_description,
+          rounded_value
+        ]
       end
     end
   end
@@ -41,7 +49,15 @@ class ItemCostView < ApplicationRecord
     CSV.generate(col_sep: ',') do |csv|
       csv << ["Item Number", "Description", "Item Type", "Cost For Invetory"]
       scope.each do |result|
-        csv << result.attributes.values_at(*["item_number", "description", "type_description", "total_inventory_cost"])
+        #csv << result.attributes.values_at(*["item_number", "description", "type_description", "total_inventory_cost"])
+        value = result.total_inventory_cost
+        rounded_value = value.present? ? BigDecimal(value.to_s).round(4) : nil
+        csv << [
+          result.item_number,
+          result.description,
+          result.type_description,
+          rounded_value
+        ]
       end
     end
   end
