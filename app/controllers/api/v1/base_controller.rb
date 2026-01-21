@@ -15,7 +15,7 @@ class Api::V1::BaseController < ApplicationController
     connection_config = Rails.application.config.database_configuration[Rails.env]
     database = ENV['PG_DB_DEV']
     current_year = get_current_year
-    if request.headers['Database'] && request.headers['Database'] != 'null' && request.headers['Database'] != current_year
+    if request.headers['Database'] && request.headers['Database'] != 'null'
         database = database + '_' + request.headers['Database']
     end
 
