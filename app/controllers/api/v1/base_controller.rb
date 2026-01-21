@@ -23,8 +23,8 @@ class Api::V1::BaseController < ApplicationController
         connection_config['database'] = database
         ActiveRecord::Base.establish_connection(connection_config)
     end
-    # logger.debug "Selected database #{database}"
-    # logger.debug "current_database #{ActiveRecord::Base.connection.current_database}"
+    logger.debug "Selected database #{database}"
+    logger.debug "current_database #{ActiveRecord::Base.connection.current_database}"
   end
 
   def check_database_location_exists
