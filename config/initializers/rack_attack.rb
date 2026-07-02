@@ -9,6 +9,11 @@ class Rack::Attack
     '127.0.0.1' == req.ip || '::1' == req.ip
   end
 
+  # Allow health check endpoint - never throttle (used by Railway, load balancers, uptime monitors)
+  safelist('allow-health-check') do |req|
+    req.path == '/health'
+  end
+
   # Allow an IP address to make 300 requests per 5 minutes (5 reqs/sec)
   throttle('req/ip', limit: 300, period: 5.minutes) do |req|
     req.ip
@@ -31,14 +36,12 @@ class Rack::Attack
   end
 
   # Block suspicious requests
-  blocklist('fail2ban pentesters') do |req|
-    # Block requests containing known attack patterns
+  blocklist('fail2ban pentesters') do |req|\n    # Block requests containing known attack patterns
     Rack::Attack::Fail2Ban.filter("pentesters-#{req.ip}", maxretry: 3, findtime: 10.minutes, bantime: 1.hour) do
       CGI.unescape(req.query_string) =~ %r{/etc/passwd} ||
       req.path.include?('/etc/passwd') ||
       req.path.include?('../') ||
-      req.path.include?('..\\')
-    end
+      req.path.include?('..\\\\')\n    end
   end
 
   # Custom response for throttled requests
