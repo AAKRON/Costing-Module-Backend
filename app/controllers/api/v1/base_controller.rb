@@ -10,6 +10,9 @@ class Api::V1::BaseController < ApplicationController
   private
 
   def set_current_database
+    # UAT/single-DB environments: skip year switching entirely
+    return if ENV['SINGLE_DATABASE_MODE'] == 'true'
+
     connection_config = Rails.application.config.database_configuration[Rails.env]
     database = ENV['PG_DB_DEV'] || ActiveRecord::Base.connection.current_database
 
