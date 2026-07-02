@@ -22,9 +22,17 @@ RUN rm -f Gemfile.lock \
 FROM ruby:3.1.4-slim
 
 # Install runtime dependencies only
+# X11/font libs required by wkhtmltopdf-binary for PDF generation
 RUN apt-get update && apt-get install -y \
     libpq5 \
     curl \
+    ca-certificates \
+    libxrender1 \
+    libxext6 \
+    libx11-6 \
+    libfontconfig1 \
+    fonts-dejavu-core \
+    libssl3 \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
