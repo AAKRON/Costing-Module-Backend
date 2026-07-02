@@ -1,23 +1,21 @@
 # Be sure to restart your server when you modify this file.
 
-# Avoid CORS issues when API is called from the frontend app.
-# Handle Cross-Origin Resource Sharing (CORS) in order to accept cross-origin AJAX requests.
+Rails.application.config.middleware.insert_before 0, Rack::Cors do
+  allow do
+    # Build origins list: env var takes precedence, known staging domains always allowed
+    origins_list = [
+      ENV['FRONTEND_URL'],           # set in Railway dashboard to the frontend service URL
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'https://uat.aakronline.com',
+      'https://staging.aakronline.com',
+    ].compact.uniq
 
-# Read more: https://github.com/cyu/rack-cors
+    origins(*origins_list)
 
- Rails.application.config.middleware.insert_before 0, Rack::Cors do
-   allow do
-     # Railway UAT deployment URLs
-     origins 'https://costing-module-frontend-uat-production.up.railway.app',
-             'https://costing-module-frontend-uat-production-3820.up.railway.app',
-             'https://web-production-bf5b5.up.railway.app', 
-             'https://uat.aakronline.com',
-             'http://localhost:3000', 
-             'https://staging.aakronline.com'
-
-     resource '*',
-       headers: :any,
-       expose: ['X-Total-Count', 'Access-Control-Expose-Headers'],
-       methods: [:get, :post, :put, :patch, :delete, :options, :head]
+    resource '*',
+      headers: :any,
+      expose: ['X-Total-Count', 'Access-Control-Expose-Headers'],
+      methods: [:get, :post, :put, :patch, :delete, :options, :head]
   end
- end
+end
