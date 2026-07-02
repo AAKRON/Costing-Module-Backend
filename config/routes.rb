@@ -18,6 +18,7 @@ Rails.application.routes.draw do
   # Data migration endpoints
   get  '/data_migration/inspect_production', to: 'data_migration#inspect_production'
   post '/data_migration/copy_from_production', to: 'data_migration#copy_from_production'
+  post '/data_migration/setup_year_database', to: 'data_migration#setup_year_database'
   mount Sidekiq::Web => '/sidekiq'
   namespace :api do
     # New V2 API with clean authentication

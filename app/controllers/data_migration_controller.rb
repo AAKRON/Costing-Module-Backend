@@ -49,7 +49,7 @@ class DataMigrationController < ApplicationController
     return render json: { error: 'DATABASE_URL is not configured.' }, status: 422 unless uat_url.present?
 
     if source_db
-      prod_url = prod_url.sub(%r{/[^/]+\z}, "/#{source_db}")
+      prod_url = swap_db_in_url(prod_url, source_db)
     end
 
     skip_tables = %w[users schema_migrations ar_internal_metadata]
@@ -91,16 +91,97 @@ class DataMigrationController < ApplicationController
     end
   end
 
+  # POST /data_migration/setup_year_database?year=2025
+  # Creates costing_database_YEAR on Railway, runs schema migrations, copies from production.
+  def setup_year_database
+    year    = params.require(:year)
+    new_db  = "costing_database_#{year}"
+    uat_url = ENV['DATABASE_URL']&.strip
+    prod_url = ENV['PROD_DATABASE_URL']&.strip
+
+    return render json: { error: 'DATABASE_URL not configured' },      status: 422 unless uat_url.present?
+    return render json: { error: 'PROD_DATABASE_URL not configured' }, status: 422 unless prod_url.present?
+
+    steps = []
+
+    # Step 1: Create the database on Railway PostgreSQL
+    begin
+      admin_conn = PG::Connection.new(uat_url)
+      admin_conn.exec("CREATE DATABASE \"#{new_db}\"")
+      admin_conn.close
+      steps << { step: 'create_database', status: 'created', database: new_db }
+    rescue PG::DuplicateDatabase
+      steps << { step: 'create_database', status: 'already_exists', database: new_db }
+    rescue => e
+      return render json: { status: 'error', step: 'create_database', message: e.message, steps: steps }, status: 500
+    end
+
+    # Step 2: Run Rails migrations on the new database to build schema
+    original_config = Rails.application.config.database_configuration[Rails.env].dup
+    new_config      = original_config.dup.merge('database' => new_db)
+
+    begin
+      ActiveRecord::Base.establish_connection(new_config)
+      ActiveRecord::MigrationContext.new(
+        Rails.root.join('db/migrate').to_s,
+        ActiveRecord::SchemaMigration
+      ).migrate
+      steps << { step: 'migrate_schema', status: 'ok' }
+    rescue => e
+      ActiveRecord::Base.establish_connection(original_config)
+      return render json: { status: 'error', step: 'migrate_schema', message: e.message, steps: steps }, status: 500
+    end
+
+    # Step 3: Copy data from the production year database
+    skip_tables   = %w[users schema_migrations ar_internal_metadata]
+    prod_year_url = swap_db_in_url(prod_url, new_db)
+    uat_year_url  = swap_db_in_url(uat_url,  new_db)
+
+    prod_conn = nil
+    uat_conn  = nil
+
+    begin
+      prod_conn = PG::Connection.new(prod_year_url)
+      uat_conn  = PG::Connection.new(uat_year_url)
+
+      uat_tables     = uat_conn.exec(
+        "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename"
+      ).map { |r| r['tablename'] }
+
+      tables_to_copy = uat_tables - skip_tables
+      table_results  = {}
+
+      tables_to_copy.each do |table|
+        table_results[table] = copy_table(prod_conn, uat_conn, table)
+      end
+
+      reset_sequences(uat_conn, tables_to_copy)
+      steps << { step: 'copy_data', status: 'ok', tables: table_results }
+    rescue => e
+      steps << { step: 'copy_data', status: 'error', message: e.message }
+    ensure
+      prod_conn&.close
+      uat_conn&.close
+      ActiveRecord::Base.establish_connection(original_config)
+    end
+
+    render json: { status: 'success', year: year, database: new_db, steps: steps }
+  end
+
   private
 
+  def swap_db_in_url(url, db_name)
+    uri      = URI.parse(url)
+    uri.path = "/#{db_name}"
+    uri.to_s
+  end
+
   def copy_table(prod_conn, uat_conn, table)
-    # Check table exists in prod
     exists = prod_conn.exec_params(
       "SELECT to_regclass($1) AS t", ["public.#{table}"]
     ).first['t']
     return 'skipped (not in production)' unless exists
 
-    # Get column info from UAT (destination) — only copy what UAT schema has
     uat_col_info = uat_conn.exec(<<~SQL).each_with_object({}) { |r, h| h[r['column_name']] = r['data_type']; }
       SELECT column_name, data_type
       FROM information_schema.columns
@@ -108,7 +189,6 @@ class DataMigrationController < ApplicationController
       ORDER BY ordinal_position
     SQL
 
-    # Get columns that exist in prod too
     prod_col_info = prod_conn.exec(<<~SQL).each_with_object({}) { |r, h| h[r['column_name']] = r['data_type']; }
       SELECT column_name, data_type
       FROM information_schema.columns
@@ -116,9 +196,7 @@ class DataMigrationController < ApplicationController
       ORDER BY ordinal_position
     SQL
 
-    # Only copy columns present in both schemas
     columns = uat_col_info.keys & prod_col_info.keys
-
     return 'no matching columns' if columns.empty?
 
     prod_rows = prod_conn.exec("SELECT #{columns.map { |c| "\"#{c}\"" }.join(', ')} FROM \"#{table}\"")
@@ -137,7 +215,6 @@ class DataMigrationController < ApplicationController
           if v.nil?
             'NULL'
           elsif uat_type&.include?('integer') && v.include?('.')
-            # Cast decimal string to integer for columns that narrowed in UAT schema
             v.to_f.round.to_s
           else
             prod_conn.escape_literal(v)
