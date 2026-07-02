@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
 class Rack::Attack
-  # Configure Redis for production
-  Rack::Attack.cache.store = ActiveSupport::Cache::RedisCacheStore.new
+  # Configure Redis cache store - uses REDIS_URL env var (required in production)
+  redis_url = ENV['REDIS_URL'] || 'redis://localhost:6379/0'
+  Rack::Attack.cache.store = ActiveSupport::Cache::RedisCacheStore.new(url: redis_url)
 
   # Allow all local traffic
   safelist('allow-localhost') do |req|
@@ -29,19 +30,19 @@ class Rack::Attack
   # Limit login attempts per username
   throttle('login/username', limit: 5, period: 20.minutes) do |req|
     if req.path == '/api/v1/sessions' && req.post?
-      # Return the username or IP (for cache key)
       username = req.params['username'].presence
       username&.downcase if username
     end
   end
 
   # Block suspicious requests
-  blocklist('fail2ban pentesters') do |req|\n    # Block requests containing known attack patterns
+  blocklist('fail2ban pentesters') do |req|
     Rack::Attack::Fail2Ban.filter("pentesters-#{req.ip}", maxretry: 3, findtime: 10.minutes, bantime: 1.hour) do
       CGI.unescape(req.query_string) =~ %r{/etc/passwd} ||
       req.path.include?('/etc/passwd') ||
       req.path.include?('../') ||
-      req.path.include?('..\\\\')\n    end
+      req.path.include?('..\\\\')\
+    end
   end
 
   # Custom response for throttled requests
