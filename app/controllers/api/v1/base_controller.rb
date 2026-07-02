@@ -11,7 +11,7 @@ class Api::V1::BaseController < ApplicationController
 
   def set_current_database
     connection_config = Rails.application.config.database_configuration[Rails.env]
-    database = ENV['PG_DB_DEV']
+    database = ENV['PG_DB_DEV'] || ActiveRecord::Base.connection.current_database
 
     if request.headers['Database'] && request.headers['Database'] != 'null' && request.headers['Database'] != Time.now.year.to_s
         database = 'costing_database_' + request.headers['Database']
