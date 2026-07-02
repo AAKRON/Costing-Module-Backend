@@ -1,6 +1,39 @@
 # frozen_string_literal: true
 class DataMigrationController < ApplicationController
 
+  # GET /data_migration/inspect_production
+  # Shows what tables and row counts exist in the production database.
+  def inspect_production
+    prod_url = ENV['PROD_DATABASE_URL']&.strip
+    return render json: { error: 'PROD_DATABASE_URL is not configured.' }, status: 422 unless prod_url.present?
+
+    begin
+      prod_conn = PG::Connection.new(prod_url)
+
+      tables = prod_conn.exec(
+        "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename"
+      ).map { |r| r['tablename'] }
+
+      table_counts = {}
+      tables.each do |t|
+        count = prod_conn.exec("SELECT COUNT(*) FROM \"#{t}\"").first['count']
+        table_counts[t] = count.to_i
+      end
+
+      prod_conn.close
+
+      render json: {
+        status: 'success',
+        production_database: prod_conn.db,
+        total_tables: tables.count,
+        tables_with_counts: table_counts,
+        timestamp: Time.current
+      }
+    rescue => e
+      render json: { status: 'error', message: e.message }, status: 500
+    end
+  end
+
   # POST /data_migration/copy_from_production
   # Requires PROD_DATABASE_URL set in Railway environment variables.
   # Copies all data tables from production into UAT, preserving the UAT users table.

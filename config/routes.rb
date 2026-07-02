@@ -15,7 +15,8 @@ Rails.application.routes.draw do
   post '/setup/create_test_user', to: 'setup#create_test_user'
   post '/setup/reset_user_password', to: 'setup#reset_user_password'
   
-  # Data migration endpoint
+  # Data migration endpoints
+  get  '/data_migration/inspect_production', to: 'data_migration#inspect_production'
   post '/data_migration/copy_from_production', to: 'data_migration#copy_from_production'
   mount Sidekiq::Web => '/sidekiq'
   namespace :api do
