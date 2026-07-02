@@ -2,7 +2,7 @@
 class DataMigrationController < ApplicationController
 
   # GET /data_migration/inspect_production
-  # Shows what tables and row counts exist in the production database.
+  # Shows all databases on the production server and tables in the default DB.
   def inspect_production
     prod_url = ENV['PROD_DATABASE_URL']&.strip
     return render json: { error: 'PROD_DATABASE_URL is not configured.' }, status: 422 unless prod_url.present?
@@ -11,6 +11,12 @@ class DataMigrationController < ApplicationController
       prod_conn = PG::Connection.new(prod_url)
       db_name   = prod_conn.db
 
+      # List ALL databases on this Postgres server
+      all_databases = prod_conn.exec(
+        "SELECT datname FROM pg_database WHERE datistemplate = false ORDER BY datname"
+      ).map { |r| r['datname'] }
+
+      # List tables in the currently connected database
       tables = prod_conn.exec(
         "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename"
       ).map { |r| r['tablename'] }
@@ -25,9 +31,9 @@ class DataMigrationController < ApplicationController
 
       render json: {
         status: 'success',
-        production_database: db_name,
-        total_tables: tables.count,
-        tables_with_counts: table_counts,
+        connected_to_database: db_name,
+        all_databases_on_server: all_databases,
+        tables_in_connected_db: table_counts,
         timestamp: Time.current
       }
     rescue => e
@@ -37,15 +43,20 @@ class DataMigrationController < ApplicationController
 
   # POST /data_migration/copy_from_production
   # Requires PROD_DATABASE_URL set in Railway environment variables.
-  # Copies all data tables from production into UAT, preserving the UAT users table.
+  # By default copies from the 'railway' database. Pass ?source_db=name to copy from a different database.
   def copy_from_production
-    prod_url = ENV['PROD_DATABASE_URL']&.strip
-    uat_url  = ENV['DATABASE_URL']&.strip
+    prod_url   = ENV['PROD_DATABASE_URL']&.strip
+    uat_url    = ENV['DATABASE_URL']&.strip
+    source_db  = params[:source_db].presence
 
-    return render json: { error: 'PROD_DATABASE_URL is not configured. Add it in Railway → UAT service → Variables.' }, status: 422 unless prod_url.present?
+    return render json: { error: 'PROD_DATABASE_URL is not configured.' }, status: 422 unless prod_url.present?
     return render json: { error: 'DATABASE_URL is not configured.' }, status: 422 unless uat_url.present?
 
-    # Tables to never touch — preserve UAT user accounts and Rails internals
+    # If a specific source database is requested, swap it into the URL
+    if source_db
+      prod_url = prod_url.sub(%r{/[^/]+\z}, "/#{source_db}")
+    end
+
     skip_tables = %w[users schema_migrations ar_internal_metadata]
 
     prod_conn = nil
@@ -55,8 +66,7 @@ class DataMigrationController < ApplicationController
       prod_conn = PG::Connection.new(prod_url)
       uat_conn  = PG::Connection.new(uat_url)
 
-      # Get list of tables in UAT (source of truth for schema)
-      uat_tables = uat_conn.exec(
+      uat_tables     = uat_conn.exec(
         "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename"
       ).map { |r| r['tablename'] }
 
@@ -67,15 +77,15 @@ class DataMigrationController < ApplicationController
         results[table] = copy_table(prod_conn, uat_conn, table)
       end
 
-      # Reset sequences so new records don't get ID conflicts
       reset_sequences(uat_conn, tables_to_copy)
 
       render json: {
-        status:    'success',
-        message:   'Production data copied to UAT successfully',
-        skipped:   skip_tables,
-        tables:    results,
-        timestamp: Time.current
+        status:        'success',
+        message:       'Production data copied to UAT successfully',
+        source_db:     prod_conn.db,
+        skipped:       skip_tables,
+        tables:        results,
+        timestamp:     Time.current
       }
 
     rescue => e
@@ -89,7 +99,6 @@ class DataMigrationController < ApplicationController
   private
 
   def copy_table(prod_conn, uat_conn, table)
-    # Check table exists in prod
     exists = prod_conn.exec_params(
       "SELECT to_regclass($1) AS t", ["public.#{table}"]
     ).first['t']
@@ -98,14 +107,11 @@ class DataMigrationController < ApplicationController
     prod_rows = prod_conn.exec("SELECT * FROM \"#{table}\"")
     row_count = prod_rows.ntuples
 
-    # Always clear UAT table first
     uat_conn.exec("DELETE FROM \"#{table}\"")
-
     return 'empty' if row_count == 0
 
     columns = prod_rows.fields
 
-    # Insert in batches of 100
     prod_rows.each_slice(100) do |batch|
       col_list    = columns.map { |c| "\"#{c}\"" }.join(', ')
       values_list = batch.map do |row|
@@ -120,7 +126,6 @@ class DataMigrationController < ApplicationController
     end
 
     row_count
-
   rescue => e
     "error: #{e.message}"
   end
@@ -138,7 +143,6 @@ class DataMigrationController < ApplicationController
         END $$;
       SQL
     rescue PG::Error
-      # Table has no id sequence — skip
     end
   end
 end
