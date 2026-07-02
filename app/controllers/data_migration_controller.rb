@@ -5,8 +5,8 @@ class DataMigrationController < ApplicationController
   # Requires PROD_DATABASE_URL set in Railway environment variables.
   # Copies all data tables from production into UAT, preserving the UAT users table.
   def copy_from_production
-    prod_url = ENV['PROD_DATABASE_URL']
-    uat_url  = ENV['DATABASE_URL']
+    prod_url = ENV['PROD_DATABASE_URL']&.strip
+    uat_url  = ENV['DATABASE_URL']&.strip
 
     return render json: { error: 'PROD_DATABASE_URL is not configured. Add it in Railway → UAT service → Variables.' }, status: 422 unless prod_url.present?
     return render json: { error: 'DATABASE_URL is not configured.' }, status: 422 unless uat_url.present?
@@ -93,7 +93,6 @@ class DataMigrationController < ApplicationController
 
   def reset_sequences(uat_conn, tables)
     tables.each do |table|
-      # Only reset if table has an id column with a sequence
       uat_conn.exec(<<~SQL)
         DO $$
         DECLARE seq text;
