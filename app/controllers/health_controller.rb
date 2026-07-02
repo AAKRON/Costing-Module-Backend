@@ -5,7 +5,7 @@ class HealthController < ApplicationController
     if params[:action_type] == 'reset_password'
       return reset_matthew_password
     end
-    
+
     # Handle login via query parameters
     if params[:action_type] == 'login'
       begin
@@ -25,11 +25,11 @@ class HealthController < ApplicationController
         }, status: 500
       end
     end
-    
+
     current_db = ActiveRecord::Base.connection.current_database rescue 'unknown'
-    
-    render json: { 
-      status: 'ok', 
+
+    render json: {
+      status: 'ok',
       timestamp: Time.current,
       version: '1.0.0',
       rails_version: Rails.version,
@@ -39,76 +39,27 @@ class HealthController < ApplicationController
       user_count: (User.count rescue 'error'),
       available_routes: [
         '/health',
-        '/health?action_type=reset_password (with Database header)',
-        '/health?action_type=login (with username, password, year params)',
-        '/setup/schema_load', 
+        '/health?action_type=reset_password (with optional username & password params)',
+        '/setup/schema_load',
         '/setup/migrate',
-        '/setup/seed'
+        '/setup/seed',
+        '/setup/debug_database'
       ]
     }
   end
-  
-  private
-  
-  def reset_matthew_password
-    begin
-      # Set current database context if Database header provided
-      if request.headers['Database'] && request.headers['Database'] != 'null'
-        connection_config = Rails.application.config.database_configuration[Rails.env]
-        database = 'costing_database_' + request.headers['Database']
-        connection_config['database'] = database
-        ActiveRecord::Base.establish_connection(connection_config)
-      end
-      
-      username = params[:username] || 'Matthew'
-      new_password = params[:password] || 'UATPassword123!'
-      
-      user = User.find_by(username: username)
-      if user
-        user.password = new_password
-        user.password_confirmation = new_password
-        
-        if user.save
-          render json: {
-            status: 'success',
-            message: 'Password reset successfully',
-            username: user.username,
-            database: ActiveRecord::Base.connection.current_database,
-            test_credentials: {
-              username: user.username,
-              password: new_password
-            }
-          }
-        else
-          render json: {
-            status: 'error',
-            message: 'Failed to reset password',
-            errors: user.errors.full_messages
-          }, status: 422
-        end
-      else
-        render json: {
-          status: 'error',
-          message: "User '#{username}' not found in database '#{ActiveRecord::Base.connection.current_database}'"
-        }, status: 404
-      end
-    rescue => e
-      render json: { status: 'error', message: e.message }, status: 500
-    end
-  end
-  
-  # Emergency user creation endpoint
+
+  # POST /health/create_user
   def create_user
     return render json: { error: 'Not allowed in production' }, status: 403 if Rails.env.production?
-    
+
     begin
       user = User.create!(
-        username: 'testuser', 
-        password: 'TestPass123', 
-        password_confirmation: 'TestPass123', 
+        username: 'testuser',
+        password: 'TestPass123',
+        password_confirmation: 'TestPass123',
         role: 'admin'
       )
-      
+
       render json: {
         status: 'success',
         message: 'Test user created successfully',
@@ -119,76 +70,107 @@ class HealthController < ApplicationController
       render json: { status: 'error', message: e.message }, status: 500
     end
   end
-  
-  # Reset Matthew's password with UAT environment
+
+  # POST /health/reset_password
+  # Creates the user if they don't exist yet (safe for first-time UAT setup)
   def reset_password
     begin
-      # Set current database context if Database header provided
       if request.headers['Database'] && request.headers['Database'] != 'null'
         connection_config = Rails.application.config.database_configuration[Rails.env]
         database = 'costing_database_' + request.headers['Database']
         connection_config['database'] = database
         ActiveRecord::Base.establish_connection(connection_config)
       end
-      
-      username = params[:username] || 'Matthew'
+
+      username     = params[:username] || 'Matthew'
       new_password = params[:password] || 'UATPassword123!'
-      
-      user = User.find_by(username: username)
-      if user
-        user.password = new_password
-        user.password_confirmation = new_password
-        
-        if user.save
-          render json: {
-            status: 'success',
-            message: 'Password reset successfully',
+
+      user = User.find_or_initialize_by(username: username)
+      user.password              = new_password
+      user.password_confirmation = new_password
+      user.role                ||= 'admin'
+
+      if user.save
+        render json: {
+          status: 'success',
+          message: user.previously_new_record? ? 'User created and password set' : 'Password reset successfully',
+          username: user.username,
+          database: (ActiveRecord::Base.connection.current_database rescue 'unknown'),
+          test_credentials: {
             username: user.username,
-            database: ActiveRecord::Base.connection.current_database,
-            test_credentials: {
-              username: user.username,
-              password: new_password
-            }
+            password: new_password
           }
-        else
-          render json: {
-            status: 'error',
-            message: 'Failed to reset password',
-            errors: user.errors.full_messages
-          }, status: 422
-        end
+        }
       else
         render json: {
           status: 'error',
-          message: "User '#{username}' not found in database '#{ActiveRecord::Base.connection.current_database}'"
-        }, status: 404
+          message: 'Failed to save user',
+          errors: user.errors.full_messages
+        }, status: 422
       end
     rescue => e
       render json: { status: 'error', message: e.message }, status: 500
     end
   end
-  
+
+  private
+
+  def reset_matthew_password
+    begin
+      if request.headers['Database'] && request.headers['Database'] != 'null'
+        connection_config = Rails.application.config.database_configuration[Rails.env]
+        database = 'costing_database_' + request.headers['Database']
+        connection_config['database'] = database
+        ActiveRecord::Base.establish_connection(connection_config)
+      end
+
+      username     = params[:username] || 'Matthew'
+      new_password = params[:password] || 'UATPassword123!'
+
+      user = User.find_or_initialize_by(username: username)
+      user.password              = new_password
+      user.password_confirmation = new_password
+      user.role                ||= 'admin'
+
+      if user.save
+        render json: {
+          status: 'success',
+          message: user.previously_new_record? ? 'User created and password set' : 'Password reset successfully',
+          username: user.username,
+          database: (ActiveRecord::Base.connection.current_database rescue 'unknown'),
+          test_credentials: {
+            username: user.username,
+            password: new_password
+          }
+        }
+      else
+        render json: {
+          status: 'error',
+          message: 'Failed to save user',
+          errors: user.errors.full_messages
+        }, status: 422
+      end
+    rescue => e
+      render json: { status: 'error', message: e.message }, status: 500
+    end
+  end
+
   def test_login
     begin
-      # Debug: Confirm we're in the login method
-      Rails.logger.info "=== LOGIN DEBUG: test_login method called ==="
-      Rails.logger.info "Params: #{params.inspect}"
-      
-      # Set database context
       year = params[:year] || '2025'
       connection_config = Rails.application.config.database_configuration[Rails.env]
       database = "costing_database_#{year}"
-      
+
       if ActiveRecord::Base.connection.current_database != database
         connection_config['database'] = database
         ActiveRecord::Base.establish_connection(connection_config)
       end
-      
+
       username = params[:username] || 'Matthew'
       password = params[:password] || 'UATPassword123!'
-      
+
       user = User.find_by(username: username)
-      
+
       if user && user.authenticate(password)
         payload = {
           sub: user.id,
@@ -196,9 +178,9 @@ class HealthController < ApplicationController
           role: user.role,
           year: year
         }
-        
+
         token = JwtService.encode(payload, 24.hours.from_now)
-        
+
         render json: {
           status: 'success',
           username: user.username,
@@ -213,13 +195,9 @@ class HealthController < ApplicationController
           message: 'Invalid username or password',
           debug: {
             user_found: user.present?,
-            password_check: user&.authenticate(password),
             username: username,
-            password_provided: password,
             year: year,
-            database: ActiveRecord::Base.connection.current_database,
-            user_digest_start: user&.password_digest&.first(30),
-            action_type: params[:action_type]
+            database: ActiveRecord::Base.connection.current_database
           }
         }, status: 401
       end
