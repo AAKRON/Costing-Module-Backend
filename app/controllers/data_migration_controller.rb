@@ -2,7 +2,6 @@
 class DataMigrationController < ApplicationController
 
   # GET /data_migration/inspect_production
-  # Shows all databases on the production server and tables in the default DB.
   def inspect_production
     prod_url = ENV['PROD_DATABASE_URL']&.strip
     return render json: { error: 'PROD_DATABASE_URL is not configured.' }, status: 422 unless prod_url.present?
@@ -11,12 +10,10 @@ class DataMigrationController < ApplicationController
       prod_conn = PG::Connection.new(prod_url)
       db_name   = prod_conn.db
 
-      # List ALL databases on this Postgres server
       all_databases = prod_conn.exec(
         "SELECT datname FROM pg_database WHERE datistemplate = false ORDER BY datname"
       ).map { |r| r['datname'] }
 
-      # List tables in the currently connected database
       tables = prod_conn.exec(
         "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename"
       ).map { |r| r['tablename'] }
@@ -42,17 +39,15 @@ class DataMigrationController < ApplicationController
   end
 
   # POST /data_migration/copy_from_production
-  # Requires PROD_DATABASE_URL set in Railway environment variables.
-  # By default copies from the 'railway' database. Pass ?source_db=name to copy from a different database.
+  # Optional param: ?source_db=costing_database_2026
   def copy_from_production
-    prod_url   = ENV['PROD_DATABASE_URL']&.strip
-    uat_url    = ENV['DATABASE_URL']&.strip
-    source_db  = params[:source_db].presence
+    prod_url  = ENV['PROD_DATABASE_URL']&.strip
+    uat_url   = ENV['DATABASE_URL']&.strip
+    source_db = params[:source_db].presence
 
     return render json: { error: 'PROD_DATABASE_URL is not configured.' }, status: 422 unless prod_url.present?
     return render json: { error: 'DATABASE_URL is not configured.' }, status: 422 unless uat_url.present?
 
-    # If a specific source database is requested, swap it into the URL
     if source_db
       prod_url = prod_url.sub(%r{/[^/]+\z}, "/#{source_db}")
     end
@@ -80,12 +75,12 @@ class DataMigrationController < ApplicationController
       reset_sequences(uat_conn, tables_to_copy)
 
       render json: {
-        status:        'success',
-        message:       'Production data copied to UAT successfully',
-        source_db:     prod_conn.db,
-        skipped:       skip_tables,
-        tables:        results,
-        timestamp:     Time.current
+        status:    'success',
+        message:   'Production data copied to UAT successfully',
+        source_db: prod_conn.db,
+        skipped:   skip_tables,
+        tables:    results,
+        timestamp: Time.current
       }
 
     rescue => e
@@ -99,25 +94,54 @@ class DataMigrationController < ApplicationController
   private
 
   def copy_table(prod_conn, uat_conn, table)
+    # Check table exists in prod
     exists = prod_conn.exec_params(
       "SELECT to_regclass($1) AS t", ["public.#{table}"]
     ).first['t']
     return 'skipped (not in production)' unless exists
 
-    prod_rows = prod_conn.exec("SELECT * FROM \"#{table}\"")
+    # Get column info from UAT (destination) — only copy what UAT schema has
+    uat_col_info = uat_conn.exec(<<~SQL).each_with_object({}) { |r, h| h[r['column_name']] = r['data_type']; }
+      SELECT column_name, data_type
+      FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = '#{table}'
+      ORDER BY ordinal_position
+    SQL
+
+    # Get columns that exist in prod too
+    prod_col_info = prod_conn.exec(<<~SQL).each_with_object({}) { |r, h| h[r['column_name']] = r['data_type']; }
+      SELECT column_name, data_type
+      FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name = '#{table}'
+      ORDER BY ordinal_position
+    SQL
+
+    # Only copy columns present in both schemas
+    columns = uat_col_info.keys & prod_col_info.keys
+
+    return 'no matching columns' if columns.empty?
+
+    prod_rows = prod_conn.exec("SELECT #{columns.map { |c| "\"#{c}\"" }.join(', ')} FROM \"#{table}\"")
     row_count = prod_rows.ntuples
 
     uat_conn.exec("DELETE FROM \"#{table}\"")
     return 'empty' if row_count == 0
 
-    columns = prod_rows.fields
-
     prod_rows.each_slice(100) do |batch|
       col_list    = columns.map { |c| "\"#{c}\"" }.join(', ')
       values_list = batch.map do |row|
         vals = columns.map do |col|
-          v = row[col]
-          v.nil? ? 'NULL' : prod_conn.escape_literal(v)
+          v        = row[col]
+          uat_type = uat_col_info[col]
+
+          if v.nil?
+            'NULL'
+          elsif uat_type&.include?('integer') && v.include?('.')
+            # Cast decimal string to integer for columns that narrowed in UAT schema
+            v.to_f.round.to_s
+          else
+            prod_conn.escape_literal(v)
+          end
         end
         "(#{vals.join(', ')})"
       end.join(', ')
