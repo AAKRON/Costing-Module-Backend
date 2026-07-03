@@ -1,12 +1,18 @@
 # frozen_string_literal: true
 class ApplicationController < ActionController::API
   # protect_from_forgery with: :null_session
-  
-  # Define restrict_access method that can be optionally used by subcontrollers
+
   private
-  
+
   def restrict_access
-    # Default implementation - override in subcontrollers that need authentication
     true
+  end
+
+  def require_admin_key
+    provided = request.headers['X-Admin-Key'].presence || params[:admin_key].presence
+    expected = ENV['ADMIN_KEY'].presence
+    unless expected && provided && ActiveSupport::SecurityUtils.secure_compare(provided, expected)
+      render json: { error: 'Unauthorized' }, status: 401
+    end
   end
 end

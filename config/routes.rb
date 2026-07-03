@@ -1,32 +1,39 @@
 require 'sidekiq/web'
 
+# Protect Sidekiq UI with HTTP Basic Auth
+Sidekiq::Web.use(Rack::Auth::Basic) do |_username, password|
+  expected = ENV['SIDEKIQ_PASSWORD'].presence
+  expected && ActiveSupport::SecurityUtils.secure_compare(password, expected)
+end
+
 Rails.application.routes.draw do
-  # Simple authentication from scratch
   post '/simple_login_2025', to: 'simple_auth#login_2025'
-  
-  get '/health', to: 'health#show'
-  post '/health/create_user', to: 'health#create_user'
+
+  get  '/health',                to: 'health#show'
+  post '/health/create_user',    to: 'health#create_user'
   post '/health/reset_password', to: 'health#reset_password'
-  # Setup endpoints for Railway deployment
-  get '/setup/schema_load', to: 'setup#schema_load'
-  get '/setup/migrate', to: 'setup#migrate'
-  get '/setup/seed', to: 'setup#seed'
-  get '/setup/debug_database', to: 'setup#debug_database'
-  post '/setup/create_test_user', to: 'setup#create_test_user'
+
+  # Setup endpoints — protected by ADMIN_KEY header
+  get  '/setup/schema_load',       to: 'setup#schema_load'
+  get  '/setup/migrate',           to: 'setup#migrate'
+  get  '/setup/seed',              to: 'setup#seed'
+  get  '/setup/debug_database',    to: 'setup#debug_database'
+  post '/setup/create_test_user',  to: 'setup#create_test_user'
   post '/setup/reset_user_password', to: 'setup#reset_user_password'
-  
-  # Data migration endpoints
-  get  '/data_migration/inspect_production', to: 'data_migration#inspect_production'
+
+  # Data migration endpoints — protected by ADMIN_KEY header
+  get  '/data_migration/inspect_production',  to: 'data_migration#inspect_production'
   post '/data_migration/copy_from_production', to: 'data_migration#copy_from_production'
   post '/data_migration/setup_year_database', to: 'data_migration#setup_year_database'
+
   mount Sidekiq::Web => '/sidekiq'
+
   namespace :api do
-    # New V2 API with clean authentication
     namespace :v2, defaults: { format: :json } do
-      post '/auth/login', to: 'auth#login'
+      post '/auth/login',       to: 'auth#login'
       post '/auth/switch_year', to: 'auth#switch_year'
     end
-    
+
     namespace :v1, defaults: { format: :json } do
       resources :raw_materials
       resources :rawmaterialtypes
@@ -49,62 +56,53 @@ Rails.application.routes.draw do
       resources :users
       resources :item_types
       resources :app_constants
-      post '/items/:id/update-type', to: 'items#update_type'
-      get '/item-list-only', to: 'items#item_list_only'
-      get '/job-list-only', to: 'job_listings#job_list_only'
-      get '/jobs-by-params', to: 'job_listings#jobs_by_params'
-      put '/update-item-jobs-only/:id', to: 'item_jobs#update_item_jobs_only'
-      get '/blank-list-only', to: 'blanks#blank_list_only'
-      get '/vendors-list-only', to: 'vendors#vendor_list_only'
-      put '/update-blank-jobs-only/:id', to: 'blank_jobs#update_blank_jobs_only'
-      get 'download/:file_type', to: 'files#download'
-      get '/box-list-only', to: 'boxes#box_list_only'
-      get '/item-type-list-only', to: 'item_types#item_type_list_only'
-      get '/units-of-measure-list-only', to: 'units_of_measures#units_of_measure_list_only'
-      get '/color-list-only', to: 'colors#color_list_only'
-      get '/vendor-list-only', to: 'vendors#vendor_list_only'
-      get '/raw-material-type-list-only', to: 'rawmaterialtypes#raw_material_type_list_only'
-      get '/raw-material-list-only', to: 'raw_materials#raw_material_list_only'
-      get '/item-download/:cost_type', to: 'files#item_download'
-      get '/blank-download/:cost_type', to: 'files#blank_download'
-      get '/raw-material-download/:cost_type', to: 'files#raw_material_download'
-      get '/color-download/:cost_type', to: 'files#color_download'
-      get '/units-download/:cost_type', to: 'files#units_download'      
-      get '/raw-material-type-download/:cost_type', to: 'files#raw_material_type_download'
-      get '/vendors-download/:cost_type', to: 'files#vendors_download'
-      get '/charts', to: 'charts#get_charts_info'
-      put '/job-cost-calculate/:id', to: 'job_listings#job_cost_calculate'
-      post '/cost-pdf-download', to: 'files#cost_pdf_download'
-      put '/update-item-blanks-only/:item_id', to: 'blanks_listing_by_items#update_item_blanks_only'
-      put '/update-item-blanks-with-cost-only/:item_id', to: 'blanks_listing_item_with_costs#update_item_blanks_with_cost_only'
+      post '/items/:id/update-type',         to: 'items#update_type'
+      get  '/item-list-only',                to: 'items#item_list_only'
+      get  '/job-list-only',                 to: 'job_listings#job_list_only'
+      get  '/jobs-by-params',                to: 'job_listings#jobs_by_params'
+      put  '/update-item-jobs-only/:id',     to: 'item_jobs#update_item_jobs_only'
+      get  '/blank-list-only',               to: 'blanks#blank_list_only'
+      get  '/vendors-list-only',             to: 'vendors#vendor_list_only'
+      put  '/update-blank-jobs-only/:id',    to: 'blank_jobs#update_blank_jobs_only'
+      get  'download/:file_type',            to: 'files#download'
+      get  '/box-list-only',                 to: 'boxes#box_list_only'
+      get  '/item-type-list-only',           to: 'item_types#item_type_list_only'
+      get  '/units-of-measure-list-only',    to: 'units_of_measures#units_of_measure_list_only'
+      get  '/color-list-only',               to: 'colors#color_list_only'
+      get  '/vendor-list-only',              to: 'vendors#vendor_list_only'
+      get  '/raw-material-type-list-only',   to: 'rawmaterialtypes#raw_material_type_list_only'
+      get  '/raw-material-list-only',        to: 'raw_materials#raw_material_list_only'
+      get  '/item-download/:cost_type',      to: 'files#item_download'
+      get  '/blank-download/:cost_type',     to: 'files#blank_download'
+      get  '/raw-material-download/:cost_type', to: 'files#raw_material_download'
+      get  '/color-download/:cost_type',     to: 'files#color_download'
+      get  '/units-download/:cost_type',     to: 'files#units_download'
+      get  '/raw-material-type-download/:cost_type', to: 'files#raw_material_type_download'
+      get  '/vendors-download/:cost_type',   to: 'files#vendors_download'
+      get  '/charts',                        to: 'charts#get_charts_info'
+      put  '/job-cost-calculate/:id',        to: 'job_listings#job_cost_calculate'
+      post '/cost-pdf-download',             to: 'files#cost_pdf_download'
+      put  '/update-item-blanks-only/:item_id',           to: 'blanks_listing_by_items#update_item_blanks_only'
+      put  '/update-item-blanks-with-cost-only/:item_id', to: 'blanks_listing_item_with_costs#update_item_blanks_with_cost_only'
 
-      ###### JOB LISTING ########
-      get '/jobs_and_blanks_download/:document_type', to: 'files#job_listing_download'
-      post '/job_listing_dashboard' ,to: 'files#update_or_create_jobs'
-      ##### RAW MATERIAL #######
-      get '/raw_materials_download/:document_type', to: 'files#raw_materials'
-      post '/raw_materials_dashboard', to: 'files#update_or_create_raw_materials'
-      ###### BLANK LISTING WITH COST ########
-      get '/blanks_listing_item_with_cost_download/:document_type', to: 'files#blanks_listing_item_with_cost_download'
-      post '/blanks_listing_item_with_cost_dashboard', to: 'files#update_or_create_blanks_listing_item_with_cost'
-      ###### BLANK ITEMS BY ITEM ########
-      get '/blanks_listing_by_item_download/:document_type', to: 'files#blanks_listing_by_item_download'
-      post '/blanks_listing_by_item_dashboard', to: 'files#update_or_create_blanks_listing_by_item'
-      ###### BOXES ########
-      get '/box_list_for_costing_module_download/:document_type', to: 'files#box_download'
-      post '/box_list_for_costing_module', to: 'files#update_or_create_boxes'      
-      ###### ITEM LISTING FOR COSTING ########
-      get '/item_list_for_costing_module_download/:document_type', to: 'files#item_list_for_costing_module_download'
-      post '/item_list_for_costing_module_dashboard', to: 'files#update_or_create_item_list_for_costing_module'    
-      ###### SCREEN CLICHE SIZES ########
-      get '/screen_cliche_sizes_for_costing_module_download/:document_type', to: 'files#screen_cliche_sizes_for_costing_module_download'
-      post '/screen_cliche_sizes_for_costing_module_dashboard', to: 'files#update_or_create_screen_cliche_sizes_for_costing_module'  
-      ###### BLANKS REPORT ########
-      get '/blanks_report_download/:document_type', to: 'files#blanks_report_download'
-      post '/blanks_report_dashboard', to: 'files#update_or_create_blanks_report'      
-      ###### ITEM LISTING WITH ITEM TYPES ########
-      get '/item_listing_with_item_types_download/:document_type', to: 'files#item_listing_with_item_types_download'
-      post '/item_listing_with_item_types_dashboard', to: 'files#update_or_create_item_listing_with_item_types'      
+      get  '/jobs_and_blanks_download/:document_type',                    to: 'files#job_listing_download'
+      post '/job_listing_dashboard',                                      to: 'files#update_or_create_jobs'
+      get  '/raw_materials_download/:document_type',                      to: 'files#raw_materials'
+      post '/raw_materials_dashboard',                                    to: 'files#update_or_create_raw_materials'
+      get  '/blanks_listing_item_with_cost_download/:document_type',      to: 'files#blanks_listing_item_with_cost_download'
+      post '/blanks_listing_item_with_cost_dashboard',                    to: 'files#update_or_create_blanks_listing_item_with_cost'
+      get  '/blanks_listing_by_item_download/:document_type',             to: 'files#blanks_listing_by_item_download'
+      post '/blanks_listing_by_item_dashboard',                           to: 'files#update_or_create_blanks_listing_by_item'
+      get  '/box_list_for_costing_module_download/:document_type',        to: 'files#box_download'
+      post '/box_list_for_costing_module',                                to: 'files#update_or_create_boxes'
+      get  '/item_list_for_costing_module_download/:document_type',       to: 'files#item_list_for_costing_module_download'
+      post '/item_list_for_costing_module_dashboard',                     to: 'files#update_or_create_item_list_for_costing_module'
+      get  '/screen_cliche_sizes_for_costing_module_download/:document_type', to: 'files#screen_cliche_sizes_for_costing_module_download'
+      post '/screen_cliche_sizes_for_costing_module_dashboard',           to: 'files#update_or_create_screen_cliche_sizes_for_costing_module'
+      get  '/blanks_report_download/:document_type',                      to: 'files#blanks_report_download'
+      post '/blanks_report_dashboard',                                    to: 'files#update_or_create_blanks_report'
+      get  '/item_listing_with_item_types_download/:document_type',       to: 'files#item_listing_with_item_types_download'
+      post '/item_listing_with_item_types_dashboard',                     to: 'files#update_or_create_item_listing_with_item_types'
     end
   end
 end

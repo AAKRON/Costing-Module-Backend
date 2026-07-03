@@ -4,8 +4,9 @@ include ActionController::MimeResponds
 
 class Api::V1::BaseController < ApplicationController
   before_action :destroy_session
-  before_action :set_raven_context
+  before_action :set_sentry_context
   before_action :set_current_database
+  before_action :restrict_access
 
   private
 
@@ -14,16 +15,13 @@ class Api::V1::BaseController < ApplicationController
     database = ENV['PG_DB_DEV'] || ActiveRecord::Base.connection.current_database
 
     if request.headers['Database'] && request.headers['Database'] != 'null' && request.headers['Database'] != Time.now.year.to_s
-        database = 'costing_database_' + request.headers['Database']
+      database = 'costing_database_' + request.headers['Database']
     end
 
     if ActiveRecord::Base.connection.current_database != database
-        connection_config['database'] = database
-        ActiveRecord::Base.establish_connection(connection_config)
+      connection_config['database'] = database
+      ActiveRecord::Base.establish_connection(connection_config)
     end
-
-    Rails.logger.debug "Selected database #{database}"
-    Rails.logger.debug "current_database #{ActiveRecord::Base.connection.current_database}"
   end
 
   def restrict_access
@@ -32,14 +30,11 @@ class Api::V1::BaseController < ApplicationController
 
   def authenticate_jwt_token
     return true if @current_user
-    
     auth_header = request.headers['Authorization']
     return false unless auth_header && auth_header.start_with?('Bearer ')
-    
     token = auth_header.split(' ').last
     payload = JwtService.decode(token)
     return false unless payload
-    
     @current_user = User.find_by(id: payload[:sub])
     !!@current_user
   rescue StandardError => e
@@ -60,9 +55,9 @@ class Api::V1::BaseController < ApplicationController
     response.headers['Access-Control-Expose-Headers'] = 'X-Total-Count'
   end
 
-  def set_raven_context
-    Raven.user_context(id: @current_user.id, username: @current_user.username) if @current_user
-    Raven.extra_context(params: params.to_unsafe_h, url: request.url)
+  def set_sentry_context
+    Sentry.set_user(id: @current_user.id, username: @current_user.username) if @current_user
+    Sentry.set_extras(params: params.to_unsafe_h, url: request.url)
   end
 
   def set_user_access_level

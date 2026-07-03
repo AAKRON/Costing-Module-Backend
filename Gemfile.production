@@ -1,23 +1,14 @@
 source 'https://rubygems.org'
-ruby '3.1.4'
+ruby '3.3.8'
 
 # Core Rails stack
-gem 'rails', '~> 6.1.7'
+gem 'rails', '~> 7.2.0'
 gem 'pg'
-gem 'puma', '~> 5.6.8'
+gem 'puma', '~> 6.4'
 gem 'bcrypt'
 
-# Ruby standard library dependencies Rails expects
-gem 'logger'
-gem 'ostruct'
-gem 'bigdecimal'
-gem 'mutex_m'
-gem 'drb'
-gem 'matrix'
-
-# Security & Authentication  
+# Security & Authentication
 gem 'jwt'
-gem 'rack', '~> 2.2.7'
 gem 'rack-attack'
 gem 'secure_headers'
 gem 'rack-cors', require: 'rack/cors'
@@ -28,15 +19,13 @@ gem 'kaminari'
 gem 'redis'
 gem 'sidekiq'
 
-# Additional Rails dependencies
-gem 'bootsnap', require: false
-gem 'listen'
-gem 'sprockets-rails'
-gem 'image_processing'
+# Error monitoring
+gem 'sentry-ruby'
+gem 'sentry-rails'
 
 # File processing
 gem 'rubyXL'
-gem 'smarter_csv' 
+gem 'smarter_csv'
 gem 'caxlsx'
 gem 'caxlsx_rails'
 gem 'roo'
@@ -47,6 +36,8 @@ gem 'wkhtmltopdf-binary'
 gem 'scenic'
 gem 'upsert'
 
-# Monitoring (optional)
+# Monitoring
 gem 'newrelic_rpm'
-gem 'sentry-raven'
+
+gem 'bootsnap', require: false
+gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby]

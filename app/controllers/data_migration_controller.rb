@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 class DataMigrationController < ApplicationController
+  before_action :require_admin_key
 
   # GET /data_migration/inspect_production
   def inspect_production
@@ -48,12 +49,9 @@ class DataMigrationController < ApplicationController
     return render json: { error: 'PROD_DATABASE_URL is not configured.' }, status: 422 unless prod_url.present?
     return render json: { error: 'DATABASE_URL is not configured.' }, status: 422 unless uat_url.present?
 
-    if source_db
-      prod_url = swap_db_in_url(prod_url, source_db)
-    end
+    prod_url = swap_db_in_url(prod_url, source_db) if source_db
 
     skip_tables = %w[users schema_migrations ar_internal_metadata]
-
     prod_conn = nil
     uat_conn  = nil
 
@@ -82,7 +80,6 @@ class DataMigrationController < ApplicationController
         tables:    results,
         timestamp: Time.current
       }
-
     rescue => e
       render json: { status: 'error', message: e.message, backtrace: e.backtrace.first(5) }, status: 500
     ensure
@@ -92,11 +89,10 @@ class DataMigrationController < ApplicationController
   end
 
   # POST /data_migration/setup_year_database?year=2025
-  # Creates costing_database_YEAR on Railway, runs schema migrations, copies from production.
   def setup_year_database
-    year    = params.require(:year)
-    new_db  = "costing_database_#{year}"
-    uat_url = ENV['DATABASE_URL']&.strip
+    year     = params.require(:year)
+    new_db   = "costing_database_#{year}"
+    uat_url  = ENV['DATABASE_URL']&.strip
     prod_url = ENV['PROD_DATABASE_URL']&.strip
 
     return render json: { error: 'DATABASE_URL not configured' },      status: 422 unless uat_url.present?
@@ -104,7 +100,6 @@ class DataMigrationController < ApplicationController
 
     steps = []
 
-    # Step 1: Create the database on Railway PostgreSQL
     begin
       admin_conn = PG::Connection.new(uat_url)
       admin_conn.exec("CREATE DATABASE \"#{new_db}\"")
@@ -116,27 +111,21 @@ class DataMigrationController < ApplicationController
       return render json: { status: 'error', step: 'create_database', message: e.message, steps: steps }, status: 500
     end
 
-    # Step 2: Run Rails migrations on the new database to build schema
     original_config = Rails.application.config.database_configuration[Rails.env].dup
     new_config      = original_config.dup.merge('database' => new_db)
 
     begin
       ActiveRecord::Base.establish_connection(new_config)
-      ActiveRecord::MigrationContext.new(
-        Rails.root.join('db/migrate').to_s,
-        ActiveRecord::SchemaMigration
-      ).migrate
+      ActiveRecord::MigrationContext.new(Rails.root.join('db/migrate').to_s).migrate
       steps << { step: 'migrate_schema', status: 'ok' }
     rescue => e
       ActiveRecord::Base.establish_connection(original_config)
       return render json: { status: 'error', step: 'migrate_schema', message: e.message, steps: steps }, status: 500
     end
 
-    # Step 3: Copy data from the production year database
     skip_tables   = %w[users schema_migrations ar_internal_metadata]
     prod_year_url = swap_db_in_url(prod_url, new_db)
     uat_year_url  = swap_db_in_url(uat_url,  new_db)
-
     prod_conn = nil
     uat_conn  = nil
 
@@ -211,7 +200,6 @@ class DataMigrationController < ApplicationController
         vals = columns.map do |col|
           v        = row[col]
           uat_type = uat_col_info[col]
-
           if v.nil?
             'NULL'
           elsif uat_type&.include?('integer') && v.include?('.')
@@ -222,7 +210,6 @@ class DataMigrationController < ApplicationController
         end
         "(#{vals.join(', ')})"
       end.join(', ')
-
       uat_conn.exec("INSERT INTO \"#{table}\" (#{col_list}) VALUES #{values_list}")
     end
 

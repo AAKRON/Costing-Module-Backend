@@ -1,5 +1,5 @@
-# Multi-stage build for security and size optimization  
-FROM ruby:3.1.4-slim AS builder
+# Multi-stage build for security and size optimization
+FROM ruby:3.3.8-slim AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
@@ -14,12 +14,12 @@ WORKDIR /app
 COPY Gemfile.production ./Gemfile
 # Ensure no original Gemfile can interfere
 RUN rm -f Gemfile.lock \
-    && gem install bundler:2.4.22 \
+    && gem install bundler \
     && bundle install --jobs $(nproc) --retry 3 \
     && bundle clean --force
 
 # Production stage
-FROM ruby:3.1.4-slim
+FROM ruby:3.3.8-slim
 
 # Install runtime dependencies only
 # X11/font libs required by wkhtmltopdf-binary for PDF generation

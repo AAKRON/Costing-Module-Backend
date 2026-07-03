@@ -1,6 +1,6 @@
-Raven.configure do |config|
+Sentry.init do |config|
   config.dsn = ENV['SENTRY_DSN']
-  config.environments = ['staging', 'production']
-  config.sanitize_fields = Rails.application.config.filter_parameters.map(&:to_s)
+  config.breadcrumbs_logger = [:active_support_logger, :http_logger]
+  config.traces_sample_rate = 0.1
+  config.enabled_environments = %w[production staging]
 end
-
