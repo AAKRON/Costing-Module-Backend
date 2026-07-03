@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 class JwtService
-  SECRET_KEY = Rails.application.secrets.secret_key_base
+  SECRET_KEY = Rails.application.secret_key_base
   ALGORITHM = 'HS256'
 
   def self.encode(payload, exp = 60.minutes.from_now)
