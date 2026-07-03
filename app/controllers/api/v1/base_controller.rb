@@ -1,8 +1,9 @@
 # frozen_string_literal: true
-include ActionController::HttpAuthentication::Token::ControllerMethods
-include ActionController::MimeResponds
 
 class Api::V1::BaseController < ApplicationController
+  include ActionController::HttpAuthentication::Token::ControllerMethods
+  include ActionController::MimeResponds
+
   before_action :destroy_session
   before_action :set_sentry_context
   before_action :set_current_database
