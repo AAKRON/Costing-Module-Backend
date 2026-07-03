@@ -15,6 +15,7 @@ gem 'pry-rails'
 gem 'rack-attack'
 gem 'rack-cors', require: 'rack/cors'
 gem 'redis'
+gem 'connection_pool', '~> 2.4'
 gem 'secure_headers'
 gem 'rubyXL'
 gem 'scenic'
@@ -28,6 +29,10 @@ gem 'caxlsx'
 gem 'caxlsx_rails'
 gem 'roo'
 gem 'bootsnap', require: false
+
+# Ruby stdlib gems extracted in Ruby 3.1+
+gem 'matrix'
+gem 'mutex_m'
 
 group :development, :test do
   gem 'byebug'

@@ -7,6 +7,10 @@ gem 'pg'
 gem 'puma', '~> 6.4'
 gem 'bcrypt'
 
+# Ruby stdlib gems extracted in Ruby 3.1+
+gem 'matrix'
+gem 'mutex_m'
+
 # Security & Authentication
 gem 'jwt'
 gem 'rack-attack'
