@@ -3,6 +3,9 @@
 class Api::V1::BaseController < ApplicationController
   include ActionController::HttpAuthentication::Token::ControllerMethods
   include ActionController::MimeResponds
+  include ActionView::Rendering
+
+  append_view_path Rails.root.join('app', 'views')
 
   before_action :destroy_session
   before_action :set_sentry_context
