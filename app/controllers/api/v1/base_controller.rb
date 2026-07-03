@@ -12,16 +12,24 @@ class Api::V1::BaseController < ApplicationController
   private
 
   def set_current_database
-    connection_config = Rails.application.config.database_configuration[Rails.env]
-    database = ENV['PG_DB_DEV'] || ActiveRecord::Base.connection.current_database
+    database = ENV['PG_DB_DEV'].presence || ActiveRecord::Base.connection.current_database
 
-    if request.headers['Database'] && request.headers['Database'] != 'null' && request.headers['Database'] != Time.now.year.to_s
+    if request.headers['Database'].present? &&
+       request.headers['Database'] != 'null' &&
+       request.headers['Database'] != Time.now.year.to_s
       database = 'costing_database_' + request.headers['Database']
     end
 
-    if ActiveRecord::Base.connection.current_database != database
-      connection_config['database'] = database
-      ActiveRecord::Base.establish_connection(connection_config)
+    return if ActiveRecord::Base.connection.current_database == database
+
+    # Rails 7.2: don't mutate the frozen config object — build a new connection spec
+    if ENV['DATABASE_URL'].present?
+      uri = URI.parse(ENV['DATABASE_URL'])
+      uri.path = "/#{database}"
+      ActiveRecord::Base.establish_connection(uri.to_s)
+    else
+      config = ActiveRecord::Base.connection_db_config.configuration_hash.merge(database: database)
+      ActiveRecord::Base.establish_connection(config)
     end
   end
 
