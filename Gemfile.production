@@ -17,6 +17,7 @@ gem 'rack-cors', require: 'rack/cors'
 gem 'jbuilder'
 gem 'kaminari'
 gem 'redis'
+gem 'connection_pool', '~> 2.4'
 gem 'sidekiq'
 
 # Error monitoring
