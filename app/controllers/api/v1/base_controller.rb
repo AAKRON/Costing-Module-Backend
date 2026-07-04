@@ -4,6 +4,10 @@ class Api::V1::BaseController < ApplicationController
   include ActionController::HttpAuthentication::Token::ControllerMethods
   include ActionController::MimeResponds
 
+  rescue_from StandardError do |e|
+    render json: { error: e.class.name, message: e.message, trace: e.backtrace&.first(5) }, status: 500
+  end
+
   before_action :destroy_session
   before_action :set_sentry_context
   before_action :set_current_database
