@@ -92,21 +92,48 @@ class SetupController < ApplicationController
     render json: { status: 'error', message: e.message, timestamp: Time.current }, status: 500
   end
 
+  def debug_views
+    rails_root = Rails.root.to_s
+    views_dir = Rails.root.join('app', 'views').to_s
+    exists = Dir.exist?(views_dir)
+
+    files = []
+    if exists
+      Dir.glob("#{views_dir}/**/*.jbuilder").each { |f| files << f.sub(rails_root, '') }
+    end
+
+    render json: {
+      rails_root: rails_root,
+      views_dir: views_dir,
+      views_dir_exists: exists,
+      jbuilder_files: files.sort,
+      view_paths: ActionController::Base.view_paths.map(&:to_s),
+      timestamp: Time.current
+    }
+  rescue => e
+    render json: { status: 'error', message: e.message, backtrace: e.backtrace&.first(5) }, status: 500
+  end
+
   private
 
   def set_current_database
-    connection_config = Rails.application.config.database_configuration[Rails.env]
-    database = ENV['PG_DB_DEV']
+    database = ENV['PG_DB_DEV'].presence
 
-    if request.headers['Database'] && request.headers['Database'] != 'null' && request.headers['Database'] != Time.now.year.to_s
-      database = 'costing_module_db_' + request.headers['Database']
+    if request.headers['Database'].present? &&
+       request.headers['Database'] != 'null' &&
+       request.headers['Database'] != Time.now.year.to_s
+      database = 'costing_database_' + request.headers['Database']
     end
 
-    if database && ActiveRecord::Base.connection.current_database != database
-      connection_config['database'] = database
-      ActiveRecord::Base.establish_connection(connection_config)
-    end
+    return unless database && ActiveRecord::Base.connection.current_database != database
 
-    Rails.logger.debug "Selected database #{database}"
+    if ENV['DATABASE_URL'].present?
+      uri = URI.parse(ENV['DATABASE_URL'])
+      uri.path = "/#{database}"
+      ActiveRecord::Base.establish_connection(uri.to_s)
+    else
+      config = ActiveRecord::Base.connection_db_config.configuration_hash.merge(database: database)
+      ActiveRecord::Base.establish_connection(config)
+    end
   end
 end
