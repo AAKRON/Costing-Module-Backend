@@ -1,17 +1,16 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Starting Costing Module Backend..."
+echo "Starting Costing Module Backend..."
 
 # Set environment for Rails
 export RAILS_ENV=production
 export RACK_ENV=production
 
-# Skip automatic migrations to avoid bundler issues
-echo "⚡ Skipping migrations - use /setup/schema_load endpoint instead"
-
-# Now we have clean production Gemfile - bundle exec should work
-echo "🌐 Starting Puma with clean production gems..."
-
+echo "Running database migrations..."
 cd /app
+bundle exec rails db:migrate
+
+echo "Starting Puma..."
+
 exec bundle exec puma -C config/puma.rb
