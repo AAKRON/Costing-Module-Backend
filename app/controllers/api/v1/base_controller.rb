@@ -3,13 +3,6 @@
 class Api::V1::BaseController < ApplicationController
   include ActionController::HttpAuthentication::Token::ControllerMethods
   include ActionController::MimeResponds
-  include ActionView::Rendering
-
-  append_view_path Rails.root.join('app', 'views')
-
-  rescue_from Exception do |e|
-    render json: { error: e.class.to_s, message: e.message, backtrace: e.backtrace&.first(10) }, status: 500
-  end
 
   before_action :destroy_session
   before_action :set_sentry_context

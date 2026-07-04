@@ -23,7 +23,10 @@ module CostingModuleApi
   class Application < Rails::Application
     config.load_defaults 7.2
 
-    config.api_only = true
+    # Keep api_only false so ActionView sets up view paths for Jbuilder templates.
+    # Controllers still inherit from ActionController::API so CSRF/session
+    # middleware does not apply to API endpoints.
+    config.api_only = false
     config.autoload_paths += %W(#{config.root}/lib)
     config.active_job.queue_adapter = :sidekiq
     config.middleware.use Rack::Attack
