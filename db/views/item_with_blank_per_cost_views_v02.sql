@@ -2,18 +2,18 @@ SELECT
   bliwc.id,
   bliwc.item_number,
   bliwc.blank_number,
-  CAST(((bcv.cost * COALESCE(blbi.mult, 1))/COALESCE(blbi.div, 1)) AS DECIMAL(10,5)) AS cost,
+  CAST(((bcv.cost * COALESCE(blbi.mult, 1)) / CASE WHEN COALESCE(blbi.div, 0) = 0 THEN 1 ELSE blbi.div END) AS DECIMAL(10,4)) AS cost,
   CASE
     WHEN bcv.type_number = 1
       THEN
-        CAST(((bcv.total_blank_cost_for_price * COALESCE(blbi.mult, 1))/ COALESCE(blbi.div, 1)) AS DECIMAL(10,5))
+        CAST(((bcv.total_blank_cost_for_price * COALESCE(blbi.mult, 1)) / CASE WHEN COALESCE(blbi.div, 0) = 0 THEN 1 ELSE blbi.div END) AS DECIMAL(10,4))
       ELSE 0
     END
   AS total_blank_cost_for_price,
   CASE
     WHEN bcv.type_number = 1
       THEN
-        CAST(((bcv.total_blank_cost_for_inventory * COALESCE(blbi.mult, 1))/ COALESCE(blbi.div, 1)) AS DECIMAL(10,5))
+        CAST(((bcv.total_blank_cost_for_inventory * COALESCE(blbi.mult, 1)) / CASE WHEN COALESCE(blbi.div, 0) = 0 THEN 1 ELSE blbi.div END) AS DECIMAL(10,4))
       ELSE 0
     END
   AS total_blank_cost_for_inventory
