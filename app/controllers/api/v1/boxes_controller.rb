@@ -16,13 +16,13 @@ module Api
         @boxes = @boxes.search(params[:box_name], :name) unless params.fetch(:box_name, '').empty?
         @boxes = @boxes.search(cost_per_box, :cost_per_box) unless cost_per_box.empty?
 
-        render template: 'api/v1/box/index.json', status: :ok
+        render json: @boxes, status: :ok
       end
 
       def create
         @box = Box.new(box_params)
         if @box.save
-          render template: 'api/v1/box/show.json', status: 201
+          render json: @box, status: 201
         else
           render json: @box.errors, status: :bad_request
         end
@@ -52,11 +52,13 @@ module Api
 
         render json: @boxes, status: :ok
       end
+
       private
 
       def set_box
         @box = Box.find(params[:id])
       end
+
       def box_params
         params.permit(:name, :cost_per_box)
       end

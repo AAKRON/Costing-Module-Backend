@@ -10,7 +10,6 @@ module Api
       def index
         _start = params[:_start].to_i
         _end = params[:_end].to_i
-        # @blanks_listing_item_with_cost = ItemWithBlankPerCostView.paginate(params.slice(:_end, :_sort, :_order))
         @blanks_listing_item_with_cost = ItemWithBlankPerCostView.order("#{params[:_sort]} #{params[:_order]}").offset(_start).limit(_end - _start)
         @blanks_listing_item_with_cost = @blanks_listing_item_with_cost.search(params[:q], :item_number) unless params.fetch(:q, '').empty?
 
@@ -18,9 +17,8 @@ module Api
       end
 
       def show
-        # TODO
         @item = Item.find(@blanks_listing_item_with_cost.item_number)
-        render_item_and_item_blanks_template(template_name: __method__, status: :ok)
+        render json: @blanks_listing_item_with_cost, status: :ok
       end
 
       def create
@@ -39,7 +37,6 @@ module Api
             mult: params[:mult],
             div: params[:div]
         )
-            # TODO
             @blanks_listing_item_with_cost = BlanksListingItemWithCost.where(item_number: params[:id])
             render json: @blanks_listing_item_with_cost, status: :ok
         else
@@ -54,7 +51,6 @@ module Api
             end
         end if params.has_key?(:blanks)
 
-        # TODO
         @blanks_listing_item_with_cost = BlanksListingItemWithCost.where(item_number: params[:id])
         render json: @blanks_listing_item_with_cost, status: :ok
       end
@@ -76,10 +72,6 @@ module Api
       end
 
       private
-
-      def render_item_and_item_blanks_template(template_name: :index, status: :ok)
-        render template: "api/v1/item_blanks_with_cost/#{template_name.to_s}.json", status: status
-      end
 
       def item_blanks_body(blanks, item_id)
         blanks.map! do |row|

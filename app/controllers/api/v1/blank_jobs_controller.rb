@@ -13,21 +13,23 @@ module Api
 
         _start = params[:_start].to_i
         _end = params[:_end].to_i
-        # @blank_jobs = BlankJobView.paginate(params.slice(:_end, :_sort, :_order))
         @blank_jobs = BlankJobView.order("#{params[:_sort]} #{params[:_order]}").offset(_start).limit(_end - _start)
         @blank_jobs = @blank_jobs.search(blank_number, :blank_number) unless blank_number.empty?
         @blank_jobs = @blank_jobs.search(params[:description], :description) unless params.fetch(:description, '').empty?
         @blank_jobs = @blank_jobs.where("number_of_jobs = #{number_of_jobs}") unless number_of_jobs.empty?
 
-        render_item_and_item_jobs_template(template_name: :list, status: :ok)
+        render json: @blank_jobs, status: :ok
       end
 
       def create
         @blank = Blank.find_by_blank_number!(blank_job_params[:blank_number])
         @blank.blank_jobs.build(blank_job_params[:blank_jobs]) if blank_job_params[:blank_jobs]
 
-        render_item_and_item_jobs_template(template_name: :show, status: :created) if @blank.save
-        render json: @blank.errors, status: :bad_request unless @blank.save
+        if @blank.save
+          render json: @blank.as_json(include: { blank_jobs: {} }), status: :created
+        else
+          render json: @blank.errors, status: :bad_request
+        end
       end
 
       def update_blank_jobs_only
@@ -56,13 +58,12 @@ module Api
             end
         end if params.has_key?(:jobs)
         @blank = Blank.find_by_id!(params[:id])
-        render_item_and_item_jobs_template(template_name: 'show', status: :ok)
+        render json: @blank.as_json(include: { blank_jobs: {} }), status: :ok
       end
 
       def show
         @blank = Blank.find_by_id!(params[:id])
-
-        render_item_and_item_jobs_template(template_name: __method__, status: :ok)
+        render json: @blank.as_json(include: { blank_jobs: {} }), status: :ok
       end
 
       private
@@ -73,10 +74,6 @@ module Api
 
       def set_blank_job
         @blankJob = BlankJob.find(params[:id])
-      end
-
-      def render_item_and_item_jobs_template(template_name: :index, status: :ok)
-        render template: "api/v1/blank_jobs/#{template_name.to_s}.json", status: status
       end
 
       def blank_job_body(jobs, blank_number)

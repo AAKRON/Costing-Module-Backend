@@ -18,14 +18,12 @@ module Api
 
       def show
         @item = Item.find(@blanks_listing_by_item.item_number)
-        render_item_and_item_blanks_template(template_name: __method__, status: :ok)
+        render json: @blanks_listing_by_item, status: :ok
       end
 
       def create
-        # Create BlanksListingItemWithCost
         BlanksListingItemWithCost.find_or_create_by(blanks_listing_item_with_cost_params)
 
-        # Create BlanksListingByItem
         @blanks_listing_by_item = BlanksListingByItem.new(blanks_listing_by_item_params)
 
         if @blanks_listing_by_item.save
@@ -82,10 +80,6 @@ module Api
 
       def set_blanks_listing_by_item
         @blanks_listing_by_item = BlanksListingByItem.find(params[:id])
-      end
-
-      def render_item_and_item_blanks_template(template_name: :index, status: :ok)
-        render template: "api/v1/item_blanks/#{template_name.to_s}.json", status: status
       end
 
       def item_blanks_body(blanks, item_id)

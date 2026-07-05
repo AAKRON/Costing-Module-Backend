@@ -9,7 +9,6 @@ module Api
       after_action(only: [:raw_material_list_only]) { set_pagination_header(RawMaterial.count) }
 
       def index
-        #set_pagination_header(RawMaterialView.count(1))
         cost = (params.fetch(:cost, '') == 'null' ) ? '' : params.fetch(:cost, '')
 
         @raw_materials = RawMaterialView.paginate(params.slice(:_end, :_sort, :_order))
@@ -19,6 +18,7 @@ module Api
         @raw_materials = @raw_materials.search(cost, :cost) unless cost.empty?
         @raw_materials = @raw_materials.search(params[:unit], :unit) unless params.fetch(:unit, '').empty?
         @raw_materials = @raw_materials.search(params[:color], :color) unless params.fetch(:color, '').empty?
+        render json: @raw_materials, status: :ok
       end
 
       def create
@@ -50,9 +50,7 @@ module Api
       end
 
       def raw_material_list_only
-        #set_pagination_header(RawMaterial.count)
         @raw_material = RawMaterial.all
-
         render json: @raw_material, status: :ok
       end
 
