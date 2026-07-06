@@ -1,12 +1,10 @@
 # frozen_string_literal: true
 class HealthController < ApplicationController
   def show
-    # Handle password reset via query parameters
     if params[:action_type] == 'reset_password'
       return reset_matthew_password
     end
 
-    # Handle login via query parameters
     if params[:action_type] == 'login'
       begin
         db_name = ActiveRecord::Base.connection.current_database rescue 'error_getting_db'
@@ -115,7 +113,6 @@ class HealthController < ApplicationController
         password_confirmation: 'TestPass123',
         role: 'admin'
       )
-
       render json: {
         status: 'success',
         message: 'Test user created successfully',
@@ -131,12 +128,7 @@ class HealthController < ApplicationController
   # Creates the user if they don't exist yet (safe for first-time UAT setup)
   def reset_password
     begin
-      if request.headers['Database'] && request.headers['Database'] != 'null'
-        connection_config = Rails.application.config.database_configuration[Rails.env]
-        database = 'costing_database_' + request.headers['Database']
-        connection_config['database'] = database
-        ActiveRecord::Base.establish_connection(connection_config)
-      end
+      switch_database(request.headers['Database'])
 
       username     = params[:username] || 'Matthew'
       new_password = params[:password] || 'UATPassword123!'
@@ -152,17 +144,10 @@ class HealthController < ApplicationController
           message: user.previously_new_record? ? 'User created and password set' : 'Password reset successfully',
           username: user.username,
           database: (ActiveRecord::Base.connection.current_database rescue 'unknown'),
-          test_credentials: {
-            username: user.username,
-            password: new_password
-          }
+          test_credentials: { username: user.username, password: new_password }
         }
       else
-        render json: {
-          status: 'error',
-          message: 'Failed to save user',
-          errors: user.errors.full_messages
-        }, status: 422
+        render json: { status: 'error', message: 'Failed to save user', errors: user.errors.full_messages }, status: 422
       end
     rescue => e
       render json: { status: 'error', message: e.message }, status: 500
@@ -171,14 +156,22 @@ class HealthController < ApplicationController
 
   private
 
+  def switch_database(year_header)
+    return unless year_header.present? && year_header != 'null'
+    database = 'costing_database_' + year_header
+    if ENV['DATABASE_URL'].present?
+      uri = URI.parse(ENV['DATABASE_URL'])
+      uri.path = "/#{database}"
+      ActiveRecord::Base.establish_connection(uri.to_s)
+    else
+      config = ActiveRecord::Base.connection_db_config.configuration_hash.merge(database: database)
+      ActiveRecord::Base.establish_connection(config)
+    end
+  end
+
   def reset_matthew_password
     begin
-      if request.headers['Database'] && request.headers['Database'] != 'null'
-        connection_config = Rails.application.config.database_configuration[Rails.env]
-        database = 'costing_database_' + request.headers['Database']
-        connection_config['database'] = database
-        ActiveRecord::Base.establish_connection(connection_config)
-      end
+      switch_database(request.headers['Database'])
 
       username     = params[:username] || 'Matthew'
       new_password = params[:password] || 'UATPassword123!'
@@ -194,17 +187,10 @@ class HealthController < ApplicationController
           message: user.previously_new_record? ? 'User created and password set' : 'Password reset successfully',
           username: user.username,
           database: (ActiveRecord::Base.connection.current_database rescue 'unknown'),
-          test_credentials: {
-            username: user.username,
-            password: new_password
-          }
+          test_credentials: { username: user.username, password: new_password }
         }
       else
-        render json: {
-          status: 'error',
-          message: 'Failed to save user',
-          errors: user.errors.full_messages
-        }, status: 422
+        render json: { status: 'error', message: 'Failed to save user', errors: user.errors.full_messages }, status: 422
       end
     rescue => e
       render json: { status: 'error', message: e.message }, status: 500
@@ -214,13 +200,8 @@ class HealthController < ApplicationController
   def test_login
     begin
       year = params[:year] || '2025'
-      connection_config = Rails.application.config.database_configuration[Rails.env]
       database = "costing_database_#{year}"
-
-      if ActiveRecord::Base.connection.current_database != database
-        connection_config['database'] = database
-        ActiveRecord::Base.establish_connection(connection_config)
-      end
+      switch_database(year)
 
       username = params[:username] || 'Matthew'
       password = params[:password] || 'UATPassword123!'
@@ -228,15 +209,8 @@ class HealthController < ApplicationController
       user = User.find_by(username: username)
 
       if user && user.authenticate(password)
-        payload = {
-          sub: user.id,
-          username: user.username,
-          role: user.role,
-          year: year
-        }
-
-        token = JwtService.encode(payload, 24.hours.from_now)
-
+        payload = { sub: user.id, username: user.username, role: user.role, year: year }
+        token   = JwtService.encode(payload, 24.hours.from_now)
         render json: {
           status: 'success',
           username: user.username,
@@ -249,12 +223,8 @@ class HealthController < ApplicationController
         render json: {
           status: 'error',
           message: 'Invalid username or password',
-          debug: {
-            user_found: user.present?,
-            username: username,
-            year: year,
-            database: ActiveRecord::Base.connection.current_database
-          }
+          debug: { user_found: user.present?, username: username, year: year,
+                   database: ActiveRecord::Base.connection.current_database }
         }, status: 401
       end
     rescue => e
