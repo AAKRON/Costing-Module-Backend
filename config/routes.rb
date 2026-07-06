@@ -37,6 +37,7 @@ Rails.application.routes.draw do
     namespace :v1, defaults: { format: :json } do
       get  '/year_management/years',              to: 'year_management#years'
       post '/year_management/freeze_and_advance', to: 'year_management#freeze_and_advance'
+      post '/year_management/rollback_freeze',    to: 'year_management#rollback_freeze'
 
       resources :raw_materials
       resources :rawmaterialtypes

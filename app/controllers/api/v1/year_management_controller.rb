@@ -20,10 +20,6 @@ module Api
 
       # POST /api/v1/year_management/freeze_and_advance
       # Header: Database: <year_to_freeze>
-      # 1. Creates costing_database_{year+1}
-      # 2. Runs migrations
-      # 3. Copies ALL data (including users) from current year to new year
-      # 4. Marks current year frozen, registers new year in database_years
       def freeze_and_advance
         year_header = request.headers['Database'].presence
         return render json: { error: 'Database header (year to freeze) is required' }, status: 422 unless year_header
@@ -63,7 +59,7 @@ module Api
           restore_main_connection(main_url)
         end
 
-        # 3 — Copy all data (including users) from current year to next year
+        # 3 — Copy all data from current year to next year
         src_conn  = nil
         dest_conn = nil
         begin
@@ -109,6 +105,63 @@ module Api
         end
 
         render json: { status: 'success', frozen_year: current_year, new_year: next_year, steps: steps }
+      end
+
+      # POST /api/v1/year_management/rollback_freeze
+      # Reverses a freeze: drops the new year DB and unfreezes the previous year.
+      # Params: year_to_unfreeze (e.g. 2026), next_year_to_drop (e.g. 2027)
+      def rollback_freeze
+        year_to_unfreeze  = (params[:year_to_unfreeze]  || params[:year]).to_i
+        next_year_to_drop = (params[:next_year_to_drop] || (year_to_unfreeze + 1)).to_i
+        main_url          = ENV['DATABASE_URL']&.strip
+
+        return render json: { error: 'year_to_unfreeze is required' }, status: 422 unless year_to_unfreeze > 0
+        return render json: { error: 'DATABASE_URL not configured' }, status: 422 unless main_url.present?
+
+        drop_db = "costing_database_#{next_year_to_drop}"
+        steps   = []
+
+        # 1 — Drop the newly created year DB
+        begin
+          # Terminate any active connections to the DB before dropping
+          admin_conn = PG::Connection.new(main_url)
+          admin_conn.exec(<<~SQL)
+            SELECT pg_terminate_backend(pid)
+            FROM pg_stat_activity
+            WHERE datname = '#{drop_db}' AND pid <> pg_backend_pid()
+          SQL
+          admin_conn.exec("DROP DATABASE IF EXISTS \"#{drop_db}\"")
+          admin_conn.close
+          steps << { step: 'drop_database', status: 'ok', database: drop_db }
+        rescue => e
+          steps << { step: 'drop_database', status: 'error', message: e.message }
+          return render json: { status: 'error', steps: steps }, status: 500
+        end
+
+        # 2 — Unfreeze the original year and remove next year from registry
+        begin
+          main_conn = PG::Connection.new(main_url)
+          main_conn.exec(
+            "UPDATE database_years SET frozen = false, updated_at = NOW() WHERE year = #{year_to_unfreeze}"
+          )
+          main_conn.exec(
+            "DELETE FROM database_years WHERE year = #{next_year_to_drop}"
+          )
+          main_conn.close
+          steps << { step: 'update_registry', status: 'ok',
+                     unfrozen_year: year_to_unfreeze, removed_year: next_year_to_drop }
+        rescue => e
+          steps << { step: 'update_registry', status: 'error', message: e.message }
+        end
+
+        render json: {
+          status: 'rolled_back',
+          unfrozen_year: year_to_unfreeze,
+          dropped_database: drop_db,
+          steps: steps
+        }
+      rescue => e
+        render json: { error: e.message }, status: 500
       end
 
       private
