@@ -34,8 +34,8 @@ gem 'smarter_csv'
 gem 'caxlsx'
 gem 'caxlsx_rails'
 gem 'roo'
-gem 'pdfkit'
-gem 'wkhtmltopdf-binary'
+gem 'prawn'
+gem 'prawn-table'
 
 # Database & utilities
 gem 'scenic'
