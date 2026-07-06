@@ -35,6 +35,7 @@ Rails.application.routes.draw do
     end
 
     namespace :v1, defaults: { format: :json } do
+      get  '/year_management/active_year',        to: 'year_management#active_year'
       get  '/year_management/years',              to: 'year_management#years'
       post '/year_management/freeze_and_advance', to: 'year_management#freeze_and_advance'
       post '/year_management/rollback_freeze',    to: 'year_management#rollback_freeze'
