@@ -66,9 +66,15 @@ class DataMigrationController < ApplicationController
       tables_to_copy = uat_tables - skip_tables
       results = {}
 
+      # Disable FK constraint enforcement for the session so parent tables
+      # can be cleared even when child tables already reference them.
+      uat_conn.exec("SET session_replication_role = 'replica'")
+
       tables_to_copy.each do |table|
         results[table] = copy_table(prod_conn, uat_conn, table)
       end
+
+      uat_conn.exec("SET session_replication_role = 'origin'")
 
       reset_sequences(uat_conn, tables_to_copy)
 
@@ -81,6 +87,7 @@ class DataMigrationController < ApplicationController
         timestamp: Time.current
       }
     rescue => e
+      uat_conn&.exec("SET session_replication_role = 'origin'")
       render json: { status: 'error', message: e.message, backtrace: e.backtrace.first(5) }, status: 500
     ensure
       prod_conn&.close
@@ -140,13 +147,20 @@ class DataMigrationController < ApplicationController
       tables_to_copy = uat_tables - skip_tables
       table_results  = {}
 
+      # Disable FK constraint enforcement for the session so parent tables
+      # can be cleared even when child _location_prices tables already reference them.
+      uat_conn.exec("SET session_replication_role = 'replica'")
+
       tables_to_copy.each do |table|
         table_results[table] = copy_table(prod_conn, uat_conn, table)
       end
 
+      uat_conn.exec("SET session_replication_role = 'origin'")
+
       reset_sequences(uat_conn, tables_to_copy)
       steps << { step: 'copy_data', status: 'ok', tables: table_results }
     rescue => e
+      uat_conn&.exec("SET session_replication_role = 'origin'")
       steps << { step: 'copy_data', status: 'error', message: e.message }
     ensure
       prod_conn&.close
