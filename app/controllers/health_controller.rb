@@ -97,22 +97,31 @@ class HealthController < ApplicationController
     return render json: { error: 'Unauthorized' }, status: 401 unless valid_admin_key?
 
     year = params[:year] || request.headers['Database']
-    switch_database(year) if year.present?
+    main_url = ENV['DATABASE_URL']&.strip
+    return render json: { error: 'DATABASE_URL not configured' }, status: 422 unless main_url.present?
 
-    users = User.select(:id, :username, :role).order(:username).map do |u|
-      { id: u.id, username: u.username, role: u.role }
+    if year.present?
+      db_name = year.to_s.start_with?('costing_database_') ? year.to_s : "costing_database_#{year}"
+      conn = PG::Connection.new(swap_db_in_url(main_url, db_name))
+    else
+      conn = PG::Connection.new(main_url)
+      db_name = 'railway'
     end
 
+    rows = conn.exec("SELECT id, username, role FROM users ORDER BY username").to_a
+    conn.close
+
     render json: {
-      database: (ActiveRecord::Base.connection.current_database rescue 'unknown'),
-      user_count: users.size,
-      users: users
+      database: db_name,
+      user_count: rows.size,
+      users: rows.map { |r| { id: r['id'], username: r['username'], role: r['role'] } }
     }
   rescue => e
     render json: { error: e.message }, status: 500
   end
 
   # POST /health/copy_users_to_year?target_year=2026
+  # Uses raw PG connections to avoid ActiveRecord enum issues across schema generations.
   def copy_users_to_year
     return render json: { error: 'Unauthorized' }, status: 401 unless valid_admin_key?
 
@@ -123,38 +132,54 @@ class HealthController < ApplicationController
     source_years = params[:source_years]&.split(',') || (2019..2025).map(&:to_s)
     results = {}
 
+    # Open target connection once
+    target_url  = swap_db_in_url(main_url, "costing_database_#{target_year}")
+    target_conn = PG::Connection.new(target_url)
+
+    # Discover what role values the target DB uses (string vs integer)
+    sample_role = target_conn.exec("SELECT role FROM users LIMIT 1").first&.dig('role').to_s
+    # If roles in target look like integers, we keep numeric mapping; otherwise we normalize to strings
+    target_uses_int_role = sample_role =~ /\A\d+\z/
+
     source_years.each do |yr|
       src_db = "costing_database_#{yr}"
       begin
-        src_url  = swap_db_in_url(main_url, src_db)
-        src_conn = PG::Connection.new(src_url)
+        src_conn = PG::Connection.new(swap_db_in_url(main_url, src_db))
         rows     = src_conn.exec("SELECT username, password_digest, role FROM users").to_a
         src_conn.close
 
-        switch_database(target_year)
         year_results = []
         rows.each do |row|
-          next if row['username'].to_s.downcase == 'matthew'
+          username = row['username']
+          next if username.to_s.downcase == 'matthew'
 
-          # Older DBs store role as integer (1 = admin, 0 = user)
-          raw_role    = row['role'].to_s
-          mapped_role = case raw_role
-                        when '1', 'true'  then 'admin'
-                        when '0', 'false' then 'user'
-                        else raw_role.presence || 'admin'
-                        end
-
-          user = User.find_or_initialize_by(username: row['username'])
-          if user.new_record?
-            user.password_digest = row['password_digest']
-            user.role            = mapped_role
-            if user.save(validate: false)
-              year_results << { username: user.username, status: 'created', role: user.role }
-            else
-              year_results << { username: user.username, status: 'error', errors: user.errors.full_messages }
-            end
+          # Normalize role for the target schema
+          raw_role = row['role'].to_s
+          if target_uses_int_role
+            # Target stores integers: keep numeric or map string->int
+            mapped_role = case raw_role
+                          when 'admin'  then '1'
+                          when 'user'   then '0'
+                          else raw_role  # already an integer string
+                          end
           else
-            year_results << { username: user.username, status: 'already_exists' }
+            # Target stores strings: map integer->string
+            mapped_role = case raw_role
+                          when '1', 'true'  then 'admin'
+                          when '0', 'false' then 'user'
+                          else raw_role.presence || 'admin'
+                          end
+          end
+
+          result = target_conn.exec_params(
+            "INSERT INTO users (username, password_digest, role, created_at, updated_at) " \
+            "VALUES ($1, $2, $3, NOW(), NOW()) ON CONFLICT (username) DO NOTHING",
+            [username, row['password_digest'], mapped_role]
+          )
+          if result.cmd_tuples == 1
+            year_results << { username: username, status: 'created', role: mapped_role }
+          else
+            year_results << { username: username, status: 'already_exists' }
           end
         end
         results[yr] = year_results
@@ -163,15 +188,16 @@ class HealthController < ApplicationController
       end
     end
 
-    switch_database(target_year)
-    final_users = User.select(:username, :role).order(:username).map { |u| { username: u.username, role: u.role } }
+    # Final user list from target
+    final_users = target_conn.exec("SELECT username, role FROM users ORDER BY username").to_a
+    target_conn.close
 
     render json: {
       status: 'done',
       target_year: target_year,
-      target_database: (ActiveRecord::Base.connection.current_database rescue 'unknown'),
+      target_database: "costing_database_#{target_year}",
       results_by_source_year: results,
-      final_users_in_target: final_users
+      final_users_in_target: final_users.map { |r| { username: r['username'], role: r['role'] } }
     }
   rescue => e
     render json: { error: e.message }, status: 500
