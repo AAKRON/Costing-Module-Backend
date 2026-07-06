@@ -120,25 +120,23 @@ class HealthController < ApplicationController
     render json: { error: e.message }, status: 500
   end
 
-  # POST /health/copy_users_to_year?target_year=2026
-  # Uses raw PG connections to avoid ActiveRecord enum issues across schema generations.
+  # POST /health/copy_users_to_year?target_year=2026&source_years=2019,2020
+  # Uses raw PG; avoids ON CONFLICT since older DBs may lack a unique index on username.
   def copy_users_to_year
     return render json: { error: 'Unauthorized' }, status: 401 unless valid_admin_key?
 
-    target_year = params[:target_year] || params[:year] || '2026'
-    main_url    = ENV['DATABASE_URL']&.strip
+    target_year  = params[:target_year] || params[:year] || '2026'
+    main_url     = ENV['DATABASE_URL']&.strip
     return render json: { error: 'DATABASE_URL not configured' }, status: 422 unless main_url.present?
 
     source_years = params[:source_years]&.split(',') || (2019..2025).map(&:to_s)
-    results = {}
+    results      = {}
 
-    # Open target connection once
     target_url  = swap_db_in_url(main_url, "costing_database_#{target_year}")
     target_conn = PG::Connection.new(target_url)
 
-    # Discover what role values the target DB uses (string vs integer)
-    sample_role = target_conn.exec("SELECT role FROM users LIMIT 1").first&.dig('role').to_s
-    # If roles in target look like integers, we keep numeric mapping; otherwise we normalize to strings
+    # Detect whether target stores role as integer or string
+    sample_role         = target_conn.exec("SELECT role FROM users LIMIT 1").first&.dig('role').to_s
     target_uses_int_role = sample_role =~ /\A\d+\z/
 
     source_years.each do |yr|
@@ -153,17 +151,15 @@ class HealthController < ApplicationController
           username = row['username']
           next if username.to_s.downcase == 'matthew'
 
-          # Normalize role for the target schema
+          # Normalize role value to match target schema
           raw_role = row['role'].to_s
           if target_uses_int_role
-            # Target stores integers: keep numeric or map string->int
             mapped_role = case raw_role
-                          when 'admin'  then '1'
-                          when 'user'   then '0'
-                          else raw_role  # already an integer string
+                          when 'admin' then '1'
+                          when 'user'  then '0'
+                          else raw_role
                           end
           else
-            # Target stores strings: map integer->string
             mapped_role = case raw_role
                           when '1', 'true'  then 'admin'
                           when '0', 'false' then 'user'
@@ -171,15 +167,20 @@ class HealthController < ApplicationController
                           end
           end
 
-          result = target_conn.exec_params(
-            "INSERT INTO users (username, password_digest, role, created_at, updated_at) " \
-            "VALUES ($1, $2, $3, NOW(), NOW()) ON CONFLICT (username) DO NOTHING",
-            [username, row['password_digest'], mapped_role]
-          )
-          if result.cmd_tuples == 1
-            year_results << { username: username, status: 'created', role: mapped_role }
-          else
+          # Check existence without relying on a unique index
+          exists = target_conn.exec_params(
+            "SELECT 1 FROM users WHERE username = $1 LIMIT 1", [username]
+          ).ntuples > 0
+
+          if exists
             year_results << { username: username, status: 'already_exists' }
+          else
+            target_conn.exec_params(
+              "INSERT INTO users (username, password_digest, role, created_at, updated_at) " \
+              "VALUES ($1, $2, $3, NOW(), NOW())",
+              [username, row['password_digest'], mapped_role]
+            )
+            year_results << { username: username, status: 'created', role: mapped_role }
           end
         end
         results[yr] = year_results
@@ -188,7 +189,6 @@ class HealthController < ApplicationController
       end
     end
 
-    # Final user list from target
     final_users = target_conn.exec("SELECT username, role FROM users ORDER BY username").to_a
     target_conn.close
 
