@@ -17,7 +17,6 @@ module Api
       end
 
       def show
-        @item = Item.find(@blanks_listing_by_item.item_number)
         render json: @blanks_listing_by_item, status: :ok
       end
 
