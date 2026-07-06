@@ -17,7 +17,20 @@ module Api
       end
 
       def show
-        render json: @blanks_listing_by_item, status: :ok
+        blanks = BlanksListingByItem
+          .where(item_number: @blanks_listing_by_item.item_number)
+          .includes(:blank)
+          .map do |b|
+            {
+              id: b.id,
+              blank_number: b.blank_number,
+              mult: b.mult,
+              div: b.div,
+              blank_description: b.blank&.description,
+            }
+          end
+
+        render json: @blanks_listing_by_item.as_json.merge('blanks_listing_by_item' => blanks), status: :ok
       end
 
       def create

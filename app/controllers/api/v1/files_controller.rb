@@ -637,7 +637,6 @@ module Api
 
         pdf.font 'Helvetica'
 
-        # Header
         pdf.text 'Aakron Line', size: 22, style: :bold
         pdf.text 'Item Cost Invoice', size: 14
         pdf.text "Created: #{Time.current.strftime('%B %d, %Y')}"
@@ -646,21 +645,19 @@ module Api
         pdf.move_down 14
 
         cell_style = { borders: [:bottom], padding: [4, 6], size: 11 }
-        header_style = { font_style: :bold, background_color: 'eeeeee' }
 
-        # Blanks
         blanks = Array(cost_data[:blanks])
         if blanks.any?
           pdf.text 'Blanks', style: :bold, size: 12
           rows = [['Blank', 'Cost($)']] + blanks.map { |b| [b[:name].to_s, "$#{b[:cost]}"] }
           pdf.table(rows, width: w, cell_style: cell_style) do
-            row(0).merge!(header_style)
+            row(0).background_color = 'eeeeee'
+            row(0).font_style = :bold
             column(1).align = :right
           end
           pdf.move_down 10
         end
 
-        # Jobs
         jobs = Array(cost_data[:selected_jobs])
         if jobs.any?
           pdf.text 'Jobs', style: :bold, size: 12
@@ -672,13 +669,13 @@ module Api
                "$#{j[:total_pricing_cost]}"]
             }
           pdf.table(rows, width: w, cell_style: cell_style) do
-            row(0).merge!(header_style)
+            row(0).background_color = 'eeeeee'
+            row(0).font_style = :bold
             columns(1..5).align = :right
           end
           pdf.move_down 10
         end
 
-        # Screens
         screens = Array(cost_data[:screens])
         if screens.any?
           pdf.text 'Screens', style: :bold, size: 12
@@ -689,26 +686,26 @@ module Api
                "$#{s[:screen][:cost]}"]
             }
           pdf.table(rows, width: w, cell_style: cell_style) do
-            row(0).merge!(header_style)
+            row(0).background_color = 'eeeeee'
+            row(0).font_style = :bold
             column(2).align = :right
           end
           pdf.move_down 10
         end
 
-        # Box
         box_arr = Array(cost_data[:box])
         if box_arr.any?
           box = box_arr[0]
           pdf.text 'Box', style: :bold, size: 12
           rows = [['Box Name', 'Cost($)'], [box[:name].to_s, "$#{box[:cost]}"]]
           pdf.table(rows, width: w, cell_style: cell_style) do
-            row(0).merge!(header_style)
+            row(0).background_color = 'eeeeee'
+            row(0).font_style = :bold
             column(1).align = :right
           end
           pdf.move_down 10
         end
 
-        # Ink cost
         ink = cost_data[:ink_cost].to_f
         if ink > 0
           pdf.table([['Ink Cost', "$#{ink}"]], width: w, cell_style: cell_style) do
@@ -718,7 +715,6 @@ module Api
           pdf.move_down 10
         end
 
-        # Total
         pdf.move_down 6
         pdf.table([['Total', "$#{cost_data[:total_cost]}"]], width: w,
           cell_style: cell_style.merge(size: 13)) do
