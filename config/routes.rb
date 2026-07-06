@@ -15,17 +15,17 @@ Rails.application.routes.draw do
   post '/health/reset_password', to: 'health#reset_password'
 
   # Setup endpoints — protected by ADMIN_KEY header
-  get  '/setup/schema_load',       to: 'setup#schema_load'
-  get  '/setup/migrate',           to: 'setup#migrate'
-  get  '/setup/seed',              to: 'setup#seed'
-  get  '/setup/debug_database',    to: 'setup#debug_database'
-  post '/setup/create_test_user',  to: 'setup#create_test_user'
+  get  '/setup/schema_load',         to: 'setup#schema_load'
+  get  '/setup/migrate',             to: 'setup#migrate'
+  get  '/setup/seed',                to: 'setup#seed'
+  get  '/setup/debug_database',      to: 'setup#debug_database'
+  post '/setup/create_test_user',    to: 'setup#create_test_user'
   post '/setup/reset_user_password', to: 'setup#reset_user_password'
 
   # Data migration endpoints — protected by ADMIN_KEY header
-  get  '/data_migration/inspect_production',  to: 'data_migration#inspect_production'
+  get  '/data_migration/inspect_production',   to: 'data_migration#inspect_production'
   post '/data_migration/copy_from_production', to: 'data_migration#copy_from_production'
-  post '/data_migration/setup_year_database', to: 'data_migration#setup_year_database'
+  post '/data_migration/setup_year_database',  to: 'data_migration#setup_year_database'
 
   mount Sidekiq::Web => '/sidekiq'
 
@@ -36,6 +36,10 @@ Rails.application.routes.draw do
     end
 
     namespace :v1, defaults: { format: :json } do
+      # Year management (freeze current year, create next year)
+      get  '/year_management/years',            to: 'year_management#years'
+      post '/year_management/freeze_and_advance', to: 'year_management#freeze_and_advance'
+
       resources :raw_materials
       resources :rawmaterialtypes
       resources :vendors

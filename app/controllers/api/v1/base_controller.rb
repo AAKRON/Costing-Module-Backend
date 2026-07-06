@@ -12,6 +12,7 @@ class Api::V1::BaseController < ApplicationController
   before_action :set_sentry_context
   before_action :set_current_database
   before_action :restrict_access
+  before_action :reject_if_year_frozen, if: :write_request?
 
   private
 
@@ -26,7 +27,6 @@ class Api::V1::BaseController < ApplicationController
 
     return if ActiveRecord::Base.connection.current_database == database
 
-    # Rails 7.2: don't mutate the frozen config object — build a new connection spec
     if ENV['DATABASE_URL'].present?
       uri = URI.parse(ENV['DATABASE_URL'])
       uri.path = "/#{database}"
@@ -53,6 +53,34 @@ class Api::V1::BaseController < ApplicationController
   rescue StandardError => e
     Rails.logger.warn "JWT authentication error: #{e.message}"
     false
+  end
+
+  # Blocks write requests to frozen years. Reads database_years from the main
+  # railway DB via a direct PG connection, independent of the per-request DB switch.
+  def reject_if_year_frozen
+    year_header = request.headers['Database'].presence
+    return unless year_header && year_header != 'null'
+
+    year = year_header.to_i
+    return unless year > 0
+
+    main_url = ENV['DATABASE_URL']
+    return unless main_url.present?
+
+    begin
+      conn   = PG::Connection.new(main_url)
+      result = conn.exec_params("SELECT frozen FROM database_years WHERE year = $1", [year]).first
+      conn.close
+      if result && result['frozen'] == 't'
+        render json: { error: "Year #{year} is frozen and read-only" }, status: 403
+      end
+    rescue => e
+      Rails.logger.warn "Year frozen check failed: #{e.message}"
+    end
+  end
+
+  def write_request?
+    %w[POST PUT PATCH DELETE].include?(request.method)
   end
 
   def unauthorized!
