@@ -53,8 +53,6 @@ class Api::V1::BaseController < ApplicationController
     false
   end
 
-  # Blocks write requests to frozen years. Reads database_years from the main
-  # railway DB via a direct PG connection, independent of the per-request DB switch.
   def reject_if_year_frozen
     year_header = request.headers['Database'].presence
     return unless year_header && year_header != 'null'
@@ -78,6 +76,7 @@ class Api::V1::BaseController < ApplicationController
   end
 
   def write_request?
+    return false if controller_name == 'sessions'
     %w[POST PUT PATCH DELETE].include?(request.method)
   end
 
