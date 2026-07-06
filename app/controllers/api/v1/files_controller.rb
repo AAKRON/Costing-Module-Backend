@@ -1,5 +1,4 @@
 # frozen_string_literal: true
-require "pdfkit"
 require 'roo'
 require 'erb'
 module Api
@@ -628,24 +627,116 @@ module Api
         end
       end
 
-
       def cost_pdf_download
-        @cost_data = params[:data]
-        kit = PDFKit.new(to_cost_calculator_html, page_size: 'A4')
-        pdf = kit.to_pdf
+        cost_data = params[:data]
+
+        pdf = Prawn::Document.new(page_size: 'A4', margin: [54, 54, 54, 54])
+        w = pdf.bounds.width
+
+        pdf.font 'Helvetica'
+
+        # Header
+        pdf.text 'Aakron Line', size: 22, style: :bold
+        pdf.text 'Item Cost Invoice', size: 14
+        pdf.text "Created: #{Time.current.strftime('%B %d, %Y')}"
+        pdf.move_down 12
+        pdf.text "Item: #{cost_data[:item_name]}", size: 13, style: :bold
+        pdf.move_down 14
+
+        cell_style = { borders: [:bottom], padding: [4, 6], size: 11 }
+        header_style = { font_style: :bold, background_color: 'eeeeee' }
+
+        # Blanks
+        blanks = Array(cost_data[:blanks])
+        if blanks.any?
+          pdf.text 'Blanks', style: :bold, size: 12
+          rows = [['Blank', 'Cost($)']] + blanks.map { |b| [b[:name].to_s, "$#{b[:cost]}"] }
+          pdf.table(rows, width: w, cell_style: cell_style) do
+            row(0).merge!(header_style)
+            column(1).align = :right
+          end
+          pdf.move_down 10
+        end
+
+        # Jobs
+        jobs = Array(cost_data[:selected_jobs])
+        if jobs.any?
+          pdf.text 'Jobs', style: :bold, size: 12
+          rows = [['Job#', 'Wages/hr', 'Hr/pcs', 'Labor($)', 'Pricing($)', 'Total']] +
+            jobs.map { |j|
+              ["#{j[:job_number]} - #{j[:description]}",
+               "$#{j[:wages_per_hour]}", j[:hour_per_piece].to_s,
+               "$#{j[:direct_labor_cost]}", "$#{j[:overhead_pricing_cost]}",
+               "$#{j[:total_pricing_cost]}"]
+            }
+          pdf.table(rows, width: w, cell_style: cell_style) do
+            row(0).merge!(header_style)
+            columns(1..5).align = :right
+          end
+          pdf.move_down 10
+        end
+
+        # Screens
+        screens = Array(cost_data[:screens])
+        if screens.any?
+          pdf.text 'Screens', style: :bold, size: 12
+          rows = [['Job', 'Screen Size', 'Cost($)']] +
+            screens.map { |s|
+              ["#{s[:job_number]} - #{s[:description]}",
+               s[:screen][:screen_size].to_s,
+               "$#{s[:screen][:cost]}"]
+            }
+          pdf.table(rows, width: w, cell_style: cell_style) do
+            row(0).merge!(header_style)
+            column(2).align = :right
+          end
+          pdf.move_down 10
+        end
+
+        # Box
+        box_arr = Array(cost_data[:box])
+        if box_arr.any?
+          box = box_arr[0]
+          pdf.text 'Box', style: :bold, size: 12
+          rows = [['Box Name', 'Cost($)'], [box[:name].to_s, "$#{box[:cost]}"]]
+          pdf.table(rows, width: w, cell_style: cell_style) do
+            row(0).merge!(header_style)
+            column(1).align = :right
+          end
+          pdf.move_down 10
+        end
+
+        # Ink cost
+        ink = cost_data[:ink_cost].to_f
+        if ink > 0
+          pdf.table([['Ink Cost', "$#{ink}"]], width: w, cell_style: cell_style) do
+            row(0).font_style = :bold
+            column(1).align = :right
+          end
+          pdf.move_down 10
+        end
+
+        # Total
+        pdf.move_down 6
+        pdf.table([['Total', "$#{cost_data[:total_cost]}"]], width: w,
+          cell_style: cell_style.merge(size: 13)) do
+          row(0).font_style = :bold
+          column(1).align = :right
+        end
+
+        pdf_data = pdf.render
 
         Document.where(document_type: 'item_cost_invoice').destroy_all
 
-        file_params = {
-          filename: "item-cost-invoice.pdf",
-          content_type: "application/pdf",
-          file_content: Base64.encode64(pdf),
-          document_type: "item_cost_invoice"
-        }
+        document = Document.new(
+          filename: 'item-cost-invoice.pdf',
+          content_type: 'application/pdf',
+          file_content: Base64.encode64(pdf_data),
+          document_type: 'item_cost_invoice'
+        )
 
-        document = Document.new(file_params.slice(:filename, :content_type, :file_content, :document_type))
         if document.save
-          render json: { message: 'You file is being processed.' }, status: :ok
+          render json: { message: 'Your file is being processed.' }, status: :ok
         else
           render json: { message: document.errors }, status: :bad_request
         end
@@ -655,11 +746,6 @@ module Api
 
       def file_params
         params.permit(:file)
-      end
-
-      def to_cost_calculator_html
-        template_path = Rails.root.join('app', 'views', 'api', 'v1', 'file', 'cost_calculator.html.erb')
-        ERB.new(File.read(template_path)).result(binding)
       end
     end
   end
