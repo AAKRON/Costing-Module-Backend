@@ -1,6 +1,5 @@
 require 'sidekiq/web'
 
-# Protect Sidekiq UI with HTTP Basic Auth
 Sidekiq::Web.use(Rack::Auth::Basic) do |_username, password|
   expected = ENV['SIDEKIQ_PASSWORD'].presence
   expected && ActiveSupport::SecurityUtils.secure_compare(password, expected)
@@ -9,12 +8,13 @@ end
 Rails.application.routes.draw do
   post '/simple_login_2025', to: 'simple_auth#login_2025'
 
-  get  '/health',                to: 'health#show'
-  get  '/health/diagnostics',    to: 'health#diagnostics'
-  post '/health/create_user',    to: 'health#create_user'
-  post '/health/reset_password', to: 'health#reset_password'
+  get  '/health',                    to: 'health#show'
+  get  '/health/diagnostics',        to: 'health#diagnostics'
+  get  '/health/list_users',         to: 'health#list_users'
+  post '/health/create_user',        to: 'health#create_user'
+  post '/health/reset_password',     to: 'health#reset_password'
+  post '/health/copy_users_to_year', to: 'health#copy_users_to_year'
 
-  # Setup endpoints — protected by ADMIN_KEY header
   get  '/setup/schema_load',         to: 'setup#schema_load'
   get  '/setup/migrate',             to: 'setup#migrate'
   get  '/setup/seed',                to: 'setup#seed'
@@ -22,7 +22,6 @@ Rails.application.routes.draw do
   post '/setup/create_test_user',    to: 'setup#create_test_user'
   post '/setup/reset_user_password', to: 'setup#reset_user_password'
 
-  # Data migration endpoints — protected by ADMIN_KEY header
   get  '/data_migration/inspect_production',   to: 'data_migration#inspect_production'
   post '/data_migration/copy_from_production', to: 'data_migration#copy_from_production'
   post '/data_migration/setup_year_database',  to: 'data_migration#setup_year_database'
@@ -36,8 +35,7 @@ Rails.application.routes.draw do
     end
 
     namespace :v1, defaults: { format: :json } do
-      # Year management (freeze current year, create next year)
-      get  '/year_management/years',            to: 'year_management#years'
+      get  '/year_management/years',              to: 'year_management#years'
       post '/year_management/freeze_and_advance', to: 'year_management#freeze_and_advance'
 
       resources :raw_materials
@@ -89,7 +87,6 @@ Rails.application.routes.draw do
       post '/cost-pdf-download',             to: 'files#cost_pdf_download'
       put  '/update-item-blanks-only/:item_id',           to: 'blanks_listing_by_items#update_item_blanks_only'
       put  '/update-item-blanks-with-cost-only/:item_id', to: 'blanks_listing_item_with_costs#update_item_blanks_with_cost_only'
-
       get  '/jobs_and_blanks_download/:document_type',                    to: 'files#job_listing_download'
       post '/job_listing_dashboard',                                      to: 'files#update_or_create_jobs'
       get  '/raw_materials_download/:document_type',                      to: 'files#raw_materials'
