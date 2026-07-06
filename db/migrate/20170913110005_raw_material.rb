@@ -1,4 +1,4 @@
-class RawMaterial < ActiveRecord::Migration[5.0]
+class RawMaterialNoop < ActiveRecord::Migration[5.0]
   def change
   end
 end
