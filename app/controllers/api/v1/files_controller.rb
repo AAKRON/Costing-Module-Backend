@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 require 'roo'
 require 'erb'
+require 'prawn'
+require 'prawn/table'
 module Api
   module V1
     class FilesController < BaseController
@@ -630,7 +632,7 @@ module Api
       def cost_pdf_download
         cost_data = params[:data]
 
-        pdf = Prawn::Document.new(page_size: 'A4', margin: [54, 54, 54, 54])
+        pdf = ::Prawn::Document.new(page_size: 'A4', margin: [54, 54, 54, 54])
         w = pdf.bounds.width
 
         pdf.font 'Helvetica'
