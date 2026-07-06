@@ -10,6 +10,7 @@ Rails.application.routes.draw do
   post '/simple_login_2025', to: 'simple_auth#login_2025'
 
   get  '/health',                to: 'health#show'
+  get  '/health/diagnostics',    to: 'health#diagnostics'
   post '/health/create_user',    to: 'health#create_user'
   post '/health/reset_password', to: 'health#reset_password'
 

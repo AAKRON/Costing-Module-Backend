@@ -39,6 +39,7 @@ class HealthController < ApplicationController
       user_count: (User.count rescue 'error'),
       available_routes: [
         '/health',
+        '/health/diagnostics (public — view counts and cost samples)',
         '/health?action_type=reset_password (with optional username & password params)',
         '/setup/schema_load',
         '/setup/migrate',
@@ -46,6 +47,61 @@ class HealthController < ApplicationController
         '/setup/debug_database'
       ]
     }
+  end
+
+  # GET /health/diagnostics — public, no auth required
+  def diagnostics
+    conn = ActiveRecord::Base.connection
+    begin
+      app_constants = conn.execute("SELECT name, value FROM app_constants ORDER BY name").to_a rescue []
+
+      blank_jobs_count  = conn.execute("SELECT COUNT(*) AS c FROM blank_jobs").first['c'] rescue 'error'
+      blanks_total      = conn.execute("SELECT COUNT(*) AS c FROM blanks").first['c'] rescue 'error'
+      blanks_with_type  = conn.execute("SELECT COUNT(*) AS c FROM blanks WHERE blank_type_id != 0").first['c'] rescue 'error'
+      blank_types       = conn.execute("SELECT type_number, description FROM blank_types ORDER BY type_number").to_a rescue []
+
+      bcv = conn.execute(<<~SQL).first rescue {}
+        SELECT
+          COUNT(*) AS total,
+          COUNT(CASE WHEN total_blank_cost_for_price > 0 THEN 1 END) AS nonzero_price,
+          COUNT(CASE WHEN type_number = 1 THEN 1 END) AS type1_count
+        FROM blank_cost_views
+      SQL
+
+      bcv_sample = conn.execute(<<~SQL).to_a rescue []
+        SELECT blank_number, type_number, total_blank_cost_for_price, total_blank_cost_for_inventory
+        FROM blank_cost_views
+        WHERE total_blank_cost_for_price > 0
+        LIMIT 5
+      SQL
+
+      iwbpcv = conn.execute(<<~SQL).first rescue {}
+        SELECT
+          COUNT(*) AS total,
+          COUNT(CASE WHEN total_blank_cost_for_price > 0 THEN 1 END) AS nonzero_price
+        FROM item_with_blank_per_cost_views
+      SQL
+
+      render json: {
+        app_constants: app_constants,
+        blank_jobs_count: blank_jobs_count,
+        blanks_total: blanks_total,
+        blanks_with_non_zero_type: blanks_with_type,
+        blank_types: blank_types,
+        blank_cost_views: {
+          total_rows: bcv['total'],
+          rows_with_nonzero_price_cost: bcv['nonzero_price'],
+          rows_with_type_number_1: bcv['type1_count'],
+          sample_nonzero: bcv_sample
+        },
+        item_with_blank_per_cost_views: {
+          total_rows: iwbpcv['total'],
+          rows_with_nonzero_price_cost: iwbpcv['nonzero_price']
+        }
+      }
+    rescue => e
+      render json: { error: e.message, backtrace: e.backtrace.first(5) }, status: 500
+    end
   end
 
   # POST /health/create_user
