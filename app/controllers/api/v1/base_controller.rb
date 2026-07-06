@@ -19,9 +19,7 @@ class Api::V1::BaseController < ApplicationController
   def set_current_database
     database = ENV['PG_DB_DEV'].presence || ActiveRecord::Base.connection.current_database
 
-    if request.headers['Database'].present? &&
-       request.headers['Database'] != 'null' &&
-       request.headers['Database'] != Time.now.year.to_s
+    if request.headers['Database'].present? && request.headers['Database'] != 'null'
       database = 'costing_database_' + request.headers['Database']
     end
 
