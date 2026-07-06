@@ -38,7 +38,7 @@ class HealthController < ApplicationController
       available_routes: [
         '/health',
         '/health/diagnostics',
-        '/health/list_users (GET, Database header, X-Admin-Key)',
+        '/health/list_users (GET, year param or Database header, X-Admin-Key)',
         '/health/copy_users_to_year (POST, ?target_year=2026, X-Admin-Key)',
         '/health/reset_password (POST, Database header)'
       ]
@@ -93,14 +93,11 @@ class HealthController < ApplicationController
   end
 
   # GET /health/list_users?year=2025  (or Database header)
-  # Lists all usernames in a given year DB. Admin key required.
   def list_users
     return render json: { error: 'Unauthorized' }, status: 401 unless valid_admin_key?
 
     year = params[:year] || request.headers['Database']
-    if year.present?
-      switch_database(year)
-    end
+    switch_database(year) if year.present?
 
     users = User.select(:id, :username, :role).order(:username).map do |u|
       { id: u.id, username: u.username, role: u.role }
@@ -116,8 +113,6 @@ class HealthController < ApplicationController
   end
 
   # POST /health/copy_users_to_year?target_year=2026
-  # Reads all users from every year DB (2019-2025) and upserts them into target_year.
-  # Skips users that already exist in the target. Admin key required.
   def copy_users_to_year
     return render json: { error: 'Unauthorized' }, status: 401 unless valid_admin_key?
 
@@ -131,23 +126,30 @@ class HealthController < ApplicationController
     source_years.each do |yr|
       src_db = "costing_database_#{yr}"
       begin
-        src_url = swap_db_in_url(main_url, src_db)
+        src_url  = swap_db_in_url(main_url, src_db)
         src_conn = PG::Connection.new(src_url)
-        rows = src_conn.exec("SELECT username, password_digest, role FROM users").to_a
+        rows     = src_conn.exec("SELECT username, password_digest, role FROM users").to_a
         src_conn.close
 
-        # Switch to target year and upsert
         switch_database(target_year)
         year_results = []
         rows.each do |row|
-          next if row['username'].to_s.downcase == 'matthew'  # Matthew already exists
+          next if row['username'].to_s.downcase == 'matthew'
+
+          # Older DBs store role as integer (1 = admin, 0 = user)
+          raw_role    = row['role'].to_s
+          mapped_role = case raw_role
+                        when '1', 'true'  then 'admin'
+                        when '0', 'false' then 'user'
+                        else raw_role.presence || 'admin'
+                        end
+
           user = User.find_or_initialize_by(username: row['username'])
           if user.new_record?
-            # Copy password_digest directly to avoid re-hashing
             user.password_digest = row['password_digest']
-            user.role = row['role'] || 'admin'
+            user.role            = mapped_role
             if user.save(validate: false)
-              year_results << { username: user.username, status: 'created' }
+              year_results << { username: user.username, status: 'created', role: user.role }
             else
               year_results << { username: user.username, status: 'error', errors: user.errors.full_messages }
             end
@@ -161,7 +163,6 @@ class HealthController < ApplicationController
       end
     end
 
-    # Show final user list in target year
     switch_database(target_year)
     final_users = User.select(:username, :role).order(:username).map { |u| { username: u.username, role: u.role } }
 
@@ -233,7 +234,7 @@ class HealthController < ApplicationController
 
   def switch_database(year_header)
     return unless year_header.present? && year_header != 'null'
-    database = year_header.to_s.start_with?('costing_database_') ? year_header : 'costing_database_' + year_header
+    database = year_header.to_s.start_with?('costing_database_') ? year_header : "costing_database_#{year_header}"
     if ENV['DATABASE_URL'].present?
       uri = URI.parse(ENV['DATABASE_URL'])
       uri.path = "/#{database}"
