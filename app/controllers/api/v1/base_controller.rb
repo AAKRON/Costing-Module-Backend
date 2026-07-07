@@ -36,6 +36,7 @@ class Api::V1::BaseController < ApplicationController
   end
 
   def restrict_access
+    return if request.method == 'OPTIONS'
     (unauthorized! && return) unless authenticate_jwt_token
   end
 
@@ -81,24 +82,7 @@ class Api::V1::BaseController < ApplicationController
   end
 
   def unauthorized!
-    debug = {}
-    begin
-      auth_header = request.headers['Authorization']
-      token = auth_header&.start_with?('Bearer ') ? auth_header.split(' ').last : nil
-      payload = token ? JwtService.decode(token) : nil
-      debug = {
-        has_auth_header: auth_header.present?,
-        token_present: token.present?,
-        token_valid: payload.present?,
-        user_id_in_token: payload&.dig(:sub),
-        user_found: payload ? User.find_by(id: payload[:sub]).present? : false,
-        database_header: request.headers['Database'],
-        current_database: ActiveRecord::Base.connection.current_database,
-      }
-    rescue => e
-      debug = { error: e.message }
-    end
-    render json: { message: 'Not Authorized', debug: debug }, status: 401
+    render json: { message: 'Not Authorized' }, status: 401
   end
 
   def destroy_session
