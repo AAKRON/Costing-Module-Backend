@@ -17,13 +17,28 @@ class Api::V1::BaseController < ApplicationController
   private
 
   def set_current_database
-    database = ENV['PG_DB_DEV'].presence || ActiveRecord::Base.connection.current_database
+    raw_header = request.headers['Database']
 
-    if request.headers['Database'].present? && request.headers['Database'] != 'null'
-      database = 'costing_database_' + request.headers['Database']
+    if raw_header.present? && raw_header != 'null'
+      database = 'costing_database_' + raw_header
+    else
+      database = ENV['PG_DB_DEV'].presence
+      database ||= begin
+        ActiveRecord::Base.connection.current_database
+      rescue
+        nil
+      end
     end
 
-    return if ActiveRecord::Base.connection.current_database == database
+    return unless database.present?
+
+    # Short-circuit if the pool is already on the right database.
+    # If the current connection is broken (e.g. post-rollback), disconnect it first.
+    begin
+      return if ActiveRecord::Base.connection.current_database == database
+    rescue ActiveRecord::NoDatabaseError, PG::ConnectionBad
+      ActiveRecord::Base.connection_pool.disconnect! rescue nil
+    end
 
     if ENV['DATABASE_URL'].present?
       uri = URI.parse(ENV['DATABASE_URL'])
@@ -33,6 +48,23 @@ class Api::V1::BaseController < ApplicationController
       config = ActiveRecord::Base.connection_db_config.configuration_hash.merge(database: database)
       ActiveRecord::Base.establish_connection(config)
     end
+
+    # Probe immediately so a missing database raises here rather than deep in a controller.
+    ActiveRecord::Base.connection.current_database
+
+  rescue ActiveRecord::NoDatabaseError, PG::ConnectionBad => e
+    # Database was dropped (e.g. after rollback_freeze). Reset pool to main so the
+    # next request isn't also broken, then return a clear error to the client.
+    ActiveRecord::Base.connection_pool.disconnect! rescue nil
+    begin
+      ActiveRecord::Base.establish_connection(ENV['DATABASE_URL']) if ENV['DATABASE_URL'].present?
+    rescue
+      nil
+    end
+    render json: {
+      error: "Database '#{database}' does not exist. This year may have been rolled back. Please log out and select an active year.",
+      code: 'DATABASE_NOT_FOUND'
+    }, status: 422
   end
 
   def restrict_access
