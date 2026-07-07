@@ -3,6 +3,7 @@ module Api
   module V1
     class ItemsController < BaseController
       before_action :restrict_access
+      skip_before_action :restrict_access, only: [:cost_for_erp]
       before_action :set_user_access_level, only: [:destroy, :update]
       before_action :set_item, only: [:show, :update, :update_type]
       after_action(only: [:index]) { set_pagination_header(ItemCostView.count) }
@@ -185,6 +186,24 @@ module Api
           else
             render json: { message: 'item not found', status: :bad_request }
           end
+        end
+      end
+
+      def cost_for_erp
+        unless params[:apikey] == ENV['TIORY_COST_APIKEY']
+          return render json: { message: 'Not Authorized' }, status: 401
+        end
+
+        item = ItemCostView.find_by(item_number: params[:item_number])
+        if item
+          render json: {
+            found: true,
+            item_number: item.item_number,
+            description: item.description,
+            total_price_cost: item.total_price_cost.round(5)
+          }, status: :ok
+        else
+          render json: { found: false, item_number: params[:item_number] }, status: :ok
         end
       end
 

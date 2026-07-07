@@ -107,6 +107,7 @@ Rails.application.routes.draw do
       post '/blanks_report_dashboard',                                    to: 'files#update_or_create_blanks_report'
       get  '/item_listing_with_item_types_download/:document_type',       to: 'files#item_listing_with_item_types_download'
       post '/item_listing_with_item_types_dashboard',                     to: 'files#update_or_create_item_listing_with_item_types'
+      get  '/item-cost/:item_number',                                     to: 'items#cost_for_erp'
     end
   end
 end
