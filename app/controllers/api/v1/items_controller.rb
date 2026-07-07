@@ -200,7 +200,7 @@ module Api
             found: true,
             item_number: item.item_number,
             description: item.description,
-            total_price_cost: item.total_price_cost.round(5)
+            total_price_cost: item.total_price_cost.round(4)
           }, status: :ok
         else
           render json: { found: false, item_number: params[:item_number] }, status: :ok
